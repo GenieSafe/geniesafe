@@ -158,7 +158,7 @@ const Home: NextPage = () => {
   return (
     <Layout>
       <Heading as="h1" mb="8">
-        Next.js Ethereum Starter
+        GenieSafe
       </Heading>
       <Text fontSize="lg" mb="4">
         Ethereum starter kit made with:
