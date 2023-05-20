@@ -14,8 +14,8 @@ import { useEffect, useState } from 'react'
 import { erc721ABI, useAccount, useContractRead } from 'wagmi'
 import { YourNFTContract as LOCAL_CONTRACT_ADDRESS } from '../artifacts/contracts/contractAddress'
 import { Layout } from '../components/layout/Layout'
-import { useCheckLocalChain } from '../hooks/useCheckLocalChain'
-import { useIsMounted } from '../hooks/useIsMounted'
+import { useCheckLocalChain } from '../src/hooks/useCheckLocalChain'
+import { useIsMounted } from '../src/hooks/useIsMounted'
 
 const GOERLI_CONTRACT_ADDRESS = '0x982659f8ce3988096A735044aD42445D6514ba7e'
 

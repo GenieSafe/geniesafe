@@ -38,6 +38,21 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
                   Token Gated
                 </Link>
               </NextLink>
+              <NextLink href="/create-will" passHref legacyBehavior>
+                <Link px="4" py="1">
+                  Create Will
+                </Link>
+              </NextLink>
+              <NextLink href="/activate-will" passHref legacyBehavior>
+                <Link px="4" py="1">
+                  Activate Will
+                </Link>
+              </NextLink>
+              <NextLink href="/validate-will" passHref legacyBehavior>
+                <Link px="4" py="1">
+                  Validate Will
+                </Link>
+              </NextLink>
             </Flex>
             <Flex
               order={[-1, null, null, 2]}
@@ -55,8 +70,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
       <footer>
         <Container mt="8" py="8" maxWidth="container.xl">
           <Text mb="4">
-            Built by{' '}
-            <Link href="https://twitter.com/hunterhchang">Hunter Chang</Link>
+            <Link href="https://github.com/GenieSafe/geniesafe">GitHub Repo</Link>
           </Text>
           <LocalFaucetButton />
         </Container>

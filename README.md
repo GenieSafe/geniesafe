@@ -1,27 +1,13 @@
-# nextjs-ethereum-starter
-
-This project was sponsored by the [BuidlGuidl](https://buidlguidl.com). Please support the BuidlGuidl if this project has been helpful!
-
----
-
-My iteration of [Austin Griffith's scaffold-eth](https://github.com/austintgriffith/scaffold-eth).
-Also inspired by [Nader Dabit's blog post](https://dev.to/dabit3/the-complete-guide-to-full-stack-ethereum-development-3j13)
-
-- [Hardhat](https://hardhat.org/)
-- [Next.js](https://nextjs.org/)
-- [RainbowKit](https://www.rainbowkit.com/)
-- [wagmi](https://wagmi.sh/)
-- [Chakra UI](https://chakra-ui.com/)
-
-👀 [View the Live Demo](https://nextjs-ethereum-starter.vercel.app/)
+# GenieSafe
+Built by [Alif](https://github.com/alifmazli) and [Syaamil](https://github.com/escornbar)
 
 ## Getting Started
 
-It is recommended to use Yarn to avoid dependency collisions: [Yarn](https://classic.yarnpkg.com/en/docs/install)
+Use Yarn to avoid dependency collisions: [Yarn](https://classic.yarnpkg.com/en/docs/install)
 
 ```bash
-git clone https://github.com/ChangoMan/nextjs-ethereum-starter.git
-cd nextjs-ethereum-starter
+git clone https://github.com/GenieSafe/geniesafe.git
+cd geniesafe
 
 yarn install
 
@@ -48,7 +34,7 @@ This will install the frontend packages. We also need to set up the local config
 cp .env.local.example .env.local
 ```
 
-This will create a file called `.env.local`. Open up that file and fill in the `NEXT_PUBLIC_ALCHEMY_API_KEY=` and `NEXT_PUBLIC_UNSPLASH_ACCESS_KEY=` environment variables.
+This will create a file called `.env.local`. Open up that file and fill in the environment variables.
 
 ```bash
 yarn dev
@@ -57,3 +43,60 @@ yarn dev
 This will start up the Next.js development server. Your site will be available at http://localhost:3000/
 
 To interact with the local contract, be sure to switch your MetaMask Network to `Localhost 8545`
+
+## Development Conventions
+
+### Branching workflow
+
+#### Regular branches
+
+- Available permanently in the repo
+- **Do not** delete these branches
+
+##### 1. `main`
+
+- Stable, deployment branch
+- Merged with `develop` at the end of a major/minor version release
+- Example: After code review for GenieSafe 1.0 is completed
+- **Do not** directly commit to this branch
+
+##### 2. `develop`
+
+- Development branch
+- Main branch used in development
+- Branches off to other `user_story` and `task` branch
+
+#### Temporary branches
+
+- Available throughout a development period for a particular user story/task
+- To be deleted **after** pull request (PR) is approved
+- Refer below to see how to name these types of branches
+
+##### Categories
+
+- `feature` is for adding, refactoring or removing a feature
+- `bugfix` is for fixing a bug
+- `hotfix` is for changing code with a temporary solution and/or without following the usual process (usually because of an emergency)
+- `test` is for experimenting outside of an issue/ticket
+
+##### Reference
+
+Insert Jira issue number, either user story or task. If there's no reference, just add `no-ref`.
+
+##### Description
+
+Insert a brief description which sums up the purpose of this specific branch. This description should be short and "kebab-cased".
+
+By default, you can use the title of the issue/ticket you are working on. Just replace any special character by "-".
+
+#### Naming pattern
+```bash
+git checkout -b <category>/<reference>/<description-in-kebab-case>
+```
+
+##### Examples
+
+- You need to add, refactor or remove a feature: `git branch feature/issue-42/create-new-button-component`
+- You need to fix a bug: `git branch bugfix/issue-342/button-overlap-form-on-mobile`
+- You need to fix a bug really fast (possibly with a temporary solution): `git branch hotfix/no-ref/registration-form-not-working`
+- You need to experiment outside of an issue/ticket: `git branch test/no-ref refactor-components-with-atomic-design`
