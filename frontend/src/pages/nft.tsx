@@ -26,9 +26,9 @@ import { YourNFTContract as LOCAL_CONTRACT_ADDRESS } from '../artifacts/contract
 import { YourNFT_ABI } from '../artifacts/contracts/YourNFT.sol/YourNFT.js'
 import { Layout } from '../components/layout/Layout'
 import { NftList } from '../components/NftList'
-import { useCheckLocalChain } from '../hooks/useCheckLocalChain'
-import { useIsMounted } from '../hooks/useIsMounted'
-import { generateTokenUri } from '../utils/generateTokenUri'
+import { useCheckLocalChain } from '../src/hooks/useCheckLocalChain'
+import { useIsMounted } from '../src/hooks/useIsMounted'
+import { generateTokenUri } from '../src/utils/generateTokenUri'
 
 const GOERLI_CONTRACT_ADDRESS = '0x982659f8ce3988096A735044aD42445D6514ba7e'
 

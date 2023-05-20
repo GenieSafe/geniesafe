@@ -2,7 +2,7 @@ import { Button, useToast } from '@chakra-ui/react'
 import { ethers, providers } from 'ethers'
 import { useCallback } from 'react'
 import { useAccount } from 'wagmi'
-import { useCheckLocalChain } from '../hooks/useCheckLocalChain'
+import { useCheckLocalChain } from '../src/hooks/useCheckLocalChain'
 
 /**
  * Constants & Helpers

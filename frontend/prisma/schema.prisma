@@ -12,12 +12,12 @@ datasource db {
 
 model User {
   id            Int           @id @default(autoincrement())
-  email         String
+  email         String        @unique
   password      String
   walletAddress String?
   owner         Owner?
-  Verifier      Verifier[]
-  Beneficiary   Beneficiary[]
+  verifier      Verifier[]
+  beneficiary   Beneficiary[]
   Validator     Validator[]
 }
 
@@ -25,20 +25,22 @@ model Owner {
   id                   Int                   @id @default(autoincrement())
   userId               Int                   @unique
   user                 User                  @relation(fields: [userId], references: [id])
+  icNumber             Int                   @unique
   walletRecoveryConfig WalletRecoveryConfig?
-  WillContract         WillContract[]
+  willContracts        WillContract[]
 }
 
 model WalletRecoveryConfig {
-  id       Int        @id @default(autoincrement())
-  ownerId  Int        @unique
-  owner    Owner      @relation(fields: [ownerId], references: [id])
-  verified Boolean
-  Verifier Verifier[]
+  id        Int        @id @default(autoincrement())
+  ownerId   Int        @unique
+  owner     Owner      @relation(fields: [ownerId], references: [id])
+  verified  Boolean
+  verifiers Verifier[]
 }
 
 model Verifier {
-  userId                 Int                  @id
+  id                     Int                  @id @default(autoincrement())
+  userId                 Int
   user                   User                 @relation(fields: [userId], references: [id])
   walletRecoveryConfigId Int
   walletRecoveryConfig   WalletRecoveryConfig @relation(fields: [walletRecoveryConfigId], references: [id])
@@ -46,24 +48,26 @@ model Verifier {
 }
 
 model WillContract {
-  id                      Int           @id @default(autoincrement())
-  ownerId                 Int
-  owner                   Owner         @relation(fields: [ownerId], references: [id])
-  deployedContractAddress String?
-  activated               Boolean
-  Beneficiary             Beneficiary[]
-  Validator               Validator[]
+  id              Int           @id @default(autoincrement())
+  ownerId         Int
+  owner           Owner         @relation(fields: [ownerId], references: [id])
+  deployedAddress String?
+  activated       Boolean
+  beneficiaries   Beneficiary[]
+  validators      Validator[]
 }
 
 model Beneficiary {
-  userId         Int          @id
+  id             Int          @id @default(autoincrement())
+  userId         Int
   user           User         @relation(fields: [userId], references: [id])
   willContractId Int
   willContract   WillContract @relation(fields: [willContractId], references: [id])
 }
 
 model Validator {
-  userId         Int          @id
+  id             Int          @id @default(autoincrement())
+  userId         Int
   user           User         @relation(fields: [userId], references: [id])
   willContractId Int
   willContract   WillContract @relation(fields: [willContractId], references: [id])
