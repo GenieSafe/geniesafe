@@ -4,6 +4,7 @@ import NextLink from 'next/link'
 import React from 'react'
 // import { LocalFaucetButton } from '../LocalFaucetButton'
 import { Head, MetaProps } from './Head'
+import { useSession } from '@supabase/auth-helpers-react'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -11,6 +12,8 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
+  const session = useSession()
+
   return (
     <>
       <Head customMeta={customMeta} />
@@ -28,7 +31,19 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
                   Home
                 </Link>
               </NextLink>
-              <NextLink href="/nft" passHref legacyBehavior>
+              {session ? (
+                <>
+                  <NextLink href="/" passHref legacyBehavior>
+                    <Link px="4" py="1">
+                      Sign out
+                    </Link>
+                  </NextLink>
+                  <Text>Signed in as {session.user.email}</Text>
+                </>
+              ) : (
+                <button>Sign in</button>
+              )}
+              {/* <NextLink href="/nft" passHref legacyBehavior>
                 <Link px="4" py="1">
                   Mint NFT
                 </Link>
@@ -52,7 +67,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
                 <Link px="4" py="1">
                   Validate Will
                 </Link>
-              </NextLink>
+              </NextLink> */}
             </Flex>
             <Flex
               order={[-1, null, null, 2]}
