@@ -181,7 +181,7 @@ const Home: NextPage = () => {
           <Heading as="h1" mb="8">
             GenieSafe
           </Heading>
-          <Text>Home Page</Text>
+          <Text>Auth successful</Text>
         </Layout>
       )}
     </>
