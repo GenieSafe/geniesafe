@@ -44,7 +44,6 @@ const demoAppInfo = {
 }
 
 const connectors = connectorsForWallets(wallets)
-
 const wagmiClient = createClient({
   autoConnect: true,
   connectors,
@@ -53,7 +52,7 @@ const wagmiClient = createClient({
 })
 
 export default function App({ Component, pageProps }: AppProps) {
-  // Create a new supabase browser client on every first render.
+  // Create a new supabase browser client on every first render
   const [supabaseClient] = useState(() => createBrowserSupabaseClient())
 
   return (
