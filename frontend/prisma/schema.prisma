@@ -24,18 +24,18 @@ model Will {
   id              Int         @id @default(autoincrement())
   owner           User        @relation(fields: [ownerId], references: [id])
   ownerId         Int
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @default(now())
+  createdAt       DateTime?   @default(now())
+  updatedAt       DateTime?   @default(now())
   divisions       Division[]
   validators      Validator[]
-  activated       Boolean
-  validated       Boolean
+  activated       Boolean     @default(false)
+  validated       Boolean     @default(false)
   deployedAt      DateTime?
   deployedAtBlock String?
 }
 
 model Division {
-  willId        Int   @unique
+  willId        Int   @id
   Will          Will  @relation(fields: [willId], references: [id])
   beneficiaryId Int
   beneficiary   User  @relation(fields: [beneficiaryId], references: [id])
