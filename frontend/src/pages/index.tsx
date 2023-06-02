@@ -23,23 +23,30 @@ import {
 import { YourContract as LOCAL_CONTRACT_ADDRESS } from '../../artifacts/contracts/contractAddress'
 import YourContract from '../../artifacts/contracts/YourContract.sol/YourContract.json'
 import { Layout } from '../../components/layout/Layout'
-import { useCheckLocalChain } from '../hooks/useCheckLocalChain'
-import { useIsMounted } from '../hooks/useIsMounted'
+// import { useCheckLocalChain } from '../hooks/useCheckLocalChain'
+// import { useIsMounted } from '../hooks/useIsMounted'
 import { YourContract as YourContractType } from '../../types/typechain'
+import { Auth } from '@supabase/auth-ui-react'
+import { ThemeSupa } from '@supabase/auth-ui-shared'
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 
 /**
  * Constants & Helpers
  */
 
+/*
 const localProvider = new providers.StaticJsonRpcProvider(
   'http://localhost:8545'
 )
 
 const GOERLI_CONTRACT_ADDRESS = '0x3B73833638556f10ceB1b49A18a27154e3828303'
+*/
 
 /**
  * Prop Types
  */
+
+/*
 type StateType = {
   greeting: string
   inputValue: string
@@ -53,15 +60,19 @@ type ActionType =
       type: 'SET_INPUT_VALUE'
       inputValue: StateType['inputValue']
     }
+*/
 
 /**
  * Component
  */
+/*
 const initialState: StateType = {
   greeting: '',
   inputValue: '',
 }
+*/
 
+/*
 function reducer(state: StateType, action: ActionType): StateType {
   switch (action.type) {
     // Track the greeting from the blockchain
@@ -79,8 +90,10 @@ function reducer(state: StateType, action: ActionType): StateType {
       throw new Error()
   }
 }
+*/
 
 const Home: NextPage = () => {
+  /*
   const [state, dispatch] = useReducer(reducer, initialState)
 
   const { isLocalChain } = useCheckLocalChain()
@@ -154,100 +167,24 @@ const Home: NextPage = () => {
   if (!isMounted) {
     return null
   }
+  */
+
+  const session = useSession()
+  const supabase = useSupabaseClient()
 
   return (
-    <Layout>
-      <Heading as="h1" mb="8">
-        GenieSafe
-      </Heading>
-      <Text fontSize="lg" mb="4">
-        Ethereum starter kit made with:
-      </Text>
-      <UnorderedList mb="8">
-        <ListItem>
-          <Link href="https://hardhat.org/" color="teal.500" isExternal>
-            Hardhat
-          </Link>
-        </ListItem>
-        <ListItem>
-          <Link href="https://nextjs.org/" color="teal.500" isExternal>
-            Next.js
-          </Link>
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.rainbowkit.com/" color="teal.500" isExternal>
-            RainbowKit
-          </Link>
-        </ListItem>
-        <ListItem>
-          <Link href="https://wagmi.sh/" color="teal.500" isExternal>
-            wagmi Hooks
-          </Link>
-        </ListItem>
-        <ListItem>
-          <Link href="https://chakra-ui.com" color="teal.500" isExternal>
-            Chakra UI
-          </Link>
-        </ListItem>
-      </UnorderedList>
-      <Button
-        as="a"
-        size="lg"
-        colorScheme="teal"
-        variant="outline"
-        href="https://github.com/ChangoMan/nextjs-ethereum-starter"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Get the source code!
-      </Button>
-
-      <Text mt="8" fontSize="xl">
-        This page only works on the GOERLI Testnet or on a Local Chain.
-      </Text>
-      <Box maxWidth="container.sm" p="8" mt="8" bg="gray.100">
-        <Text fontSize="xl">Contract Address: {CONTRACT_ADDRESS}</Text>
-        <Divider my="8" borderColor="gray.400" />
-        <Box>
-          <Text fontSize="lg">Greeting: {state.greeting}</Text>
-          <Button
-            mt="2"
-            colorScheme="teal"
-            disabled={!address}
-            onClick={fetchContractGreeting}
-          >
-            {address ? 'Fetch Greeting' : 'Please Connect Your Wallet'}
-          </Button>
-        </Box>
-        <Divider my="8" borderColor="gray.400" />
-        <Box>
-          <Text fontSize="lg" mb="2">
-            Enter a Greeting:
-          </Text>
-          <Input
-            bg="white"
-            type="text"
-            placeholder="Enter a Greeting"
-            disabled={!address || isLoading}
-            onBlur={(e) => {
-              dispatch({
-                type: 'SET_INPUT_VALUE',
-                inputValue: e.target.value,
-              })
-            }}
-          />
-          <Button
-            mt="2"
-            colorScheme="teal"
-            isLoading={isLoading}
-            disabled={!address || isLoading}
-            onClick={() => write?.()}
-          >
-            {address ? 'Set Greeting' : 'Please Connect Your Wallet'}
-          </Button>
-        </Box>
-      </Box>
-    </Layout>
+    <>
+      {!session ? (
+        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />
+      ) : (
+        <Layout>
+          <Heading as="h1" mb="8">
+            GenieSafe
+          </Heading>
+          <Text>Auth successful</Text>
+        </Layout>
+      )}
+    </>
   )
 }
 
