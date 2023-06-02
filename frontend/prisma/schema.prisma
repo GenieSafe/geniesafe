@@ -11,65 +11,41 @@ datasource db {
 }
 
 model User {
-  id            Int           @id @default(autoincrement())
-  email         String        @unique
+  id            Int         @id @default(autoincrement())
+  email         String      @unique
   password      String
   walletAddress String?
-  owner         Owner?
-  verifier      Verifier[]
-  beneficiary   Beneficiary[]
+  Will          Will[]
+  Division      Division[]
   Validator     Validator[]
 }
 
-model Owner {
-  id                   Int                   @id @default(autoincrement())
-  userId               Int                   @unique
-  user                 User                  @relation(fields: [userId], references: [id])
-  icNumber             Int                   @unique
-  walletRecoveryConfig WalletRecoveryConfig?
-  willContracts        WillContract[]
-}
-
-model WalletRecoveryConfig {
-  id        Int        @id @default(autoincrement())
-  ownerId   Int        @unique
-  owner     Owner      @relation(fields: [ownerId], references: [id])
-  verified  Boolean
-  verifiers Verifier[]
-}
-
-model Verifier {
-  id                     Int                  @id @default(autoincrement())
-  userId                 Int
-  user                   User                 @relation(fields: [userId], references: [id])
-  walletRecoveryConfigId Int
-  walletRecoveryConfig   WalletRecoveryConfig @relation(fields: [walletRecoveryConfigId], references: [id])
-  verified               Boolean
-}
-
-model WillContract {
-  id              Int           @id @default(autoincrement())
+model Will {
+  id              Int         @id @default(autoincrement())
+  owner           User        @relation(fields: [ownerId], references: [id])
   ownerId         Int
-  owner           Owner         @relation(fields: [ownerId], references: [id])
-  deployedAddress String?
-  activated       Boolean
-  beneficiaries   Beneficiary[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @default(now())
+  divisions       Division[]
   validators      Validator[]
+  activated       Boolean
+  validated       Boolean
+  deployedAt      DateTime?
+  deployedAtBlock String?
 }
 
-model Beneficiary {
-  id             Int          @id @default(autoincrement())
-  userId         Int
-  user           User         @relation(fields: [userId], references: [id])
-  willContractId Int
-  willContract   WillContract @relation(fields: [willContractId], references: [id])
+model Division {
+  willId        Int   @unique
+  Will          Will  @relation(fields: [willId], references: [id])
+  beneficiaryId Int
+  beneficiary   User  @relation(fields: [beneficiaryId], references: [id])
+  percentage    Float
 }
 
 model Validator {
-  id             Int          @id @default(autoincrement())
-  userId         Int
-  user           User         @relation(fields: [userId], references: [id])
-  willContractId Int
-  willContract   WillContract @relation(fields: [willContractId], references: [id])
-  validated      Boolean
+  id     Int  @id @default(autoincrement())
+  willId Int
+  Will   Will @relation(fields: [willId], references: [id])
+  userId Int
+  User   User @relation(fields: [userId], references: [id])
 }
