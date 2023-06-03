@@ -11,19 +11,21 @@ datasource db {
 }
 
 model User {
-  id            Int         @id @default(autoincrement())
+  id            String      @id @default(uuid()) @db.Uuid
+  firstName     String
+  lastName      String
   email         String      @unique
   password      String
   walletAddress String?
-  Will          Will[]
-  Division      Division[]
-  Validator     Validator[]
+  wills         Will[]
+  divisions     Division[]
+  validators    Validator[]
 }
 
 model Will {
   id              Int         @id @default(autoincrement())
   owner           User        @relation(fields: [ownerId], references: [id])
-  ownerId         Int
+  ownerId         String      @db.Uuid
   createdAt       DateTime?   @default(now())
   updatedAt       DateTime?   @default(now())
   divisions       Division[]
@@ -35,17 +37,18 @@ model Will {
 }
 
 model Division {
-  willId        Int   @id
-  Will          Will  @relation(fields: [willId], references: [id])
-  beneficiaryId Int
-  beneficiary   User  @relation(fields: [beneficiaryId], references: [id])
+  id            Int    @id @default(autoincrement())
+  willId        Int
+  will          Will   @relation(fields: [willId], references: [id])
+  beneficiaryId String @db.Uuid
+  beneficiary   User   @relation(fields: [beneficiaryId], references: [id])
   percentage    Float
 }
 
 model Validator {
-  id     Int  @id @default(autoincrement())
+  id     Int    @id @default(autoincrement())
   willId Int
-  Will   Will @relation(fields: [willId], references: [id])
-  userId Int
-  User   User @relation(fields: [userId], references: [id])
+  will   Will   @relation(fields: [willId], references: [id])
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id])
 }
