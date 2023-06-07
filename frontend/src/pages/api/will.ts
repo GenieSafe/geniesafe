@@ -81,12 +81,13 @@ const willSchema = Yup.object().shape({
  * @returns Promise<void>
  */
 const createWill: NextApiHandler = async (req, res) => {
+  const data = validateRequest(req.body, willSchema)
   const ownerId = req.body.ownerId
 
   try {
     const newWill = await prisma.will.create({
       data: {
-        ownerId: ownerId,
+        ...req.body,
       },
     })
     res.status(200).json({ data: newWill })
