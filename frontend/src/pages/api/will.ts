@@ -9,6 +9,10 @@ import { validateRequest } from '../../utils/yup'
 /**
  * Handler for retrieving a will.
  * Supports retrieving a will by willId or ownerId.
+ *
+ * @param req - The Next.js API request object.
+ * @param res - The Next.js API response object.
+ * @returns Promise<void>
  */
 const getWill: NextApiHandler = async (req, res) => {
   const { ownerId } = req.query
@@ -62,14 +66,22 @@ const getWill: NextApiHandler = async (req, res) => {
   }
 }
 
+/**
+ * Schema for validating the request body when creating a will.
+ */
 const willSchema = Yup.object().shape({
   ownerId: Yup.string().required('Owner ID is required!'),
 })
 
+/**
+ * Handler for creating a new will.
+ *
+ * @param req - The Next.js API request object.
+ * @param res - The Next.js API response object.
+ * @returns Promise<void>
+ */
 const createWill: NextApiHandler = async (req, res) => {
-  // const data = validateRequest(req.body, willSchema)
   const ownerId = req.body.ownerId
-  console.log(ownerId)
 
   try {
     const newWill = await prisma.will.create({
@@ -86,7 +98,68 @@ const createWill: NextApiHandler = async (req, res) => {
   }
 }
 
+/**
+ * Handler for deleting a will.
+ *
+ * @param req - The Next.js API request object.
+ * @param res - The Next.js API response object.
+ * @returns Promise<void>
+ */
+const deleteWill: NextApiHandler = async (req, res) => {
+  const { willId } = req.query
+
+  try {
+    const deletedWill = await prisma.will.delete({
+      where: {
+        id: parseInt(willId as string),
+      },
+    })
+    res.status(200).json({
+      message: `Successfully deleted will (ID: ${willId})`,
+      data: deletedWill,
+    })
+  } catch (err) {
+    console.log(err)
+    throw new createHttpError.NotFound(
+      `Error deleting will with willId: ${willId}!`
+    )
+  }
+}
+
+/**
+ * Handler for updating a will.
+ *
+ * @param req - The Next.js API request object.
+ * @param res - The Next.js API response object.
+ * @returns Promise<void>
+ */
+const updateWill: NextApiHandler = async (req, res) => {
+  const { willId } = req.query
+
+  try {
+    const updatedWill = await prisma.will.update({
+      where: {
+        id: parseInt(willId as string),
+      },
+      data: {
+        ...req.body,
+      },
+    })
+    res.status(200).json({
+      message: `Successfully updated will (ID: ${willId})`,
+      data: updatedWill,
+    })
+  } catch (err) {
+    console.log(err)
+    throw new createHttpError.NotFound(
+      `Error updating will with willId: ${willId}!`
+    )
+  }
+}
+
 export default apiHandler({
   GET: getWill,
   POST: createWill,
+  DELETE: deleteWill,
+  PATCH: updateWill,
 })
