@@ -42,6 +42,7 @@ const walletRecoveryConfigSchema = Yup.object().shape({
 })
 
 const createConfig: NextApiHandler = async (req, res) => {
+  // @ts-ignore
   const data = validateRequest(req.body, walletRecoveryConfigSchema)
   const ownerId = req.body.ownerId
 

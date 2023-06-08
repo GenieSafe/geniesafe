@@ -81,6 +81,7 @@ const willSchema = Yup.object().shape({
  * @returns Promise<void>
  */
 const createWill: NextApiHandler = async (req, res) => {
+  // @ts-ignore
   const data = validateRequest(req.body, willSchema)
   const ownerId = req.body.ownerId
 
