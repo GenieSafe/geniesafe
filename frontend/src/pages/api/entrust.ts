@@ -68,9 +68,30 @@ const createConfig: NextApiHandler = async (req, res) => {
   }
 }
 
+const deleteConfig: NextApiHandler = async (req, res) => {
+  const { walletRecoveryConfigId } = req.query
+
+  try {
+    const deletedConfig = await prisma.walletRecoveryConfig.delete({
+      where: {
+        id: parseInt(walletRecoveryConfigId as string),
+      },
+    })
+    res.status(200).json({
+      message: `Successfully deleted config (ID: ${walletRecoveryConfigId})`,
+      data: deletedConfig,
+    })
+  } catch (err) {
+    console.log(err)
+    throw new createHttpError.NotFound(
+      `Error deleting config with ID: ${walletRecoveryConfigId}!`
+    )
+  }
+}
+
 export default apiHandler({
   GET: getConfig,
   POST: createConfig,
-  //   DELETE: deleteConfig,
+  DELETE: deleteConfig,
   //   PATCH: updateConfig,
 })
