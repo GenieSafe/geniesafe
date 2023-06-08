@@ -10,16 +10,18 @@ datasource db {
 }
 
 model User {
-  email         String      @unique
-  walletAddress String?
-  password      String
-  firstName     String
-  lastName      String
-  id            String      @id @db.Uuid
-  divisions     Division[]
-  users         users       @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  validators    Validator[]
-  wills         Will[]
+  email                String                 @unique
+  walletAddress        String?
+  password             String
+  firstName            String
+  lastName             String
+  id                   String                 @id @db.Uuid
+  Divisions            Division[]
+  Users                users                  @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Validators           Validator[]
+  Verifier             Verifier[]
+  WalletRecoveryConfig WalletRecoveryConfig[]
+  Wills                Will[]
 
   @@schema("public")
 }
@@ -33,9 +35,9 @@ model Will {
   deployedAt      DateTime?
   deployedAtBlock String?
   ownerId         String      @db.Uuid
-  divisions       Division[]
-  validators      Validator[]
-  owner           User        @relation(fields: [ownerId], references: [id])
+  Divisions       Division[]
+  Validators      Validator[]
+  Owner           User        @relation(fields: [ownerId], references: [id])
 
   @@schema("public")
 }
@@ -45,8 +47,8 @@ model Division {
   percentage    Float
   id            Int    @id @default(autoincrement())
   beneficiaryId String @db.Uuid
-  beneficiary   User   @relation(fields: [beneficiaryId], references: [id])
-  will          Will   @relation(fields: [willId], references: [id])
+  Beneficiary   User   @relation(fields: [beneficiaryId], references: [id])
+  Will          Will   @relation(fields: [willId], references: [id])
 
   @@schema("public")
 }
@@ -55,8 +57,20 @@ model Validator {
   id     Int    @id @default(autoincrement())
   willId Int
   userId String @db.Uuid
-  user   User   @relation(fields: [userId], references: [id])
-  will   Will   @relation(fields: [willId], references: [id])
+  User   User   @relation(fields: [userId], references: [id])
+  Will   Will   @relation(fields: [willId], references: [id])
+
+  @@schema("public")
+}
+
+model Verifier {
+  id                     Int                  @id @default(autoincrement())
+  userId                 String               @db.Uuid
+  walletRecoveryConfigId Int
+  verified               Boolean              @default(false)
+  verifiedAt             DateTime?
+  User                   User                 @relation(fields: [userId], references: [id])
+  WalletRecoveryConfig   WalletRecoveryConfig @relation(fields: [walletRecoveryConfigId], references: [id])
 
   @@schema("public")
 }
@@ -64,6 +78,19 @@ model Validator {
 model Relationship {
   id   Int    @id @default(autoincrement())
   name String
+
+  @@schema("public")
+}
+
+model WalletRecoveryConfig {
+  id        Int        @id @default(autoincrement())
+  ownerId   String     @db.Uuid
+  createdAt DateTime?  @default(now())
+  updatedAt DateTime?  @default(now())
+  active    Boolean    @default(false)
+  verified  Boolean    @default(false)
+  Verifiers Verifier[]
+  owner     User       @relation(fields: [ownerId], references: [id])
 
   @@schema("public")
 }
