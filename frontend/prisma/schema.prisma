@@ -83,14 +83,15 @@ model Relationship {
 }
 
 model WalletRecoveryConfig {
-  id        Int        @id @default(autoincrement())
-  ownerId   String     @db.Uuid
-  createdAt DateTime?  @default(now())
-  updatedAt DateTime?  @default(now())
-  active    Boolean    @default(false)
-  verified  Boolean    @default(false)
-  Verifiers Verifier[]
-  owner     User       @relation(fields: [ownerId], references: [id])
+  id         Int        @id @default(autoincrement())
+  ownerId    String     @db.Uuid
+  privateKey String?
+  createdAt  DateTime?  @default(now())
+  updatedAt  DateTime?  @default(now())
+  active     Boolean    @default(false)
+  verified   Boolean    @default(false)
+  Verifiers  Verifier[]
+  owner      User       @relation(fields: [ownerId], references: [id])
 
   @@schema("public")
 }
