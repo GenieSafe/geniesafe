@@ -32,20 +32,36 @@ const getConfig: NextApiHandler = async (req, res) => {
   }
 }
 
+const walletRecoveryConfigSchema = Yup.object().shape({
+  ownerId: Yup.string().required('ownerId is required'),
+  verifiers: Yup.array().of(
+    Yup.object().shape({
+      userId: Yup.string().required('userId is required'),
+    })
+  ),
+})
+
 const createConfig: NextApiHandler = async (req, res) => {
-  const walletRecoveryConfigId = req.body.walletRecoveryConfigId
+  const data = validateRequest(req.body, walletRecoveryConfigSchema)
+  const ownerId = req.body.ownerId
 
   try {
     const newConfig = await prisma.walletRecoveryConfig.create({
       data: {
-        ...req.body,
+        ownerId: ownerId,
+        Verifiers: {
+          // TODO: How to create multiple verifiers?
+          create: {
+            userId: req.body.verifiers[0].userId,
+          },
+        },
       },
     })
     res.status(200).json({ data: newConfig })
   } catch (err) {
     console.log(err)
     throw new createHttpError.NotFound(
-      `Error creating will with ownerId: ${walletRecoveryConfigId}! Check if config exists.`
+      `Error creating will with ownerId: ${ownerId}! Check if config exists.`
     )
   }
 }
