@@ -22,7 +22,7 @@ import {
 } from 'wagmi'
 import { YourContract as LOCAL_CONTRACT_ADDRESS } from '../../artifacts/contracts/contractAddress'
 import YourContract from '../../artifacts/contracts/YourContract.sol/YourContract.json'
-import { Layout } from '../../components/layout/Layout'
+import { Layout } from '../components/layout/Layout'
 // import { useCheckLocalChain } from '../hooks/useCheckLocalChain'
 // import { useIsMounted } from '../hooks/useIsMounted'
 import { YourContract as YourContractType } from '../../types/typechain'

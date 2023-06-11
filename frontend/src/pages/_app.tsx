@@ -13,6 +13,7 @@ import { publicProvider } from 'wagmi/providers/public'
 import { SessionContextProvider, Session } from '@supabase/auth-helpers-react'
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
 import { useState } from 'react'
+import '../../styles/global.css'
 
 const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || ''
 
@@ -68,9 +69,7 @@ export default function App({ Component, pageProps }: AppProps) {
             borderRadius: 'small',
           })}
         >
-          <ChakraProvider>
             <Component {...pageProps} />
-          </ChakraProvider>
         </RainbowKitProvider>
       </WagmiConfig>
     </SessionContextProvider>
