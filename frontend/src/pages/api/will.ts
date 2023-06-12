@@ -117,13 +117,13 @@ const deleteWill: NextApiHandler = async (req, res) => {
       },
     })
     res.status(200).json({
-      message: `Successfully deleted will (ID: ${willId})`,
+      message: `Successfully deleted will with ID: ${willId}`,
       data: deletedWill,
     })
   } catch (err) {
     console.log(err)
     throw new createHttpError.NotFound(
-      `Error deleting will with willId: ${willId}!`
+      `Error deleting will with willId: ${willId}! Check if will exists.`
     )
   }
 }
@@ -148,13 +148,13 @@ const updateWill: NextApiHandler = async (req, res) => {
       },
     })
     res.status(200).json({
-      message: `Successfully updated will (ID: ${willId})`,
+      message: `Successfully updated will with ID: ${willId}`,
       data: updatedWill,
     })
   } catch (err) {
     console.log(err)
     throw new createHttpError.NotFound(
-      `Error updating will with willId: ${willId}!`
+      `Error updating will with ID: ${willId}! Check if will exists.`
     )
   }
 }
