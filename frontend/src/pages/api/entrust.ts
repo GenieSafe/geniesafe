@@ -59,7 +59,10 @@ const createConfig: NextApiHandler = async (req, res) => {
         },
       },
     })
-    res.status(200).json({ data: newConfig })
+    res.status(200).json({
+      message: `Successfully created config with ID: ${newConfig.id}`,
+      data: newConfig,
+    })
   } catch (err) {
     console.log(err)
     throw new createHttpError.NotFound(
@@ -78,13 +81,45 @@ const deleteConfig: NextApiHandler = async (req, res) => {
       },
     })
     res.status(200).json({
-      message: `Successfully deleted config (ID: ${walletRecoveryConfigId})`,
+      message: `Successfully deleted config with ID: ${walletRecoveryConfigId}`,
       data: deletedConfig,
     })
   } catch (err) {
     console.log(err)
     throw new createHttpError.NotFound(
-      `Error deleting config with ID: ${walletRecoveryConfigId}!`
+      `Error deleting config with ID: ${walletRecoveryConfigId}! Check if config exists.`
+    )
+  }
+}
+
+// TODO: Continue from here
+
+const updateConfig: NextApiHandler = async (req, res) => {
+  const { walletRecoveryConfigId } = req.query
+  const { verifiers, ...rest } = req.body
+
+  try {
+    const updatedConfig = await prisma.walletRecoveryConfig.update({
+      where: {
+        id: parseInt(walletRecoveryConfigId as string),
+      },
+      data: {
+        ...rest,
+        Verifiers: {
+          update: {
+            userId: verifiers[0].userId,
+          },
+        },
+      },
+    })
+    res.status(200).json({
+      message: `Successfully updated config with ID: ${walletRecoveryConfigId}`,
+      data: updatedConfig,
+    })
+  } catch (err) {
+    console.log(err)
+    throw new createHttpError.NotFound(
+      `Error updating config with ID: ${walletRecoveryConfigId}! Check if config exists.`
     )
   }
 }
@@ -93,5 +128,5 @@ export default apiHandler({
   GET: getConfig,
   POST: createConfig,
   DELETE: deleteConfig,
-  //   PATCH: updateConfig,
+  PATCH: updateConfig,
 })
