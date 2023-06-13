@@ -1,15 +1,3 @@
-import {
-  Box,
-  Button,
-  Divider,
-  Heading,
-  Input,
-  Link,
-  ListItem,
-  Text,
-  UnorderedList,
-  useToast,
-} from '@chakra-ui/react'
 import { ethers, providers } from 'ethers'
 import type { NextPage } from 'next'
 import { useReducer } from 'react'
@@ -169,21 +157,9 @@ const Home: NextPage = () => {
   }
   */
 
-  const session = useSession()
-  const supabase = useSupabaseClient()
-
   return (
     <>
-      {!session ? (
-        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />
-      ) : (
-        <Layout>
-          <Heading as="h1" mb="8">
-            GenieSafe
-          </Heading>
-          <Text>Auth successful</Text>
-        </Layout>
-      )}
+          <h1>Logged In</h1>
     </>
   )
 }
