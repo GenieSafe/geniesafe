@@ -1821,6 +1821,15 @@
     "@babel/runtime" "^7.13.10"
     "@radix-ui/react-slot" "1.0.2"
 
+"@radix-ui/react-progress@^1.0.3":
+  "integrity" "sha512-5G6Om/tYSxjSeEdrb1VfKkfZfn/1IlPWd731h2RfPuSbIfNUgfqAwbKfJCg/PP6nuUCTrYzalwHSpSinoWoCag=="
+  "resolved" "https://registry.npmjs.org/@radix-ui/react-progress/-/react-progress-1.0.3.tgz"
+  "version" "1.0.3"
+  dependencies:
+    "@babel/runtime" "^7.13.10"
+    "@radix-ui/react-context" "1.0.1"
+    "@radix-ui/react-primitive" "1.0.3"
+
 "@radix-ui/react-separator@^1.0.3":
   "integrity" "sha512-itYmTy/kokS21aiV5+Z56MZB54KrhPgn6eHDKkFeOLR34HMN2s8PaN47qZZAGnvupcjxHaFZnW4pQEh0BvvVuw=="
   "resolved" "https://registry.npmjs.org/@radix-ui/react-separator/-/react-separator-1.0.3.tgz"
