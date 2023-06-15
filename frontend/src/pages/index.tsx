@@ -80,7 +80,7 @@ function reducer(state: StateType, action: ActionType): StateType {
 }
 */
 
-const Home: NextPage = () => {
+const Home = () => {
   /*
   const [state, dispatch] = useReducer(reducer, initialState)
 
@@ -159,7 +159,7 @@ const Home: NextPage = () => {
 
   return (
     <>
-          <h1>Logged In</h1>
+      <h1>Logged In</h1>
     </>
   )
 }

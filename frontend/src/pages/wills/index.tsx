@@ -1,14 +1,41 @@
 import { NextPage } from 'next'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { Plus } from 'lucide-react'
 
 import { WillCard } from '../../components/WillCard'
 import { Button } from '../../components/ui/button'
 import Link from 'next/link'
-import Will from '../api/will'
 
-const Wills: NextPage = () => {
+function getWills(userId: string) {
+  return fetch(`http://localhost:3000/api/will?ownerId=${userId}`, {
+    method: 'GET',
+  }).then((res) => res.json())
+}
+
+const Wills = () => {
+  // TODO: Replace with current session's user ID
+  const tempUserId = '1136348d-3ec7-4d12-95f2-234748b26213'
+  const [wills, setWills] = useState([])
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await getWills(tempUserId)
+        if (response.data) {
+          setWills(response.data)
+        } else {
+          console.error('No data found in the response.')
+        }
+      } catch (error) {
+        console.error('Error fetching wills:', error)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  console.log(wills)
 
   return (
     <>
@@ -24,7 +51,11 @@ const Wills: NextPage = () => {
         </Button>
       </div>
       <div className="container flex flex-col">
-        <WillCard />
+        {wills.length > 0 ? (
+          wills.map((will) => <WillCard data={will} />)
+        ) : (
+          <p className="text-2xl font-bold">No wills found.</p>
+        )}
       </div>
     </>
   )

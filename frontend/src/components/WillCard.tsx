@@ -32,52 +32,34 @@ interface WillProps {
 }
 
 export function WillCard({ className, ...props }: CardProps) {
+  const { title, deployedAtBlock, isValidated } = props.data
   return (
     <Card className="dark">
       <CardHeader className="flex-row justify-between columns-2">
         <div>
-          <CardTitle className="text-2xl">My Ethereum Will</CardTitle>
+          <CardTitle className="text-2xl">{title}</CardTitle>
           <CardDescription className="text-white">
-            Will contract deployed to{' '}
-            <span className="font-semibold">0x1234567890</span>
+            Will contract deployed to
+            {deployedAtBlock !== null ? (
+              <span className="font-semibold">{deployedAtBlock}</span>
+            ) : (
+              <span className="font-semibold"> N/A</span>
+            )}
           </CardDescription>
         </div>
         <div>
-          <Badge className="bg-green-500">Validated</Badge>
+          {isValidated ? (
+            <Badge className="bg-green-500">Validated</Badge>
+          ) : (
+            <Badge className="bg-red-500">Not Validated</Badge>
+          )}
         </div>
       </CardHeader>
       <CardContent className="">
         <div className="flex flex-col gap-4 pb-4">
           <p className="font-bold">Beneficiaries</p>
           <div className="flex gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex flex-row gap-8">
-                  <div className="flex flex-col">
-                    <p className="text-lg font-semibold">Ali bin Abu</p>
-                    <p>0x1234567890</p>
-                    <p>Brother</p>
-                  </div>
-                  <div className="flex flex-col items-center justify-center">
-                    <p className="text-2xl font-bold">50%</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex flex-row gap-8">
-                  <div className="flex flex-col">
-                    <p className="text-lg font-semibold">Ali bin Abu</p>
-                    <p>0x1234567890</p>
-                    <p>Brother</p>
-                  </div>
-                  <div className="flex flex-col items-center justify-center">
-                    <p className="text-2xl font-bold">50%</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* TODO: Retrieve list of beneficiaries before rendering these cards */}
             <Card>
               <CardContent className="pt-6">
                 <div className="flex flex-row gap-8">
@@ -97,22 +79,7 @@ export function WillCard({ className, ...props }: CardProps) {
         <div className="flex flex-col gap-4">
           <p className="font-bold">Validators</p>
           <div className="flex gap-4">
-            <Card className="">
-              <CardContent className="pt-6">
-                <div className="flex flex-row gap-8">
-                  <p>Ali bin Abu</p>
-                  <CheckCircle2 className="text-success"></CheckCircle2>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="">
-              <CardContent className="pt-6">
-                <div className="flex flex-row gap-8">
-                  <p>Ali bin Abu</p>
-                  <CheckCircle2 className="text-success"></CheckCircle2>
-                </div>
-              </CardContent>
-            </Card>
+            {/* TODO: Retrieve list of validators before rendering these cards */}
             <Card className="">
               <CardContent className="pt-6">
                 <div className="flex flex-row gap-8">

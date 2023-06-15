@@ -31,7 +31,10 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
                 <Link className={buttonVariants({ variant: 'link' })} href="">
                   Dashboard
                 </Link>
-                <Link className={buttonVariants({ variant: 'link' })} href="/wills">
+                <Link
+                  className={buttonVariants({ variant: 'link' })}
+                  href="/wills"
+                >
                   Will
                 </Link>
                 {/* <Link className={buttonVariants({ variant: 'link' })} href="">
@@ -40,7 +43,10 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
                 <Link className={buttonVariants({ variant: 'link' })} href="">
                   Inheritance
                 </Link> */}
-                <Link className={buttonVariants({ variant: 'link' })} href="/safeguard">
+                <Link
+                  className={buttonVariants({ variant: 'link' })}
+                  href="/safeguard"
+                >
                   Safeguard
                 </Link>
               </div>

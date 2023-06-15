@@ -7,15 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from '../../components/ui/card'
-import { CheckCircle2, Edit3 } from 'lucide-react'
+import { Edit3 } from 'lucide-react'
 import { Button } from '../../components/ui/button'
-import { setConfig } from 'next/config'
 
 const Recover: NextPage = () => {
   return (
     <>
       <div className="container pt-12 pb-8">
-        <div className="flex flex-col gap-4 mb-4">
+        <div className="flex flex-col gap-4">
           <h1 className="text-4xl font-bold tracking-tight scroll-m-20 lg:text-5xl">
             Recover your wallet
           </h1>

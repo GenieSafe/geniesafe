@@ -81,12 +81,14 @@ const willSchema = Yup.object().shape({
  * @returns Promise<void>
  */
 const createWill: NextApiHandler = async (req, res) => {
-  const ownerId = req.body.ownerId
+  // @ts-ignore
+  const data = validateRequest(req.body, willSchema)
+  const { ownerId } = data
 
   try {
     const newWill = await prisma.will.create({
       data: {
-        ownerId: ownerId,
+        ...req.body,
       },
     })
     res.status(200).json({ data: newWill })
@@ -115,17 +117,16 @@ const deleteWill: NextApiHandler = async (req, res) => {
       },
     })
     res.status(200).json({
-      message: `Successfully deleted will (ID: ${willId})`,
+      message: `Successfully deleted will with ID: ${willId}`,
       data: deletedWill,
     })
   } catch (err) {
     console.log(err)
     throw new createHttpError.NotFound(
-      `Error deleting will with willId: ${willId}!`
+      `Error deleting will with willId: ${willId}! Check if will exists.`
     )
   }
 }
-
 /**
  * Handler for updating a will.
  *
@@ -146,13 +147,13 @@ const updateWill: NextApiHandler = async (req, res) => {
       },
     })
     res.status(200).json({
-      message: `Successfully updated will (ID: ${willId})`,
+      message: `Successfully updated will with ID: ${willId}`,
       data: updatedWill,
     })
   } catch (err) {
     console.log(err)
     throw new createHttpError.NotFound(
-      `Error updating will with willId: ${willId}!`
+      `Error updating will with ID: ${willId}! Check if will exists.`
     )
   }
 }
