@@ -7,7 +7,9 @@ import { ChangeEvent, useState } from 'react'
 import { Card, CardContent } from '../../components/ui/card'
 import { Trash2 } from 'lucide-react'
 
-const Entrust: NextPage = () => {
+const Assign: NextPage = () => {
+  const valid = false
+
   const [inputValue, setInputValue] = useState('')
   const [cardValues, setCardValues] = useState<string[]>([])
   const [submitButtonDisabled, setSubmitButtonDisabled] = useState(true)
@@ -97,4 +99,4 @@ const Entrust: NextPage = () => {
   )
 }
 
-export default Entrust
+export default Assign

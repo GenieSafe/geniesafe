@@ -7,14 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from '../../components/ui/card'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Edit3 } from 'lucide-react'
 import { Button } from '../../components/ui/button'
+import { setConfig } from 'next/config'
 
 const Recover: NextPage = () => {
   return (
     <>
       <div className="container pt-12 pb-8">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 mb-4">
           <h1 className="text-4xl font-bold tracking-tight scroll-m-20 lg:text-5xl">
             Recover your wallet
           </h1>
@@ -26,21 +27,23 @@ const Recover: NextPage = () => {
         <div className="grid gap-8">
           <Card className="dark">
             <CardHeader>
-                <CardTitle className="text-2xl">Verifiers</CardTitle>
+              <CardTitle className="flex justify-between text-2xl">
+                Verifiers
+                <Button size={'sm'} className="">
+                  <Edit3 className="w-4 h-4" />
+                </Button>
+              </CardTitle>
             </CardHeader>
-            <CardContent className='grid grid-cols-4 gap-4'>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex flex-row gap-8">
-                      <p>Ali bin Abu</p>
-                      <CheckCircle2 className="text-success"></CheckCircle2>
-                    </div>
-                  </CardContent>
-                </Card>
+            <CardContent className="flex gap-4">
+              <Card className="bg-primary">
+                <CardContent className="grid pt-6">
+                  <p className="text-secondary">Ali bin Abu</p>
+                </CardContent>
+              </Card>
             </CardContent>
           </Card>
         </div>
-        <div className='grid justify-end py-8'>
+        <div className="grid justify-end py-8">
           <Button>Notify Verifiers</Button>
         </div>
       </div>
