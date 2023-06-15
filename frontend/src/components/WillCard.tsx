@@ -13,24 +13,6 @@ import { Badge } from './ui/badge'
 
 type CardProps = React.ComponentProps<typeof Card>
 
-interface WillProps {
-  data: {
-    title: string
-    deployed: number
-    type: string
-    beneficiaries: {
-      name: string
-      address: string
-      relationship: string
-      percentage: string
-    }[]
-    validators: {
-      name: string
-      validated: boolean
-    }[]
-  }
-}
-
 export function WillCard({ className, ...props }: CardProps) {
   const { title, deployedAtBlock, isValidated } = props.data
   return (
