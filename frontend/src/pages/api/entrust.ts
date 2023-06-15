@@ -6,6 +6,10 @@ import { apiHandler } from '../../utils/api'
 import prisma from '../../utils/prisma'
 import { validateRequest } from '../../utils/yup'
 
+type Verifier = {
+  userId: string
+}
+
 const getConfig: NextApiHandler = async (req, res) => {
   const { walletRecoveryConfigId } = req.query
 
@@ -51,17 +55,17 @@ const createConfig: NextApiHandler = async (req, res) => {
     const newConfig = await prisma.walletRecoveryConfig.create({
       data: {
         ...rest,
-        Verifiers: {
-          // TODO: How to create multiple verifiers?
-          create: {
-            userId: verifiers[0].userId,
-          },
-        },
       },
+    })
+    const newVerifiers = await prisma.verifier.createMany({
+      data: verifiers.map((verifier: Verifier) => ({
+        ...verifier,
+        walletRecoveryConfigId: newConfig.id,
+      })),
     })
     res.status(200).json({
       message: `Successfully created config with ID: ${newConfig.id}`,
-      data: newConfig,
+      data: { newConfig, newVerifiers },
     })
   } catch (err) {
     console.log(err)
@@ -91,8 +95,6 @@ const deleteConfig: NextApiHandler = async (req, res) => {
     )
   }
 }
-
-// TODO: Continue from here
 
 const updateConfig: NextApiHandler = async (req, res) => {
   const { walletRecoveryConfigId } = req.query
@@ -124,9 +126,33 @@ const updateConfig: NextApiHandler = async (req, res) => {
   }
 }
 
+const activateConfig: NextApiHandler = async (req, res) => {
+  const { walletRecoveryConfigId } = req.query
+  try {
+    const updatedConfig = await prisma.walletRecoveryConfig.update({
+      where: {
+        id: parseInt(walletRecoveryConfigId as string),
+      },
+      data: {
+        isActive: true,
+      },
+    })
+    res.status(200).json({
+      message: `Successfully activated config with ID: ${walletRecoveryConfigId}`,
+      data: updatedConfig,
+    })
+  } catch (err) {
+    console.log(err)
+    throw new createHttpError.NotFound(
+      `Error activating config with ID: ${walletRecoveryConfigId}! Check if config exists.`
+    )
+  }
+}
+
 export default apiHandler({
   GET: getConfig,
   POST: createConfig,
   DELETE: deleteConfig,
   PATCH: updateConfig,
+  PUT: activateConfig,
 })

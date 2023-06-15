@@ -83,7 +83,7 @@ const willSchema = Yup.object().shape({
 const createWill: NextApiHandler = async (req, res) => {
   // @ts-ignore
   const data = validateRequest(req.body, willSchema)
-  const ownerId = req.body.ownerId
+  const { ownerId } = data
 
   try {
     const newWill = await prisma.will.create({
@@ -127,7 +127,6 @@ const deleteWill: NextApiHandler = async (req, res) => {
     )
   }
 }
-
 /**
  * Handler for updating a will.
  *

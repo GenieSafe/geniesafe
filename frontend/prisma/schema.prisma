@@ -10,12 +10,12 @@ datasource db {
 }
 
 model User {
+  id                   String                 @id @db.Uuid
   email                String                 @unique
   walletAddress        String?
   password             String
   firstName            String
   lastName             String
-  id                   String                 @id @db.Uuid
   Divisions            Division[]
   Users                users                  @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   Validators           Validator[]
@@ -28,13 +28,14 @@ model User {
 
 model Will {
   id              Int         @id @default(autoincrement())
+  ownerId         String      @db.Uuid
+  title           String?
   createdAt       DateTime?   @default(now())
   updatedAt       DateTime?   @default(now())
-  activated       Boolean     @default(false)
-  validated       Boolean     @default(false)
+  isActive        Boolean     @default(false)
+  isValidated     Boolean     @default(false)
   deployedAt      DateTime?
   deployedAtBlock String?
-  ownerId         String      @db.Uuid
   Divisions       Division[]
   Validators      Validator[]
   Owner           User        @relation(fields: [ownerId], references: [id])
@@ -43,9 +44,9 @@ model Will {
 }
 
 model Division {
+  id            Int    @id @default(autoincrement())
   willId        Int
   percentage    Float
-  id            Int    @id @default(autoincrement())
   beneficiaryId String @db.Uuid
   Beneficiary   User   @relation(fields: [beneficiaryId], references: [id])
   Will          Will   @relation(fields: [willId], references: [id])
@@ -67,10 +68,10 @@ model Verifier {
   id                     Int                  @id @default(autoincrement())
   userId                 String               @db.Uuid
   walletRecoveryConfigId Int
-  verified               Boolean              @default(false)
+  isVerified             Boolean              @default(false)
   verifiedAt             DateTime?
   User                   User                 @relation(fields: [userId], references: [id])
-  WalletRecoveryConfig   WalletRecoveryConfig @relation(fields: [walletRecoveryConfigId], references: [id])
+  WalletRecoveryConfig   WalletRecoveryConfig @relation(fields: [walletRecoveryConfigId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@schema("public")
 }
@@ -88,8 +89,8 @@ model WalletRecoveryConfig {
   privateKey String?
   createdAt  DateTime?  @default(now())
   updatedAt  DateTime?  @default(now())
-  active     Boolean    @default(false)
-  verified   Boolean    @default(false)
+  isActive   Boolean    @default(false)
+  isVerified Boolean    @default(false)
   Verifiers  Verifier[]
   owner      User       @relation(fields: [ownerId], references: [id])
 
@@ -313,7 +314,7 @@ model users {
   id                          String        @id @db.Uuid
   aud                         String?       @db.VarChar(255)
   role                        String?       @db.VarChar(255)
-  email                       String?       @db.VarChar(255)
+  email                       String?       @unique @db.VarChar(255)
   encrypted_password          String?       @db.VarChar(255)
   email_confirmed_at          DateTime?     @db.Timestamptz(6)
   invited_at                  DateTime?     @db.Timestamptz(6)

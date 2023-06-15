@@ -1,4 +1,3 @@
-import { ChakraProvider } from '@chakra-ui/react'
 import {
   connectorsForWallets,
   darkTheme,
@@ -11,8 +10,10 @@ import { chain, configureChains, createClient, WagmiConfig } from 'wagmi'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import { SessionContextProvider, Session } from '@supabase/auth-helpers-react'
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
+import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
 import { useState } from 'react'
+import '../../styles/global.css'
+import { Layout } from '../components/layout/Layout'
 
 const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || ''
 
@@ -53,7 +54,7 @@ const wagmiClient = createClient({
 
 export default function App({ Component, pageProps }: AppProps) {
   // Create a new supabase browser client on every first render
-  const [supabaseClient] = useState(() => createBrowserSupabaseClient())
+  const [supabaseClient] = useState(() => createPagesBrowserClient())
 
   return (
     <SessionContextProvider
@@ -68,9 +69,9 @@ export default function App({ Component, pageProps }: AppProps) {
             borderRadius: 'small',
           })}
         >
-          <ChakraProvider>
+          <Layout>
             <Component {...pageProps} />
-          </ChakraProvider>
+          </Layout>
         </RainbowKitProvider>
       </WagmiConfig>
     </SessionContextProvider>

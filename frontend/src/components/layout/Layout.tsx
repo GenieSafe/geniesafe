@@ -1,10 +1,13 @@
-import { Container, Flex, Link, SimpleGrid, Text } from '@chakra-ui/react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import NextLink from 'next/link'
+import Link from 'next/link'
 import React from 'react'
 // import { LocalFaucetButton } from '../LocalFaucetButton'
 import { Head, MetaProps } from './Head'
-import { useSession } from '@supabase/auth-helpers-react'
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
+import { buttonVariants } from '../ui/button'
+import { Auth } from '@supabase/auth-ui-react'
+import { supabase } from '../../utils/supabase'
+import { ThemeSupa } from '@supabase/auth-ui-shared'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -13,85 +16,54 @@ interface LayoutProps {
 
 export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
   const session = useSession()
+  const supabase = useSupabaseClient()
 
   return (
     <>
-      <Head customMeta={customMeta} />
-      <header>
-        <Container maxWidth="container.xl">
-          <SimpleGrid
-            columns={[1, 1, 1, 2]}
-            alignItems="center"
-            justifyContent="space-between"
-            py="8"
-          >
-            <Flex py={[4, null, null, 0]}>
-              <NextLink href="/" passHref legacyBehavior>
-                <Link px="4" py="1">
-                  Home
+      {!session ? (
+        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />
+      ) : (
+        <>
+          <Head customMeta={customMeta} />
+          <header>
+            <div className="container flex items-center justify-between py-4">
+              <div className="flex items-center justify-between">
+                <Link className={buttonVariants({ variant: 'link' })} href="">
+                  Dashboard
                 </Link>
-              </NextLink>
-              {session ? (
-                <>
-                  <NextLink href="/" passHref legacyBehavior>
-                    <Link px="4" py="1">
-                      Sign out
-                    </Link>
-                  </NextLink>
-                  <Text>Signed in as {session.user.email}</Text>
-                </>
-              ) : (
-                <button>Sign in</button>
-              )}
-              {/* <NextLink href="/nft" passHref legacyBehavior>
-                <Link px="4" py="1">
-                  Mint NFT
+                <Link
+                  className={buttonVariants({ variant: 'link' })}
+                  href="/wills"
+                >
+                  Will
                 </Link>
-              </NextLink>
-              <NextLink href="/token-gated" passHref legacyBehavior>
-                <Link px="4" py="1">
-                  Token Gated
+                {/* <Link className={buttonVariants({ variant: 'link' })} href="">
+                  Asset
                 </Link>
-              </NextLink>
-              <NextLink href="/create-will" passHref legacyBehavior>
-                <Link px="4" py="1">
-                  Create Will
+                <Link className={buttonVariants({ variant: 'link' })} href="">
+                  Inheritance
+                </Link> */}
+                <Link
+                  className={buttonVariants({ variant: 'link' })}
+                  href="/safeguard"
+                >
+                  Safeguard
                 </Link>
-              </NextLink>
-              <NextLink href="/activate-will" passHref legacyBehavior>
-                <Link px="4" py="1">
-                  Activate Will
-                </Link>
-              </NextLink>
-              <NextLink href="/validate-will" passHref legacyBehavior>
-                <Link px="4" py="1">
-                  Validate Will
-                </Link>
-              </NextLink> */}
-            </Flex>
-            <Flex
-              order={[-1, null, null, 2]}
-              alignItems={'center'}
-              justifyContent={['flex-start', null, null, 'flex-end']}
-            >
-              <ConnectButton />
-            </Flex>
-          </SimpleGrid>
-        </Container>
-      </header>
-      <main>
-        <Container maxWidth="container.xl">{children}</Container>
-      </main>
-      <footer>
-        <Container mt="8" py="8" maxWidth="container.xl">
-          <Text mb="4">
-            <Link href="https://github.com/GenieSafe/geniesafe">
-              GitHub Repo
-            </Link>
-          </Text>
-          {/* <LocalFaucetButton /> */}
-        </Container>
-      </footer>
+              </div>
+              <div className="flex items-center justify-between space-x-8">
+                <small className="text-sm font-normal leading-none">
+                  Hi, {session.user.email}!
+                </small>
+                <ConnectButton />
+              </div>
+            </div>
+          </header>
+          <main>
+            <div className="container mx-auto">{children}</div>
+          </main>
+          <footer></footer>
+        </>
+      )}
     </>
   )
 }

@@ -1,15 +1,3 @@
-import {
-  Box,
-  Button,
-  Divider,
-  Heading,
-  Input,
-  Link,
-  ListItem,
-  Text,
-  UnorderedList,
-  useToast,
-} from '@chakra-ui/react'
 import { ethers, providers } from 'ethers'
 import type { NextPage } from 'next'
 import { useReducer } from 'react'
@@ -22,7 +10,7 @@ import {
 } from 'wagmi'
 import { YourContract as LOCAL_CONTRACT_ADDRESS } from '../../artifacts/contracts/contractAddress'
 import YourContract from '../../artifacts/contracts/YourContract.sol/YourContract.json'
-import { Layout } from '../../components/layout/Layout'
+import { Layout } from '../components/layout/Layout'
 // import { useCheckLocalChain } from '../hooks/useCheckLocalChain'
 // import { useIsMounted } from '../hooks/useIsMounted'
 import { YourContract as YourContractType } from '../../types/typechain'
@@ -92,7 +80,7 @@ function reducer(state: StateType, action: ActionType): StateType {
 }
 */
 
-const Home: NextPage = () => {
+const Home = () => {
   /*
   const [state, dispatch] = useReducer(reducer, initialState)
 
@@ -169,21 +157,9 @@ const Home: NextPage = () => {
   }
   */
 
-  const session = useSession()
-  const supabase = useSupabaseClient()
-
   return (
     <>
-      {!session ? (
-        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />
-      ) : (
-        <Layout>
-          <Heading as="h1" mb="8">
-            GenieSafe
-          </Heading>
-          <Text>Auth successful</Text>
-        </Layout>
-      )}
+      <h1>Logged In</h1>
     </>
   )
 }
