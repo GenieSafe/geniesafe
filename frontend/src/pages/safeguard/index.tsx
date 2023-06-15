@@ -27,7 +27,7 @@ const Safeguard: NextPage = () => {
           identity to retrieve your private key
         </p>
         <Button asChild>
-          <Link href="/wills/recover">Notify Verifiers</Link>
+          <Link href="/safeguard/recover">Notify Verifiers</Link>
         </Button>
       </div>
     </>
