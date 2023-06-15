@@ -10,6 +10,7 @@ import { Trash2 } from 'lucide-react'
 const Entrust: NextPage = () => {
   const [inputValue, setInputValue] = useState('')
   const [cardValues, setCardValues] = useState<string[]>([])
+  const [submitButtonDisabled, setSubmitButtonDisabled] = useState(true)
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value)
@@ -22,6 +23,7 @@ const Entrust: NextPage = () => {
 
       if (newCardValues.length === 3) {
         setInputValue('')
+        setSubmitButtonDisabled(false)
       } else {
         setInputValue('')
       }
@@ -31,7 +33,7 @@ const Entrust: NextPage = () => {
   const calculateProgress = () => {
     return Math.floor((cardValues.length / 3) * 100)
   }
-  
+
   return (
     <>
       <div className="container pt-12 pb-8">
@@ -39,13 +41,13 @@ const Entrust: NextPage = () => {
           <h1 className="text-4xl font-bold tracking-tight scroll-m-20 lg:text-5xl">
             Safeguard your wallet
           </h1>
-          <p className="mb-4 leading-7">
+          <p className="leading-7 ">
             Worry you might lose access to your wallet? Assign trusted Verifiers
             to help safeguard your private key.
           </p>
         </div>
         <div className="grid gap-8">
-          <div className="grid w-full items-center gap-1.5">
+          <div className="grid w-full items-center gap-1.5 pt-8">
             <Progress value={calculateProgress()} />
             <Label className="justify-self-end">
               {cardValues.length}/3 Verifiers
@@ -62,6 +64,7 @@ const Entrust: NextPage = () => {
                 disabled={cardValues.length === 3}
               />
               <Button
+                type="submit"
                 onClick={handleButtonClick}
                 disabled={cardValues.length === 3}
               >
@@ -73,15 +76,20 @@ const Entrust: NextPage = () => {
             {cardValues.map((value) => (
               <Card className="dark">
                 <CardContent className="pt-6">
-                  <div className="flex flex-row gap-8">
+                  <div className="flex flex-row items-center gap-8">
                     <p>{value}</p>
-                    {/* <Button size={'sm'} variant={'secondary'}>
+                    <Button size={'sm'} variant={'secondary'}>
                       <Trash2 className="w-4 h-4" />
-                    </Button> */}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
+          </div>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={submitButtonDisabled}>
+              Confirm verifiers
+            </Button>
           </div>
         </div>
       </div>
