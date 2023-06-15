@@ -5,7 +5,7 @@ import { Button } from '../../components/ui/button'
 import { Label } from '../../components/ui/label'
 import { ChangeEvent, useState } from 'react'
 import { Card, CardContent } from '../../components/ui/card'
-import { CheckCircle2, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 
 const Entrust: NextPage = () => {
   const [inputValue, setInputValue] = useState('')
