@@ -4,10 +4,12 @@ import React from 'react'
 // import { LocalFaucetButton } from '../LocalFaucetButton'
 import { Head, MetaProps } from './Head'
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
-import { buttonVariants } from '../ui/button'
 import { Auth } from '@supabase/auth-ui-react'
 import { supabase } from '../../utils/supabase'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
+
+import { Button, buttonVariants } from '../ui/button'
+import { LogOut } from 'lucide-react'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -17,7 +19,16 @@ interface LayoutProps {
 export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
   const session = useSession()
   const supabase = useSupabaseClient()
-
+  
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error('Error signing out:', error.message)
+    } else {
+      // Redirect or perform additional actions after signout
+    }
+  }
+  
   return (
     <>
       {!session ? (
@@ -50,10 +61,14 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
                   Safeguard
                 </Link>
               </div>
-              <div className="flex items-center justify-between space-x-8">
-                <small className="text-sm font-normal leading-none">
+              <div className="flex items-center justify-between space-x-4">
+                <small className="text-sm font-medium leading-none">
                   Hi, {session.user.email}!
                 </small>
+                <Button variant={'ghost'} onClick={handleSignOut} >
+                  Logout
+                  <LogOut className="w-4 h-4 ml-2" />
+                </Button>
                 <ConnectButton />
               </div>
             </div>
