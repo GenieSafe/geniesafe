@@ -44,7 +44,7 @@ const Safeguard = () => {
 
   return (
     <>
-      <div className="container flex flex-col gap-8 pt-12 pb-8">
+      <div className="container flex flex-col gap-8 pb-8">
         {config.length > 0 ? (
           <>
             <div className="container pt-12 pb-8">

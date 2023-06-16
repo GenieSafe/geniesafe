@@ -59,7 +59,7 @@ const Assign = () => {
 
   return (
     <>
-      <div className="container pt-12 pb-8">
+      <div className="container pb-8">
         <div className="flex flex-col gap-4">
           <h1 className="text-4xl font-bold tracking-tight scroll-m-20 lg:text-5xl">
             Safeguard your wallet

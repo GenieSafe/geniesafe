@@ -38,7 +38,7 @@ const Wills = () => {
 
   return (
     <>
-      <div className="container flex items-center justify-between pt-12 pb-8">
+      <div className="container flex items-center justify-between pb-8">
         <h1 className="text-4xl font-bold tracking-tight scroll-m-20 lg:text-5xl">
           Your Wills
         </h1>
