@@ -6,34 +6,55 @@ import { Label } from '../../components/ui/label'
 import { ChangeEvent, useState } from 'react'
 import { Card, CardContent } from '../../components/ui/card'
 import { Trash2 } from 'lucide-react'
+import { set } from 'cypress/types/lodash'
 
-const Assign: NextPage = () => {
-  const valid = false
+interface Verifier {
+  name: string,
+  walletAddress: string,
+}
 
-  const [inputValue, setInputValue] = useState('')
-  const [cardValues, setCardValues] = useState<string[]>([])
+const Assign = () => {
+  const [verifiersArr, setVerifiersArr] = useState<Verifier[]>([])
+  const [verifierInputVal, setVerifierInputVal] = useState('')
+
   const [submitButtonDisabled, setSubmitButtonDisabled] = useState(true)
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value)
+  const handleVerifierInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setVerifierInputVal(e.target.value)
   }
 
-  const handleButtonClick = () => {
-    if (inputValue.trim() !== '') {
-      const newCardValues = [...cardValues, inputValue]
-      setCardValues(newCardValues)
-
-      if (newCardValues.length === 3) {
-        setInputValue('')
+  const handleAddVerifier = () => {
+    if (verifierInputVal.trim() !== '') {
+      const newObj: Verifier = {
+        name: 'test',
+        walletAddress: verifierInputVal,
+      }
+      setVerifiersArr([...verifiersArr, newObj])
+      
+      if (verifiersArr.length === 3) {
+        setVerifierInputVal('')
         setSubmitButtonDisabled(false)
       } else {
-        setInputValue('')
+        setVerifierInputVal('')
       }
     }
   }
 
+  const handleDeleteVerifier = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    index: number
+  ) => {
+    e.preventDefault()
+    const newArr = [...verifiersArr]
+    newArr.splice(index, 1)
+    setVerifiersArr(newArr)
+  }
+  
   const calculateProgress = () => {
-    return Math.floor((cardValues.length / 3) * 100)
+    return Math.floor((verifiersArr.length / 3) * 100)
+  }
+
+  const handleSubmit = () => {
   }
 
   return (
@@ -52,7 +73,7 @@ const Assign: NextPage = () => {
           <div className="grid w-full items-center gap-1.5 pt-8">
             <Progress value={calculateProgress()} />
             <Label className="justify-self-end">
-              {cardValues.length}/3 Verifiers
+              {verifiersArr.length}/3 Verifiers
             </Label>
           </div>
           <div className="grid w-full items-center gap-1.5">
@@ -61,26 +82,30 @@ const Assign: NextPage = () => {
               <Input
                 type="text"
                 placeholder="0x12345..."
-                value={inputValue}
-                onChange={handleInputChange}
-                disabled={cardValues.length === 3}
+                value={verifierInputVal}
+                onChange={handleVerifierInputChange}
+                disabled={verifiersArr.length === 3}
               />
               <Button
                 type="submit"
-                onClick={handleButtonClick}
-                disabled={cardValues.length === 3}
+                onClick={handleAddVerifier}
+                disabled={verifiersArr.length === 3}
               >
                 Assign
               </Button>
             </div>
           </div>
           <div className="flex gap-4">
-            {cardValues.map((value) => (
+            {verifiersArr.map((value, index) => (
               <Card className="dark">
                 <CardContent className="pt-6">
                   <div className="flex flex-row items-center gap-8">
-                    <p>{value}</p>
-                    <Button size={'sm'} variant={'secondary'}>
+                    <p>{value.walletAddress}</p>
+                    <Button
+                      size={'sm'}
+                      variant={'secondary'}
+                      onClick={(event) => handleDeleteVerifier(event, index)}
+                    >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>

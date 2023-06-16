@@ -111,7 +111,7 @@ const CreateWill = () => {
     if (benWalletAddressFieldVal !== '' && parseInt(percentFieldVal) !== 0) {
       if (totalPercent + parseInt(percentFieldVal) <= 100) {
         const newObj: Beneficiary = {
-          name: 'test', //replace with name after fetch from API
+          name: 'test', //TODO: replace with name after fetch from API
           walletAddress: benWalletAddressFieldVal,
           percentage: parseInt(percentFieldVal),
         }
@@ -154,7 +154,7 @@ const CreateWill = () => {
     if (validatorsArr.length < 3) {
       if (valWalletAddressFieldVal !== '') {
         const newObj: Validator = {
-          name: 'test', //replace with name after fetch from API
+          name: 'test', //TODO: replace with name after fetch from API
           walletAddress: valWalletAddressFieldVal,
         }
         setValidatorsArr([...validatorsArr, newObj])
