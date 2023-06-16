@@ -59,7 +59,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
             </div>
           </header>
           <main>
-            <div className="container mx-auto">{children}</div>
+            <div className="container mx-auto my-12">{children}</div>
           </main>
           <footer></footer>
         </>
