@@ -2,6 +2,7 @@ import {
   connectorsForWallets,
   darkTheme,
   getDefaultWallets,
+  midnightTheme,
   RainbowKitProvider,
 } from '@rainbow-me/rainbowkit'
 import '@rainbow-me/rainbowkit/styles.css'
@@ -65,8 +66,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <RainbowKitProvider
           appInfo={demoAppInfo}
           chains={chains}
-          theme={darkTheme({
+          theme={midnightTheme({
             borderRadius: 'small',
+            fontStack: 'system',
           })}
         >
           <Layout>
