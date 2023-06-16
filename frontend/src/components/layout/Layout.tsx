@@ -28,7 +28,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
           <header>
             <div className="container flex items-center justify-between py-4">
               <div className="flex items-center justify-between">
-                <Link className={buttonVariants({ variant: 'link' })} href="">
+                <Link className={buttonVariants({ variant: 'link' })} href="/">
                   Dashboard
                 </Link>
                 <Link
