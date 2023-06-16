@@ -19,6 +19,7 @@ import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { Trash2 } from 'lucide-react'
 import { Card, CardContent } from '../../components/ui/card'
+import useConfirmationPrompt from '../../utils/useConfirmationPrompt'
 
 const formSchema = z.object({
   willTitle: z
@@ -48,11 +49,11 @@ interface Validator {
 }
 
 interface Will {
-  willTitle: string,
-  identityNumber: string,
-  walletAddress: string,
-  beneficiaries: Beneficiary[],
-  validators: Validator[],
+  willTitle: string
+  identityNumber: string
+  walletAddress: string
+  beneficiaries: Beneficiary[]
+  validators: Validator[]
 }
 
 const CreateWill = () => {
@@ -70,11 +71,26 @@ const CreateWill = () => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values)
+    // console.log(values)
+    
+    const will: Will = {
+      willTitle: values.willTitle,
+      identityNumber: values.identityNumber,
+      walletAddress: values.walletAddress,
+      beneficiaries: beneficiariesArr,
+      validators: validatorsArr,
+    }
+
+    console.log(will)
   }
 
-// const[buttonDisabled, setButtonDisabled] = useState(true)
-  
+  // const [isDirty, setIsDirty] = useState(false)
+  // useConfirmationPrompt(isDirty)
+  // const handleInputChange = () => {
+  //   setIsDirty(true)
+  // }
+
+  //adding beneficiaries
   const [beneficiariesArr, setBeneficiariesArr] = useState<Beneficiary[]>([])
   const [benWalletAddressFieldVal, setBenWalletAddressFieldVal] = useState('')
   const [percentFieldVal, setPercentFieldVal] = useState('')
@@ -122,6 +138,7 @@ const CreateWill = () => {
     setBeneficiariesArr(newArr)
   }
 
+  //adding validators
   const [validatorsArr, setValidatorsArr] = useState<Validator[]>([])
   const [valWalletAddressFieldVal, setValWalletAddressFieldVal] = useState('')
 
@@ -134,12 +151,16 @@ const CreateWill = () => {
   const handleAddValidator = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
 
-    if (valWalletAddressFieldVal !== '') {
+    if (validatorsArr.length < 3) {
+      if (valWalletAddressFieldVal !== '') {
         const newObj: Validator = {
           name: 'test', //replace with name after fetch from API
           walletAddress: valWalletAddressFieldVal,
         }
         setValidatorsArr([...validatorsArr, newObj])
+      }
+    } else {
+      alert('Maximum number of validators reached')
     }
 
     // Clear the input fields
@@ -155,7 +176,7 @@ const CreateWill = () => {
     newArr.splice(index, 1)
     setValidatorsArr(newArr)
   }
-  
+
   return (
     <>
       <div className="container flex items-center justify-between pb-8">
@@ -263,7 +284,7 @@ const CreateWill = () => {
                 Validators
               </h2>
               <div className="grid items-end grid-cols-11 gap-4">
-                <div className="grid w-full items-center gap-1.5 col-span-10">
+                <div className="grid items-center w-full col-span-10 gap-2">
                   <Label htmlFor="email">Validator's Wallet Address</Label>
                   <Input
                     type="text"
@@ -273,7 +294,12 @@ const CreateWill = () => {
                     onChange={handleValWalletAddressFieldChange}
                   />
                 </div>
-                <Button onClick={handleAddValidator}>Add</Button>
+                <Button
+                  className="grid col-span-1"
+                  onClick={handleAddValidator}
+                >
+                  Add
+                </Button>
               </div>
               <div className="grid gap-4">
                 {validatorsArr.map((val, index) => (
@@ -286,7 +312,7 @@ const CreateWill = () => {
                         <Button
                           size={'sm'}
                           variant={'destructive'}
-                          className="col-span-1"
+                          className="grid col-span-1"
                           onClick={(event) =>
                             handleDeleteValidator(event, index)
                           }
@@ -299,7 +325,11 @@ const CreateWill = () => {
                 ))}
               </div>
             </div>
-            <Button size={'lg'} type="submit">Submit</Button>
+            <div className="grid justify-end">
+              <Button size={'lg'} type="submit">
+                Submit
+              </Button>
+            </div>
           </form>
         </Form>
       </div>
