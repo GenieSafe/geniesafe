@@ -5,7 +5,6 @@ import React from 'react'
 import { Head, MetaProps } from './Head'
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 import { Auth } from '@supabase/auth-ui-react'
-import { supabase } from '../../utils/supabase'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 
 import { Button, buttonVariants } from '../ui/button'
@@ -19,7 +18,7 @@ interface LayoutProps {
 export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
   const session = useSession()
   const supabase = useSupabaseClient()
-  
+
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut()
     if (error) {
@@ -28,7 +27,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
       // Redirect or perform additional actions after signout
     }
   }
-  
+
   return (
     <>
       {!session ? (
