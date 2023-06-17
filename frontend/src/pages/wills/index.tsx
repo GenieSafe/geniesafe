@@ -49,7 +49,7 @@ const Wills = () => {
           </Link>
         </Button>
       </div>
-      <div className="container flex flex-col">
+      <div className="container flex flex-col space-y-4">
         {wills.length > 0 ? (
           wills.map((will) => <WillCard data={will} />)
         ) : (
