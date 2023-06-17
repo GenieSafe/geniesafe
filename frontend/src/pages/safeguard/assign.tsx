@@ -31,7 +31,7 @@ const Assign = () => {
       }
       setVerifiersArr([...verifiersArr, newObj])
       
-      if (verifiersArr.length === 3) {
+      if (verifiersArr.length == 3) {
         setVerifierInputVal('')
         setSubmitButtonDisabled(false)
       } else {
@@ -95,15 +95,15 @@ const Assign = () => {
               </Button>
             </div>
           </div>
-          <div className="flex gap-4">
+          <div className="grid grid-cols-3 gap-4">
             {verifiersArr.map((value, index) => (
               <Card className="dark">
                 <CardContent className="pt-6">
-                  <div className="flex flex-row items-center gap-8">
+                  <div className="flex flex-row items-center justify-between">
                     <p>{value.walletAddress}</p>
                     <Button
                       size={'sm'}
-                      variant={'secondary'}
+                      variant={'destructive'}
                       onClick={(event) => handleDeleteVerifier(event, index)}
                     >
                       <Trash2 className="w-4 h-4" />
