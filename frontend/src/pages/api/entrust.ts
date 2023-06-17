@@ -11,24 +11,24 @@ type Verifier = {
 }
 
 const getConfig: NextApiHandler = async (req, res) => {
-  const { walletRecoveryConfigId } = req.query
+  const { ownerId } = req.query
 
-  if (walletRecoveryConfigId) {
+  if (ownerId) {
     try {
-      const config = await prisma.walletRecoveryConfig.findUnique({
+      const config = await prisma.walletRecoveryConfig.findFirst({
         where: {
-          id: parseInt(walletRecoveryConfigId as string),
+          ownerId: ownerId as string,
         },
       })
       if (!config)
         throw new createHttpError.NotFound(
-          `Config (ID: ${walletRecoveryConfigId}) does not exist!`
+          `User (ID: ${ownerId}) does not exist!`
         )
       res.status(200).json({ data: config })
     } catch (err) {
       console.log(err)
       throw new createHttpError.NotFound(
-        `Error retrieving config with configId: ${walletRecoveryConfigId}!`
+        `Error retrieving config with userId: ${ownerId}!`
       )
     }
   } else {

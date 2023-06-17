@@ -20,6 +20,7 @@ import { Label } from '../../components/ui/label'
 import { Trash2 } from 'lucide-react'
 import { Card, CardContent } from '../../components/ui/card'
 import useConfirmationPrompt from '../../utils/useConfirmationPrompt'
+import { useAccount } from 'wagmi'
 
 const formSchema = z.object({
   willTitle: z
@@ -67,12 +68,14 @@ const CreateWill = () => {
     },
   })
 
+  const { address, connector, isConnected } = useAccount()
+
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     // console.log(values)
-    
+
     const will: Will = {
       willTitle: values.willTitle,
       identityNumber: values.identityNumber,
@@ -200,7 +203,7 @@ const CreateWill = () => {
                 </FormItem>
               )}
             />
-            <FormField
+            {/* <FormField
               control={form.control}
               name="identityNumber"
               render={({ field }) => (
@@ -212,7 +215,7 @@ const CreateWill = () => {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
             <FormField
               control={form.control}
               name="walletAddress"
@@ -220,7 +223,12 @@ const CreateWill = () => {
                 <FormItem>
                   <FormLabel>Wallet Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="0x123456789" {...field} />
+                    <Input
+                      placeholder={address}
+                      value={address}
+                      {...field}
+                      readOnly
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -246,7 +254,7 @@ const CreateWill = () => {
                   <Input
                     type="number"
                     name="field2"
-                    placeholder="100%"
+                    placeholder="100"
                     value={percentFieldVal}
                     onChange={handlePercentFieldChange}
                   />
