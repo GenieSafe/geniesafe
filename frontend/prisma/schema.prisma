@@ -10,67 +10,73 @@ datasource db {
 }
 
 model User {
-  id                   String                 @id @db.Uuid
-  email                String                 @unique
-  walletAddress        String?
-  password             String
-  firstName            String
-  lastName             String
-  Divisions            Division[]
-  Users                users                  @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  Validators           Validator[]
-  Verifier             Verifier[]
-  WalletRecoveryConfig WalletRecoveryConfig[]
-  Wills                Will[]
+  id                      String                 @id @db.Uuid
+  email                   String                 @unique
+  walletAddress           String?
+  password                String
+  firstName               String
+  lastName                String
+  identityNumber          String?
+  Beneficiaries           Beneficiary[]
+  users_User_emailTousers users                  @relation("User_emailTousers", fields: [email], references: [email], onDelete: Cascade, onUpdate: NoAction)
+  Users                   users                  @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Validators              Validator[]
+  Verifier                Verifier[]
+  WalletRecoveryConfig    WalletRecoveryConfig[]
+  Wills                   Will[]
 
   @@schema("public")
 }
 
 model Will {
-  id              Int         @id @default(autoincrement())
-  ownerId         String      @db.Uuid
+  id              Int           @id @default(autoincrement())
+  ownerUserId     String        @db.Uuid
   title           String?
-  createdAt       DateTime?   @default(now())
-  updatedAt       DateTime?   @default(now())
-  isActive        Boolean     @default(false)
-  isValidated     Boolean     @default(false)
+  createdAt       DateTime?     @default(now())
+  updatedAt       DateTime?     @default(now())
+  isActive        Boolean       @default(false)
+  isValidated     Boolean       @default(false)
   deployedAt      DateTime?
   deployedAtBlock String?
-  Divisions       Division[]
+  Beneficiaries   Beneficiary[]
   Validators      Validator[]
-  Owner           User        @relation(fields: [ownerId], references: [id])
+  Owner           User          @relation(fields: [ownerUserId], references: [id])
 
   @@schema("public")
 }
 
-model Division {
-  id            Int    @id @default(autoincrement())
-  willId        Int
-  percentage    Float
-  beneficiaryId String @db.Uuid
-  Beneficiary   User   @relation(fields: [beneficiaryId], references: [id])
-  Will          Will   @relation(fields: [willId], references: [id])
+model Beneficiary {
+  id                Int     @id @default(autoincrement())
+  willId            Int
+  percentage        Float
+  beneficiaryUserId String? @db.Uuid
+  name              String?
+  walletAddress     String?
+  User              User?   @relation(fields: [beneficiaryUserId], references: [id])
+  Will              Will    @relation(fields: [willId], references: [id])
 
   @@schema("public")
 }
 
 model Validator {
-  id     Int    @id @default(autoincrement())
-  willId Int
-  userId String @db.Uuid
-  User   User   @relation(fields: [userId], references: [id])
-  Will   Will   @relation(fields: [willId], references: [id])
+  id              Int     @id @default(autoincrement())
+  willId          Int
+  validatorUserId String? @db.Uuid
+  name            String?
+  walletAddress   String?
+  User            User?   @relation(fields: [validatorUserId], references: [id])
+  Will            Will    @relation(fields: [willId], references: [id])
 
   @@schema("public")
 }
 
 model Verifier {
   id                     Int                  @id @default(autoincrement())
-  userId                 String               @db.Uuid
+  verifierUserId         String               @db.Uuid
   walletRecoveryConfigId Int
   isVerified             Boolean              @default(false)
   verifiedAt             DateTime?
-  User                   User                 @relation(fields: [userId], references: [id])
+  User                   User                 @relation(fields: [verifierUserId], references: [id])
   WalletRecoveryConfig   WalletRecoveryConfig @relation(fields: [walletRecoveryConfigId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@schema("public")
@@ -95,6 +101,53 @@ model WalletRecoveryConfig {
   owner      User       @relation(fields: [ownerId], references: [id])
 
   @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model users {
+  instance_id                 String?       @db.Uuid
+  id                          String        @id @db.Uuid
+  aud                         String?       @db.VarChar(255)
+  role                        String?       @db.VarChar(255)
+  email                       String?       @unique @db.VarChar(255)
+  encrypted_password          String?       @db.VarChar(255)
+  email_confirmed_at          DateTime?     @db.Timestamptz(6)
+  invited_at                  DateTime?     @db.Timestamptz(6)
+  confirmation_token          String?       @db.VarChar(255)
+  confirmation_sent_at        DateTime?     @db.Timestamptz(6)
+  recovery_token              String?       @db.VarChar(255)
+  recovery_sent_at            DateTime?     @db.Timestamptz(6)
+  email_change_token_new      String?       @db.VarChar(255)
+  email_change                String?       @db.VarChar(255)
+  email_change_sent_at        DateTime?     @db.Timestamptz(6)
+  last_sign_in_at             DateTime?     @db.Timestamptz(6)
+  raw_app_meta_data           Json?
+  raw_user_meta_data          Json?
+  is_super_admin              Boolean?
+  created_at                  DateTime?     @db.Timestamptz(6)
+  updated_at                  DateTime?     @db.Timestamptz(6)
+  phone                       String?       @unique
+  phone_confirmed_at          DateTime?     @db.Timestamptz(6)
+  phone_change                String?       @default("")
+  phone_change_token          String?       @default("") @db.VarChar(255)
+  phone_change_sent_at        DateTime?     @db.Timestamptz(6)
+  confirmed_at                DateTime?     @default(dbgenerated("LEAST(email_confirmed_at, phone_confirmed_at)")) @db.Timestamptz(6)
+  email_change_token_current  String?       @default("") @db.VarChar(255)
+  email_change_confirm_status Int?          @default(0) @db.SmallInt
+  banned_until                DateTime?     @db.Timestamptz(6)
+  reauthentication_token      String?       @default("") @db.VarChar(255)
+  reauthentication_sent_at    DateTime?     @db.Timestamptz(6)
+  is_sso_user                 Boolean       @default(false)
+  deleted_at                  DateTime?     @db.Timestamptz(6)
+  identities                  identities[]
+  mfa_factors                 mfa_factors[]
+  sessions                    sessions[]
+  User_User_emailTousers      User?         @relation("User_emailTousers")
+  User                        User?
+
+  @@index([instance_id])
+  @@schema("auth")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -304,52 +357,6 @@ model sso_providers {
   saml_relay_states saml_relay_states[]
   sso_domains       sso_domains[]
 
-  @@schema("auth")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model users {
-  instance_id                 String?       @db.Uuid
-  id                          String        @id @db.Uuid
-  aud                         String?       @db.VarChar(255)
-  role                        String?       @db.VarChar(255)
-  email                       String?       @unique @db.VarChar(255)
-  encrypted_password          String?       @db.VarChar(255)
-  email_confirmed_at          DateTime?     @db.Timestamptz(6)
-  invited_at                  DateTime?     @db.Timestamptz(6)
-  confirmation_token          String?       @db.VarChar(255)
-  confirmation_sent_at        DateTime?     @db.Timestamptz(6)
-  recovery_token              String?       @db.VarChar(255)
-  recovery_sent_at            DateTime?     @db.Timestamptz(6)
-  email_change_token_new      String?       @db.VarChar(255)
-  email_change                String?       @db.VarChar(255)
-  email_change_sent_at        DateTime?     @db.Timestamptz(6)
-  last_sign_in_at             DateTime?     @db.Timestamptz(6)
-  raw_app_meta_data           Json?
-  raw_user_meta_data          Json?
-  is_super_admin              Boolean?
-  created_at                  DateTime?     @db.Timestamptz(6)
-  updated_at                  DateTime?     @db.Timestamptz(6)
-  phone                       String?       @unique
-  phone_confirmed_at          DateTime?     @db.Timestamptz(6)
-  phone_change                String?       @default("")
-  phone_change_token          String?       @default("") @db.VarChar(255)
-  phone_change_sent_at        DateTime?     @db.Timestamptz(6)
-  confirmed_at                DateTime?     @default(dbgenerated("LEAST(email_confirmed_at, phone_confirmed_at)")) @db.Timestamptz(6)
-  email_change_token_current  String?       @default("") @db.VarChar(255)
-  email_change_confirm_status Int?          @default(0) @db.SmallInt
-  banned_until                DateTime?     @db.Timestamptz(6)
-  reauthentication_token      String?       @default("") @db.VarChar(255)
-  reauthentication_sent_at    DateTime?     @db.Timestamptz(6)
-  is_sso_user                 Boolean       @default(false)
-  deleted_at                  DateTime?     @db.Timestamptz(6)
-  identities                  identities[]
-  mfa_factors                 mfa_factors[]
-  sessions                    sessions[]
-  User                        User?
-
-  @@index([instance_id])
   @@schema("auth")
 }
 
