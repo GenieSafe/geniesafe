@@ -48,9 +48,7 @@ const Assign = () => {
         )
 
         if (response.ok) {
-          console.log('user fetch success')
           const data = await response.json()
-          console.log(data)
           const newObj: Verifier = {
             verifierUserId: data.data.id,
           }
@@ -117,7 +115,6 @@ const Assign = () => {
       if (response.ok) {
         // API call was successful
         // Do something with the response
-        console.log('POST success')
         router.push('/safeguard')
       } else {
         // API call failed
