@@ -20,6 +20,7 @@ import { Card, CardContent } from '../../components/ui/card'
 import { useAccount } from 'wagmi'
 import { Beneficiary, Validator, Will } from '../../../types/interfaces'
 import { useSession } from '@supabase/auth-helpers-react'
+import router from 'next/router'
 
 const USER_GUS = '994474fa-d558-4cd4-90e8-d72ae10b884f'
 
@@ -28,11 +29,6 @@ const formSchema = z.object({
     .string({ required_error: 'Will title is required' })
     .min(5)
     .max(30),
-  // walletAddress: z
-  //   .string({ required_error: 'Wallet address is required' })
-  //   .regex(/^0x[a-fA-F0-9]{40}$/, {
-  //     message: 'Invalid Ethereum wallet address',
-  //   }),
 })
 
 const CreateWill = () => {
@@ -41,8 +37,6 @@ const CreateWill = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       willTitle: '',
-      // identityNumber: '',
-      // walletAddress: '',
     },
   })
 
@@ -51,10 +45,6 @@ const CreateWill = () => {
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    // console.log(values)
-
     const will: Will = {
       ownerUserId: USER_GUS,
       title: values.willTitle,
@@ -63,24 +53,28 @@ const CreateWill = () => {
       validators: validatorsArr,
     }
 
-    const res = await fetch('http://localhost:3000/api/will', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ will }),
-    })
-    
-    console.log(will)
-    console.log(res)
+    try {
+      const res = await fetch('http://localhost:3000/api/will', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(will),
+      })
+      if (res.ok) {
+        // API call was successful
+        // Do something with the response
+        router.push('/wills')
+      } else {
+        // API call failed
+        // Handle the error
+        console.log('fail')
+      }
+    } catch (err) {
+      console.log(err)
+    }
   }
-
-  // const [isDirty, setIsDirty] = useState(false)
-  // useConfirmationPrompt(isDirty)
-  // const handleInputChange = () => {
-  //   setIsDirty(true)
-  // }
 
   //adding beneficiaries
   const [beneficiariesArr, setBeneficiariesArr] = useState<Beneficiary[]>([])
@@ -97,18 +91,40 @@ const CreateWill = () => {
     setPercentFieldVal(e.target.value)
   }
 
-  const handleAddBeneficiary = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddBeneficiary = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
     e.preventDefault()
 
     if (benWalletAddressFieldVal !== '' && parseInt(percentFieldVal) !== 0) {
       if (totalPercent + parseInt(percentFieldVal) <= 100) {
-        const newObj: Beneficiary = {
-          name: 'test', //TODO: replace with name after fetch from API
-          walletAddress: benWalletAddressFieldVal,
-          percentage: parseInt(percentFieldVal),
+        try {
+          const response = await fetch(
+            'http://localhost:3000/api/user?walletAddress=' +
+              benWalletAddressFieldVal,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          )
+
+          if (response.ok) {
+            const data = await response.json()
+            const newObj: Beneficiary = {
+              name: data.data.firstName + ' ' + data.data.lastName, //TODO: replace with name after fetch from API
+              walletAddress: benWalletAddressFieldVal,
+              percentage: parseInt(percentFieldVal),
+            }
+            setBeneficiariesArr([...beneficiariesArr, newObj])
+            setTotalPercent(totalPercent + parseInt(percentFieldVal))
+          } else {
+            console.log('user fetch fail')
+          }
+        } catch (error) {
+          console.log(error)
         }
-        setBeneficiariesArr([...beneficiariesArr, newObj])
-        setTotalPercent(totalPercent + parseInt(percentFieldVal))
       } else {
         alert('Total percentage cannot exceed 100%')
       }
@@ -140,16 +156,35 @@ const CreateWill = () => {
     setValWalletAddressFieldVal(e.target.value)
   }
 
-  const handleAddValidator = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddValidator = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-
     if (validatorsArr.length < 3) {
-      if (valWalletAddressFieldVal !== '') {
-        const newObj: Validator = {
-          name: 'test', //TODO: replace with name after fetch from API
-          walletAddress: valWalletAddressFieldVal,
+      if (valWalletAddressFieldVal.trim() !== '') {
+        try {
+          const response = await fetch(
+            'http://localhost:3000/api/user?walletAddress=' +
+              valWalletAddressFieldVal,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          )
+
+          if (response.ok) {
+            const data = await response.json()
+            const newObj: Validator = {
+              name: data.data.firstName + ' ' + data.data.lastName,
+              walletAddress: valWalletAddressFieldVal,
+            }
+            setValidatorsArr([...validatorsArr, newObj])
+          } else {
+            console.log('user fetch fail')
+          }
+        } catch (error) {
+          console.log(error)
         }
-        setValidatorsArr([...validatorsArr, newObj])
       }
     } else {
       alert('Maximum number of validators reached')
@@ -169,7 +204,7 @@ const CreateWill = () => {
     setValidatorsArr(newArr)
   }
 
-  const session = useSession()
+  // const session = useSession()
 
   return (
     <>
@@ -240,8 +275,10 @@ const CreateWill = () => {
                     <Card className="dark" key={index}>
                       <CardContent className="flex items-center justify-between pt-6">
                         <div className="flex items-center gap-12">
-                          <p className="leading-7 ">{ben.name}</p>
-                          <p className="leading-7 ">{ben.walletAddress}</p>
+                          <p className="leading-7">{ben.name}</p>
+                          <p className="leading-7 text-bold text-muted-foreground">
+                            {ben.walletAddress}
+                          </p>
                           <p className="leading-7">{ben.percentage}%</p>
                         </div>
                         <Button
@@ -288,7 +325,7 @@ const CreateWill = () => {
                     <Card className="dark" key={index}>
                       <CardContent className="flex items-center justify-between pt-6">
                         <div className="flex items-center gap-12">
-                          <p className="leading-7 ">{val.walletAddress}</p>
+                          <p className="leading-7 ">{val.name}</p>
                         </div>
                         <Button
                           size={'sm'}

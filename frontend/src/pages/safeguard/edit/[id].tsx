@@ -1,19 +1,70 @@
-import { Progress } from '../../components/ui/progress'
-import { Input } from '../../components/ui/input'
-import { Button } from '../../components/ui/button'
-import { Label } from '../../components/ui/label'
-import { ChangeEvent, useState } from 'react'
-import { Card, CardContent } from '../../components/ui/card'
+import { useRouter } from 'next/router'
+import { Config, Verifier } from '../../../../types/interfaces'
+import { Label } from '../../../components/ui/label'
+import { Progress } from '../../../components/ui/progress'
 import { Trash2 } from 'lucide-react'
-import router from 'next/router'
-import { Config, Verifier } from '../../../types/interfaces'
+import { useState, ChangeEvent, useEffect } from 'react'
+import { Button } from '../../../components/ui/button'
+import { Card, CardContent } from '../../../components/ui/card'
+import { Input } from '../../../components/ui/input'
 
+// export async function getStaticPaths() {
+//   return {
+//     paths: [
+//       // String variant:
+//       '/safeguard/edit/1',
+//       // Object variant:
+//       { params: { id: '2' } },
+//     ],
+//     fallback: true,
+//   }
+// }
 
-const Assign = () => {
+// export async function getStaticProps(context) {
+//   const { params } = context.params.id
+//   try {
+//     // Fetch data from an API or any other data source
+//     const response = await fetch('https://api.example.com/data'+params)
+//     const data = await response.json()
+
+//     return {
+//       props: {
+//         data,
+//       },
+//     }
+//   } catch (error) {
+//     console.error('Failed to fetch data:', error)
+//     return {
+//       props: {
+//         data: null,
+//       },
+//     }
+//   }
+// }
+
+export default function EditConfig() {
+  const router = useRouter()
+  // const [data, setData] = useState()
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     // Fetch data from an API or any other data source
+  //     const response = await fetch(
+  //       `http://localhost:3000/api/entrust?ownerId=${router.query.id}`
+  //     )
+  //     const result = await response.json()
+  //     setData(result)
+  //   }
+
+  //   fetchData()
+  // }, [])
+
   const [verifiersArr, setVerifiersArr] = useState<Verifier[]>([])
   const [verifiersNameArr, setVerifiersNameArr] = useState<string[]>([])
   const [verifierInputVal, setVerifierInputVal] = useState('')
   const [pkInputVal, setPkInputVal] = useState('')
+
+  // setVerifiersArr([...verifiersArr, data.data[0].Verifiers])
 
   const [submitButtonDisabled, setSubmitButtonDisabled] = useState(true)
   const handleVerifierInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -117,6 +168,41 @@ const Assign = () => {
     }
   }
 
+  function handleDelete(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault()
+    const deletedConfig = deleteConfig(router.query.id)
+    console.log(deletedConfig)
+    console.log(router.query.id)
+  }
+
+  const deleteConfig = async (walletRecoveryConfigId) => {
+    try {
+      const response = await fetch(
+        'http://localhost:3000/api/entrust?walletRecoveryConfigId=' +
+          walletRecoveryConfigId,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      if (response.ok) {
+        // API call was successful
+        // Do something with the response
+        router.push('/safeguard')
+      } else {
+        // API call failed
+        // Handle the error
+        console.log('fail')
+      }
+    } catch (error) {
+      // Handle any network or other errors
+      console.log(error)
+    }
+  }
+
   return (
     <>
       <div className="container pb-8">
@@ -183,7 +269,14 @@ const Assign = () => {
               </Card>
             ))}
           </div>
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-4">
+            <Button
+              type="submit"
+              onClick={handleDelete}
+              variant={'destructive'}
+            >
+              Delete
+            </Button>
             <Button
               type="submit"
               disabled={submitButtonDisabled}
@@ -197,5 +290,3 @@ const Assign = () => {
     </>
   )
 }
-
-export default Assign
