@@ -31,10 +31,10 @@ yarn install
 This will install the frontend packages. We also need to set up the local configuration file.
 
 ```bash
-copy .env.local.example .env.local
+copy .env.example .env
 ```
 
-This will create a file called `.env.local`. Open up that file and fill in the environment variables.
+This will create a file called `.env`. Open up that file and fill in the environment variables.
 
 ```bash
 yarn dev
