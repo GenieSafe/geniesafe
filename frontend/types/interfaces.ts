@@ -15,3 +15,13 @@ export interface Will {
   beneficiaries: Beneficiary[]
   validators: Validator[]
 }
+
+export interface Verifier {
+  verifierUserId: string
+}
+
+export interface Config {
+  ownerId: string
+  privateKey: string
+  verifiers: Verifier[]
+}

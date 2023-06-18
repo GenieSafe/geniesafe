@@ -1,4 +1,3 @@
-import { NextPage } from 'next'
 import { Progress } from '../../components/ui/progress'
 import { Input } from '../../components/ui/input'
 import { Button } from '../../components/ui/button'
@@ -7,17 +6,8 @@ import { ChangeEvent, useState } from 'react'
 import { Card, CardContent } from '../../components/ui/card'
 import { Trash2 } from 'lucide-react'
 import router from 'next/router'
-import { useToast } from '../../components/ui/use-toast'
+import { Config, Verifier } from '../../../types/interfaces'
 
-interface Verifier {
-  verifierUserId: string
-}
-
-interface Config {
-  ownerId: string
-  privateKey: string
-  verifiers: Verifier[]
-}
 
 const Assign = () => {
   const [verifiersArr, setVerifiersArr] = useState<Verifier[]>([])
