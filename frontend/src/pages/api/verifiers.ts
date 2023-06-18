@@ -15,6 +15,27 @@ const getVerifiers: NextApiHandler = async (req, res) => {
       where: {
         walletRecoveryConfigId: parseInt(walletRecoveryConfigId as string),
       },
+      select: {
+        verifierUserId: true,
+        isVerified: true,
+        verifiedAt: true,
+        User: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        WalletRecoveryConfig: {
+          select: {
+            id: true,
+            ownerId: true,
+            createdAt: true,
+            updatedAt: true,
+            isActive: true,
+            isVerified: true,
+          },
+        },
+      },
     })
     res.status(200).json({
       message: `Successfully retrieved verifiers for config with ID: ${walletRecoveryConfigId}`,
@@ -32,7 +53,10 @@ const verifierSchema = Yup.object().shape({
   walletRecoveryConfigId: Yup.number().required(
     'walletRecoveryConfigId is required'
   ),
-  userId: Yup.number().required('userId is required'),
+  // walletAddress: Yup.string()
+  //   .required('walletAddress is required')
+  //   .matches(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
+  verifierUserId: Yup.number().required('verifierUserId is required'),
 })
 
 const deleteVerifier: NextApiHandler = async (req, res) => {

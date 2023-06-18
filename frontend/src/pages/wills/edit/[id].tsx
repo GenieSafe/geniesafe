@@ -1,88 +1,114 @@
-import React, { ChangeEvent, useState } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { useForm } from 'react-hook-form'
+'use client'
 
-import { Button } from '../../components/ui/button'
+import { useState, useEffect, Validator } from 'react'
+import { useRouter } from 'next/router'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from '../../components/ui/form'
-import { Input } from '../../components/ui/input'
-import { Label } from '../../components/ui/label'
+} from '../../../components/ui/form'
+import { Label } from '@radix-ui/react-label'
 import { Trash2 } from 'lucide-react'
-import { Card, CardContent } from '../../components/ui/card'
+import { Button } from '../../../components/ui/button'
+import { Card, CardContent } from '../../../components/ui/card'
+import { Input } from '../../../components/ui/input'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Will, Beneficiary } from '@prisma/client'
 import { useAccount } from 'wagmi'
-import { Beneficiary, Validator, Will } from '../../../types/interfaces'
-import { useSession } from '@supabase/auth-helpers-react'
 
-const USER_GUS = '994474fa-d558-4cd4-90e8-d72ae10b884f'
+function getWill(userId: string, willId: number) {
+  return fetch(
+    `http://localhost:3000/api/will?ownerId=${userId}&willId=${willId}`,
+    {
+      method: 'GET',
+    }
+  ).then((res) => res.json())
+}
 
 const formSchema = z.object({
   willTitle: z
     .string({ required_error: 'Will title is required' })
     .min(5)
     .max(30),
-  // walletAddress: z
-  //   .string({ required_error: 'Wallet address is required' })
-  //   .regex(/^0x[a-fA-F0-9]{40}$/, {
-  //     message: 'Invalid Ethereum wallet address',
+  // identityNumber: z
+  //   .string({ required_error: 'Identity Number is required' })
+  //   .regex(/^(\d{6}-\d{2}-\d{4})$/, {
+  //     message: `Identity number must contain '-'`,
   //   }),
+  walletAddress: z
+    .string({ required_error: 'Wallet address is required' })
+    .regex(/^0x[a-fA-F0-9]{40}$/, {
+      message: 'Invalid Ethereum wallet address',
+    }),
 })
 
-const CreateWill = () => {
-  // 1. Define your form.
+export default function EditWill() {
+  const router = useRouter()
+  const tempUserId = '1136348d-3ec7-4d12-95f2-234748b26213'
+  const [will, setWill] = useState()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       willTitle: '',
-      // identityNumber: '',
-      // walletAddress: '',
+      walletAddress: '',
     },
   })
 
-  // Get the current account address
-  const { address } = useAccount()
-
-  // 2. Define a submit handler.
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    // console.log(values)
-
-    const will: Will = {
-      ownerUserId: USER_GUS,
-      title: values.willTitle,
-      walletAddress: address as string,
-      beneficiaries: beneficiariesArr,
-      validators: validatorsArr,
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await getWill(tempUserId, router.query.id)
+        if (response.data) {
+          setWill(response.data)
+        } else {
+          console.error('No data found in the response.')
+        }
+      } catch (error) {
+        console.error('Error fetching wills:', error)
+      }
     }
 
-    const res = await fetch('http://localhost:3000/api/will', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ will }),
-    })
-    
-    console.log(will)
-    console.log(res)
+    fetchData()
+  }, [])
+
+  const updateData = async (data: Will) => {
+    console.log(data)
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/will?willId=${router.query.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            data,
+          }),
+        }
+      )
+
+      if (response.ok) {
+        // Request was successful
+        // Handle the response here
+        console.log('success')
+      } else {
+        // Request failed
+        // Handle the error here
+        console.log('fail')
+      }
+    } catch (error) {
+      // An error occurred during the request
+      // Handle the error here
+      console.log('error update')
+    }
   }
 
-  // const [isDirty, setIsDirty] = useState(false)
-  // useConfirmationPrompt(isDirty)
-  // const handleInputChange = () => {
-  //   setIsDirty(true)
-  // }
-
-  //adding beneficiaries
   const [beneficiariesArr, setBeneficiariesArr] = useState<Beneficiary[]>([])
   const [benWalletAddressFieldVal, setBenWalletAddressFieldVal] = useState('')
   const [percentFieldVal, setPercentFieldVal] = useState('')
@@ -169,13 +195,71 @@ const CreateWill = () => {
     setValidatorsArr(newArr)
   }
 
-  const session = useSession()
+  const USER_GUS = '994474fa-d558-4cd4-90e8-d72ae10b884f'
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    // Do something with the form values.
+    // ✅ This will be type-safe and validated.
+    // console.log(values)
+
+    // Get the current account address
+    const { address } = useAccount()
+
+    const will: Will = {
+      ownerUserId: USER_GUS,
+      title: values.willTitle,
+      walletAddress: address as string,
+      beneficiaries: beneficiariesArr,
+      validators: validatorsArr,
+    }
+
+    updateData(will)
+    console.log(will)
+  }
+
+  async function deleteWill(willId: number) {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/will?willId=${willId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      if (response.ok) {
+        // Request was successful
+        // Handle the response here
+        console.log('success')
+        router.push('/wills')
+      } else {
+        // Request failed
+        // Handle the error here
+        console.log('fail')
+      }
+    } catch (error) {
+      // An error occurred during the request
+      // Handle the error here
+      console.log('error delete')
+    }
+  }
+
+  function onDelete(
+    event: MouseEvent<HTMLButtonElement, MouseEvent>
+  ): Promise<void> {
+    event.preventDefault()
+    const deletedWill = deleteWill(parseInt(router.query.id as string))
+    console.log(`deletedWill: ${deletedWill}`)
+    console.log(router.query.id)
+  }
 
   return (
     <>
       <div className="container flex items-center justify-between pb-8">
         <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
-          Create a will
+          Edit Will
         </h1>
       </div>
       <div className="container grid gap-4">
@@ -198,17 +282,22 @@ const CreateWill = () => {
               control={form.control}
               name="walletAddress"
               render={({ field }) => (
-                <FormItem>
+                  <FormItem>
                   <FormLabel>Wallet Address</FormLabel>
                   <FormControl>
-                    <Input placeholder={address} {...field} />
+                  <Input
+                  placeholder={address}
+                  value={address}
+                  {...field}
+                  readOnly
+                  />
                   </FormControl>
                   <FormMessage />
-                </FormItem>
-              )}
-            /> */}
+                  </FormItem>
+                  )} 
+                />*/}
             <div className="grid gap-4">
-              <h2 className="text-2xl font-semibold tracking-tight transition-colorsscroll-m-20">
+              <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
                 Beneficiaries
               </h2>
               <div className="grid items-end grid-cols-11 gap-4">
@@ -261,7 +350,7 @@ const CreateWill = () => {
               </div>
             </div>
             <div className="grid gap-4">
-              <h2 className="text-2xl font-semibold tracking-tight transition-colorsscroll-m-20">
+              <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
                 Validators
               </h2>
               <div className="grid items-end grid-cols-11 gap-4">
@@ -306,8 +395,16 @@ const CreateWill = () => {
                 ))}
               </div>
             </div>
-            <div className="grid justify-end">
-              <Button size={'lg'} type="submit">
+            <div className="flex gap-[1rem] justify-end">
+              <Button
+                size={'lg'}
+                variant="destructive"
+                type="submit"
+                onClick={onDelete}
+              >
+                Delete
+              </Button>
+              <Button size={'lg'} type="submit" onClick={onSubmit}>
                 Submit
               </Button>
             </div>
@@ -317,5 +414,3 @@ const CreateWill = () => {
     </>
   )
 }
-
-export default CreateWill

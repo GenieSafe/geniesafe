@@ -5,36 +5,27 @@ import { Plus } from 'lucide-react'
 import { WillCard } from '../../components/WillCard'
 import { Button } from '../../components/ui/button'
 import Link from 'next/link'
+import { useSession } from '@supabase/auth-helpers-react'
+import { supabase } from '../../utils/supabase'
 
-function getWills(userId: string) {
-  return fetch(`http://localhost:3000/api/will?ownerId=${userId}`, {
-    method: 'GET',
-  }).then((res) => res.json())
+export async function getStaticProps() {
+  //TODO: replace with current session userId. How to retrieve?
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // const currentUserId = user?.id
+  const currentUserId = '994474fa-d558-4cd4-90e8-d72ae10b884f' // Gus
+
+  const res = await fetch(
+    `http://localhost:3000/api/will?ownerId=${currentUserId}`
+  )
+  const data = await res.json()
+  return { props: { data } }
 }
 
-const Wills = () => {
-  // TODO: Replace with current session's user ID
-  const tempUserId = '1136348d-3ec7-4d12-95f2-234748b26213'
-  const [wills, setWills] = useState([])
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await getWills(tempUserId)
-        if (response.data) {
-          setWills(response.data)
-        } else {
-          console.error('No data found in the response.')
-        }
-      } catch (error) {
-        console.error('Error fetching wills:', error)
-      }
-    }
-
-    fetchData()
-  }, [])
-
-  console.log(wills)
+const Wills = ({ data }) => {
+  const session = useSession()
 
   return (
     <>
@@ -49,9 +40,9 @@ const Wills = () => {
           </Link>
         </Button>
       </div>
-      <div className="container flex flex-col">
-        {wills.length > 0 ? (
-          wills.map((will) => <WillCard data={will} />)
+      <div className="container flex flex-col space-y-4">
+        {data.data ? (
+          data.data.map((data) => <WillCard key={data.id} will={data} />)
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>
         )}
