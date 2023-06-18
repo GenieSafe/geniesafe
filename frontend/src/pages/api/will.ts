@@ -48,6 +48,9 @@ const getWill: NextApiHandler = async (req, res) => {
         where: {
           ownerUserId: ownerUserId.toString(),
         },
+        orderBy: {
+          updatedAt: 'desc',
+        },
       })
       if (!wills)
         throw new createHttpError.NotFound(
