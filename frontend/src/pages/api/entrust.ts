@@ -7,7 +7,7 @@ import prisma from '../../utils/prisma'
 import { validateRequest } from '../../utils/yup'
 
 type Verifier = {
-  userId: string
+  verifierUserId: string
 }
 
 const getConfig: NextApiHandler = async (req, res) => {
@@ -41,7 +41,7 @@ const walletRecoveryConfigSchema = Yup.object().shape({
   privateKey: Yup.string().required('privateKey is required'),
   verifiers: Yup.array().of(
     Yup.object().shape({
-      userId: Yup.string().required('userId is required'),
+      verifierUserId: Yup.string().required('userId is required'),
     })
   ),
 })
@@ -50,6 +50,7 @@ const createConfig: NextApiHandler = async (req, res) => {
   // @ts-ignore
   const data = validateRequest(req.body, walletRecoveryConfigSchema)
   const { verifiers, ...rest } = req.body
+  let newVerifiers = []
 
   try {
     const newConfig = await prisma.walletRecoveryConfig.create({
@@ -57,12 +58,27 @@ const createConfig: NextApiHandler = async (req, res) => {
         ...rest,
       },
     })
-    const newVerifiers = await prisma.verifier.createMany({
-      data: verifiers.map((verifier: Verifier) => ({
-        ...verifier,
-        walletRecoveryConfigId: newConfig.id,
-      })),
-    })
+
+    newVerifiers = await Promise.all(
+      verifiers.map((verifier: Verifier) => {
+        const { verifierUserId } = verifier
+
+        return prisma.verifier.create({
+          data: {
+            User: {
+              connect: {
+                id: verifierUserId,
+              },
+            },
+            WalletRecoveryConfig: {
+              connect: {
+                id: newConfig.id,
+              },
+            },
+          },
+        })
+      })
+    )
     res.status(200).json({
       message: `Successfully created config with ID: ${newConfig.id}`,
       data: { newConfig, newVerifiers },
@@ -70,7 +86,7 @@ const createConfig: NextApiHandler = async (req, res) => {
   } catch (err) {
     console.log(err)
     throw new createHttpError.NotFound(
-      `Error creating will with ownerId: ${req.body.ownerId}! Check if user exists.`
+      `Error creating config with ownerId: ${req.body.ownerId}!`
     )
   }
 }
