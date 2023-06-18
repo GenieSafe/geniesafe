@@ -19,25 +19,21 @@ import { Trash2 } from 'lucide-react'
 import { Card, CardContent } from '../../components/ui/card'
 import { useAccount } from 'wagmi'
 import { Beneficiary, Validator, Will } from '../../../types/interfaces'
+import { useSession } from '@supabase/auth-helpers-react'
+
+const USER_GUS = '994474fa-d558-4cd4-90e8-d72ae10b884f'
 
 const formSchema = z.object({
   willTitle: z
     .string({ required_error: 'Will title is required' })
     .min(5)
     .max(30),
-  identityNumber: z
-    .string({ required_error: 'Identity Number is required' })
-    .regex(/^(\d{6}-\d{2}-\d{4})$/, {
-      message: `Identity number must contain '-'`,
-    }),
-  walletAddress: z
-    .string({ required_error: 'Wallet address is required' })
-    .regex(/^0x[a-fA-F0-9]{40}$/, {
-      message: 'Invalid Ethereum wallet address',
-    }),
+  // walletAddress: z
+  //   .string({ required_error: 'Wallet address is required' })
+  //   .regex(/^0x[a-fA-F0-9]{40}$/, {
+  //     message: 'Invalid Ethereum wallet address',
+  //   }),
 })
-
-
 
 const CreateWill = () => {
   // 1. Define your form.
@@ -45,28 +41,39 @@ const CreateWill = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       willTitle: '',
-      identityNumber: '',
-      walletAddress: '',
+      // identityNumber: '',
+      // walletAddress: '',
     },
   })
 
-  const { address, connector, isConnected } = useAccount()
+  // Get the current account address
+  const { address } = useAccount()
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     // console.log(values)
 
     const will: Will = {
-      willTitle: values.willTitle,
-      identityNumber: values.identityNumber,
-      walletAddress: values.walletAddress,
+      ownerUserId: USER_GUS,
+      title: values.willTitle,
+      walletAddress: address as string,
       beneficiaries: beneficiariesArr,
       validators: validatorsArr,
     }
 
+    const res = await fetch('http://localhost:3000/api/will', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ will }),
+    })
+    
     console.log(will)
+    console.log(res)
   }
 
   // const [isDirty, setIsDirty] = useState(false)
@@ -162,6 +169,8 @@ const CreateWill = () => {
     setValidatorsArr(newArr)
   }
 
+  const session = useSession()
+
   return (
     <>
       <div className="container flex items-center justify-between pb-8">
@@ -185,19 +194,6 @@ const CreateWill = () => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="identityNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Identity Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="012345-11-4032" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             {/* <FormField
               control={form.control}
               name="walletAddress"
@@ -205,17 +201,12 @@ const CreateWill = () => {
                 <FormItem>
                   <FormLabel>Wallet Address</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder={address}
-                      value={address}
-                      {...field}
-                      readOnly
-                    />
+                    <Input placeholder={address} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
-              )} */}
-            />
+              )}
+            /> */}
             <div className="grid gap-4">
               <h2 className="text-2xl font-semibold tracking-tight transition-colorsscroll-m-20">
                 Beneficiaries

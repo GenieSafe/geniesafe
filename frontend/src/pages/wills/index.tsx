@@ -5,16 +5,28 @@ import { Plus } from 'lucide-react'
 import { WillCard } from '../../components/WillCard'
 import { Button } from '../../components/ui/button'
 import Link from 'next/link'
+import { useSession } from '@supabase/auth-helpers-react'
+import { supabase } from '../../utils/supabase'
 
-export async function getStaticProps(userId: string) {
-  //TODO: replace with current session userId
-  const tempId = '1136348d-3ec7-4d12-95f2-234748b26213'
-  const res = await fetch(`http://localhost:3000/api/will?ownerId=${tempId}`)
-  var data = await res.json()
+export async function getStaticProps() {
+  //TODO: replace with current session userId. How to retrieve?
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // const currentUserId = user?.id
+  const currentUserId = '994474fa-d558-4cd4-90e8-d72ae10b884f' // Gus
+
+  const res = await fetch(
+    `http://localhost:3000/api/will?ownerId=${currentUserId}`
+  )
+  const data = await res.json()
   return { props: { data } }
 }
 
-const Wills = ({data}) => {
+const Wills = ({ data }) => {
+  const session = useSession()
+
   return (
     <>
       <div className="container flex items-center justify-between pb-8">
@@ -29,7 +41,7 @@ const Wills = ({data}) => {
         </Button>
       </div>
       <div className="container flex flex-col space-y-4">
-        {data.data.length > 0 ? (
+        {data.data ? (
           data.data.map((data) => <WillCard key={data.id} will={data} />)
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Validator } from 'react'
 import { useRouter } from 'next/router'
 import {
   Form,
@@ -18,6 +18,8 @@ import { Input } from '../../../components/ui/input'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { Will, Beneficiary } from '@prisma/client'
+import { useAccount } from 'wagmi'
 
 function getWill(userId: string, willId: number) {
   return fetch(
@@ -33,35 +35,17 @@ const formSchema = z.object({
     .string({ required_error: 'Will title is required' })
     .min(5)
     .max(30),
-  identityNumber: z
-    .string({ required_error: 'Identity Number is required' })
-    .regex(/^(\d{6}-\d{2}-\d{4})$/, {
-      message: `Identity number must contain '-'`,
-    }),
+  // identityNumber: z
+  //   .string({ required_error: 'Identity Number is required' })
+  //   .regex(/^(\d{6}-\d{2}-\d{4})$/, {
+  //     message: `Identity number must contain '-'`,
+  //   }),
   walletAddress: z
     .string({ required_error: 'Wallet address is required' })
     .regex(/^0x[a-fA-F0-9]{40}$/, {
       message: 'Invalid Ethereum wallet address',
     }),
 })
-
-interface Beneficiary {
-  name: string
-  walletAddress: string
-  percentage: number
-}
-interface Validator {
-  name: string
-  walletAddress: string
-}
-
-interface Will {
-  willTitle: string
-  identityNumber: string
-  walletAddress: string
-  beneficiaries: Beneficiary[]
-  validators: Validator[]
-}
 
 export default function EditWill() {
   const router = useRouter()
@@ -72,7 +56,6 @@ export default function EditWill() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       willTitle: '',
-      identityNumber: '',
       walletAddress: '',
     },
   })
@@ -95,7 +78,7 @@ export default function EditWill() {
   }, [])
 
   const updateData = async (data: Will) => {
-      console.log(data)
+    console.log(data)
     try {
       const response = await fetch(
         `http://localhost:3000/api/will?willId=${router.query.id}`,
@@ -212,15 +195,20 @@ export default function EditWill() {
     setValidatorsArr(newArr)
   }
 
+  const USER_GUS = '994474fa-d558-4cd4-90e8-d72ae10b884f'
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     // console.log(values)
 
+    // Get the current account address
+    const { address } = useAccount()
+
     const will: Will = {
-      willTitle: values.willTitle,
-      identityNumber: values.identityNumber,
-      walletAddress: values.walletAddress,
+      ownerUserId: USER_GUS,
+      title: values.willTitle,
+      walletAddress: address as string,
       beneficiaries: beneficiariesArr,
       validators: validatorsArr,
     }
@@ -246,20 +234,7 @@ export default function EditWill() {
                 <FormItem>
                   <FormLabel>Will Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="My First Will" {...field}/>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="identityNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Identity Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="012345-11-4032" {...field} />
+                    <Input placeholder="My First Will" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
