@@ -16,8 +16,26 @@ const getVerifiers: NextApiHandler = async (req, res) => {
         walletRecoveryConfigId: parseInt(walletRecoveryConfigId as string),
       },
       select: {
-        
-      }
+        verifierUserId: true,
+        isVerified: true,
+        verifiedAt: true,
+        User: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        WalletRecoveryConfig: {
+          select: {
+            id: true,
+            ownerId: true,
+            createdAt: true,
+            updatedAt: true,
+            isActive: true,
+            isVerified: true,
+          },
+        },
+      },
     })
     res.status(200).json({
       message: `Successfully retrieved verifiers for config with ID: ${walletRecoveryConfigId}`,
