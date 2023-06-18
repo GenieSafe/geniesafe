@@ -6,36 +6,15 @@ import { WillCard } from '../../components/WillCard'
 import { Button } from '../../components/ui/button'
 import Link from 'next/link'
 
-function getWills(userId: string) {
-  return fetch(`http://localhost:3000/api/will?ownerId=${userId}`, {
-    method: 'GET',
-  }).then((res) => res.json())
+export async function getStaticProps(userId: string) {
+  //TODO: replace with current session userId
+  const tempId = '1136348d-3ec7-4d12-95f2-234748b26213'
+  const res = await fetch(`http://localhost:3000/api/will?ownerId=${tempId}`)
+  var data = await res.json()
+  return { props: { data } }
 }
 
-const Wills = () => {
-  // TODO: Replace with current session's user ID
-  const tempUserId = '1136348d-3ec7-4d12-95f2-234748b26213'
-  const [wills, setWills] = useState([])
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await getWills(tempUserId)
-        if (response.data) {
-          setWills(response.data)
-        } else {
-          console.error('No data found in the response.')
-        }
-      } catch (error) {
-        console.error('Error fetching wills:', error)
-      }
-    }
-
-    fetchData()
-  }, [])
-
-  console.log(wills)
-
+const Wills = ({data}) => {
   return (
     <>
       <div className="container flex items-center justify-between pb-8">
@@ -50,8 +29,8 @@ const Wills = () => {
         </Button>
       </div>
       <div className="container flex flex-col space-y-4">
-        {wills.length > 0 ? (
-          wills.map((will) => <WillCard data={will} />)
+        {data.data.length > 0 ? (
+          data.data.map((data) => <WillCard key={data.id} will={data} />)
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>
         )}

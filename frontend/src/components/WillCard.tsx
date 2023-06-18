@@ -20,28 +20,27 @@ import { Separator } from './ui/separator'
 
 type CardProps = React.ComponentProps<typeof Card>
 
-export function WillCard({ className, ...props }: CardProps) {
-  const { title, deployedAtBlock, isValidated, id } = props.data
+export function WillCard({ className, will }: CardProps) {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link href={`wills/edit/${id}`}>
+          <Link href={`wills/edit/${will.id}`}>
             <Card className="dark">
               <CardHeader className="grid grid-cols-2">
                 <div className="space-y-2">
-                  <CardTitle className="text-2xl">{title}</CardTitle>
+                  <CardTitle className="text-2xl">{will.title}</CardTitle>
                   <CardDescription className="text-foreground">
                     Will contract deployed to
-                    {deployedAtBlock !== null ? (
-                      <span className="font-semibold"> {deployedAtBlock}</span>
+                    {will.deployedAtBlock !== null ? (
+                      <span className="font-semibold"> {will.deployedAtBlock}</span>
                     ) : (
                       <span className="font-semibold"> N/A</span>
                     )}
                   </CardDescription>
                 </div>
                 <div className="flex items-start justify-end">
-                  {isValidated ? (
+                  {will.isValidated ? (
                     <Badge variant={'success'}>Active</Badge>
                   ) : (
                     <Badge className="" variant={'destructive'}>
