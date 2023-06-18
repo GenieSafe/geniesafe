@@ -43,8 +43,8 @@ const Safeguard = ({ data }: any) => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex gap-4">
-                    {data.data[0].Verifiers.map((verifier: any) => (
-                      <Card className="bg-primary">
+                    {data.data[0].Verifiers.map((verifier: any, index) => (
+                      <Card key={index} className="bg-primary">
                         <CardContent className="grid pt-6">
                           <p className="text-secondary">
                             {verifier.User.firstName +
