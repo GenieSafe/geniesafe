@@ -6,6 +6,7 @@ import { Label } from '../../components/ui/label'
 import { ChangeEvent, useState } from 'react'
 import { Card, CardContent } from '../../components/ui/card'
 import { Trash2 } from 'lucide-react'
+import router from 'next/router'
 
 interface Verifier {
   verifierUserId: string
@@ -19,6 +20,7 @@ interface Config {
 
 const Assign = () => {
   const [verifiersArr, setVerifiersArr] = useState<Verifier[]>([])
+  const [verifiersNameArr, setVerifiersNameArr] = useState<string[]>([])
   const [verifierInputVal, setVerifierInputVal] = useState('')
   const [pkInputVal, setPkInputVal] = useState('')
 
@@ -32,20 +34,44 @@ const Assign = () => {
     setPkInputVal(e.target.value)
   }
 
-  const handleAddVerifier = () => {
+  const handleAddVerifier = async () => {
+    
     if (verifierInputVal.trim() !== '') {
-      const newObj: Verifier = {
-        // name: 'test',
-        // walletAddress: verifierInputVal,
-        verifierUserId: verifierInputVal,
-      }
-      setVerifiersArr([...verifiersArr, newObj])
+      try {
+        const response = await fetch(
+          'http://localhost:3000/api/user?walletAddress=' + verifierInputVal,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )
 
-      if (verifiersArr.length >= 2) {
-        setVerifierInputVal('')
-        setSubmitButtonDisabled(false)
-      } else {
-        setVerifierInputVal('')
+        if (response.ok) {
+          console.log('user fetch success')
+          const data = await response.json()
+          console.log(data)
+          const newObj: Verifier = {
+            verifierUserId: data.data.id,
+          }
+          setVerifiersArr([...verifiersArr, newObj])
+          setVerifiersNameArr([...verifiersNameArr, data.data.firstName+' '+data.data.lastName])
+    
+          if (verifiersArr.length >= 2) {
+            setVerifierInputVal('')
+            setSubmitButtonDisabled(false)
+          } else {
+            setVerifierInputVal('')
+          }
+        } else {
+          // API call failed
+          // Handle the error
+          console.log('user fetch fail')
+        }
+      } catch (error) {
+        // Handle any network or other errors
+        console.log(error)
       }
     }
   }
@@ -55,9 +81,12 @@ const Assign = () => {
     index: number
   ) => {
     e.preventDefault()
-    const newArr = [...verifiersArr]
-    newArr.splice(index, 1)
-    setVerifiersArr(newArr)
+    const upVerifiersArr = [...verifiersArr]
+    const upVerifiersNameArr = [...verifiersNameArr]
+    upVerifiersArr.splice(index, 1)
+    upVerifiersNameArr.splice(index, 1)
+    setVerifiersArr(upVerifiersArr)
+    setVerifiersNameArr(upVerifiersNameArr)
     if (verifiersArr.length <= 3) {
       setSubmitButtonDisabled(true)
     }
@@ -65,7 +94,7 @@ const Assign = () => {
 
   const calculateProgress = () => {
     return Math.floor((verifiersArr.length / 3) * 100)
-  }
+  }  
 
   const handleSubmit = async () => {
     const config: Config = {
@@ -73,9 +102,6 @@ const Assign = () => {
       privateKey: pkInputVal,
       verifiers: verifiersArr,
     }
-
-    console.log(config)
-    console.log(JSON.stringify(config))
 
     try {
       const response = await fetch('http://localhost:3000/api/entrust', {
@@ -89,7 +115,8 @@ const Assign = () => {
       if (response.ok) {
         // API call was successful
         // Do something with the response
-        console.log('success')
+        console.log('POST success')
+        router.push('/safeguard')
       } else {
         // API call failed
         // Handle the error
@@ -144,12 +171,12 @@ const Assign = () => {
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            {verifiersArr.map((value, index) => (
-              <Card className="dark">
+            {verifiersNameArr.map((value, index) => (
+              <Card className="dark" key={index}>
                 <CardContent className="pt-6">
                   <div className="flex flex-row items-center justify-between">
                     {/* <p>{value.walletAddress}</p> */}
-                    <p>{value.verifierUserId}</p>
+                    <p>{value}</p>
                     <Button
                       size={'sm'}
                       variant={'destructive'}
