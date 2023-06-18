@@ -15,9 +15,30 @@ const getConfig: NextApiHandler = async (req, res) => {
 
   if (ownerId) {
     try {
-      const config = await prisma.walletRecoveryConfig.findFirst({
+      const config = await prisma.walletRecoveryConfig.findMany({
         where: {
           ownerId: ownerId as string,
+        },
+        select: {
+          id: true,
+          ownerId: true,
+          createdAt: true,
+          updatedAt: true,
+          isActive: true,
+          isVerified: true,
+          Verifiers: {
+            select: {
+              verifierUserId: true,
+              isVerified: true,
+              verifiedAt: true,
+              User: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
         },
       })
       if (!config)
