@@ -1,12 +1,10 @@
 export interface Beneficiary {
   name: string
-  beneficiaryUserId: string
   walletAddress: string
   percentage: number
 }
 export interface Validator {
   name: string
-  validatorUserId: string
   walletAddress: string
 }
 

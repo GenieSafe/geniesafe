@@ -53,7 +53,10 @@ const verifierSchema = Yup.object().shape({
   walletRecoveryConfigId: Yup.number().required(
     'walletRecoveryConfigId is required'
   ),
-  userId: Yup.number().required('userId is required'),
+  // walletAddress: Yup.string()
+  //   .required('walletAddress is required')
+  //   .matches(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
+  verifierUserId: Yup.number().required('verifierUserId is required'),
 })
 
 const deleteVerifier: NextApiHandler = async (req, res) => {

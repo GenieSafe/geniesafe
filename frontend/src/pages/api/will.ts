@@ -73,9 +73,6 @@ const getWill: NextApiHandler = async (req, res) => {
  */
 const willSchema = Yup.object().shape({
   ownerUserId: Yup.string().required('Owner user ID is required!'),
-  // identityNumber: Yup.string()
-  //   .required('Owner identity number is required!')
-  //   .matches(/^(\d{6}-\d{2}-\d{4})$/, 'Invalid identity number format!'),
   title: Yup.string().required('Title is required!'),
   walletAddress: Yup.string()
     .required('Owner wallet address is required!')
@@ -83,9 +80,6 @@ const willSchema = Yup.object().shape({
   beneficiaries: Yup.array().of(
     Yup.object().shape({
       name: Yup.string().required('Beneficiary name is required!'),
-      beneficiaryUserId: Yup.string().required(
-        'Beneficiary user ID is required!'
-      ),
       walletAddress: Yup.string()
         .required('Beneficiary wallet address is required!')
         .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
@@ -98,7 +92,6 @@ const willSchema = Yup.object().shape({
   validators: Yup.array().of(
     Yup.object().shape({
       name: Yup.string().required('Validator name is required!'),
-      validatorUserId: Yup.string().required('Validator user ID is required!'),
       walletAddress: Yup.string()
         .required('Owner wallet address is required!')
         .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
@@ -120,7 +113,6 @@ const createWill: NextApiHandler = async (req, res) => {
     req.body
 
   try {
-
     // Create will
     const newWill = await prisma.will.create({
       data: {
@@ -136,6 +128,18 @@ const createWill: NextApiHandler = async (req, res) => {
     // Create beneficiaries
     const newBeneficiaries = await Promise.all(
       beneficiaries.map(async (beneficiary: Beneficiary) => {
+        const { name, walletAddress, percentage } = beneficiary
+
+        // Retrieve beneficiary user ID by wallet address
+        const beneficiaryUserId = await prisma.user.findUnique({
+          where: {
+            walletAddress: walletAddress as unknown as string,
+          },
+          select: {
+            id: true,
+          },
+        })
+
         const newBeneficiary = await prisma.beneficiary.create({
           data: {
             name: beneficiary.name,
@@ -147,7 +151,7 @@ const createWill: NextApiHandler = async (req, res) => {
             },
             User: {
               connect: {
-                id: beneficiary.beneficiaryUserId as unknown as string,
+                id: beneficiaryUserId?.id as unknown as string,
               },
             },
           },
@@ -159,6 +163,17 @@ const createWill: NextApiHandler = async (req, res) => {
     // Create validators
     const newValidators = await Promise.all(
       validators.map(async (validator: Validator) => {
+        const { name, walletAddress } = validator
+
+        const validatorUserId = await prisma.user.findUnique({
+          where: {
+            walletAddress: walletAddress as unknown as string,
+          },
+          select: {
+            id: true,
+          },
+        })
+
         const newValidator = await prisma.validator.create({
           data: {
             name: validator.name,
@@ -169,7 +184,7 @@ const createWill: NextApiHandler = async (req, res) => {
             },
             User: {
               connect: {
-                id: validator.validatorUserId as unknown as string,
+                id: validatorUserId?.id as unknown as string,
               },
             },
           },
