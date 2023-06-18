@@ -217,11 +217,49 @@ export default function EditWill() {
     console.log(will)
   }
 
+  async function deleteWill(willId: number) {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/will?willId=${willId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      if (response.ok) {
+        // Request was successful
+        // Handle the response here
+        console.log('success')
+        router.push('/wills')
+      } else {
+        // Request failed
+        // Handle the error here
+        console.log('fail')
+      }
+    } catch (error) {
+      // An error occurred during the request
+      // Handle the error here
+      console.log('error delete')
+    }
+  }
+
+  function onDelete(
+    event: MouseEvent<HTMLButtonElement, MouseEvent>
+  ): Promise<void> {
+    event.preventDefault()
+    const deletedWill = deleteWill(parseInt(router.query.id as string))
+    console.log(`deletedWill: ${deletedWill}`)
+    console.log(router.query.id)
+  }
+
   return (
     <>
       <div className="container flex items-center justify-between pb-8">
         <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
-          Edit will
+          Edit Will
         </h1>
       </div>
       <div className="container grid gap-4">
@@ -357,7 +395,15 @@ export default function EditWill() {
                 ))}
               </div>
             </div>
-            <div className="grid justify-end">
+            <div className="flex gap-[1rem] justify-end">
+              <Button
+                size={'lg'}
+                variant="destructive"
+                type="submit"
+                onClick={onDelete}
+              >
+                Delete
+              </Button>
               <Button size={'lg'} type="submit" onClick={onSubmit}>
                 Submit
               </Button>
