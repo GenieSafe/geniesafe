@@ -7,6 +7,7 @@ import { ChangeEvent, useState } from 'react'
 import { Card, CardContent } from '../../components/ui/card'
 import { Trash2 } from 'lucide-react'
 import router from 'next/router'
+import { useToast } from '../../components/ui/use-toast'
 
 interface Verifier {
   verifierUserId: string
@@ -25,7 +26,6 @@ const Assign = () => {
   const [pkInputVal, setPkInputVal] = useState('')
 
   const [submitButtonDisabled, setSubmitButtonDisabled] = useState(true)
-
   const handleVerifierInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVerifierInputVal(e.target.value)
   }
@@ -35,7 +35,6 @@ const Assign = () => {
   }
 
   const handleAddVerifier = async () => {
-    
     if (verifierInputVal.trim() !== '') {
       try {
         const response = await fetch(
@@ -56,8 +55,11 @@ const Assign = () => {
             verifierUserId: data.data.id,
           }
           setVerifiersArr([...verifiersArr, newObj])
-          setVerifiersNameArr([...verifiersNameArr, data.data.firstName+' '+data.data.lastName])
-    
+          setVerifiersNameArr([
+            ...verifiersNameArr,
+            data.data.firstName + ' ' + data.data.lastName,
+          ])
+
           if (verifiersArr.length >= 2) {
             setVerifierInputVal('')
             setSubmitButtonDisabled(false)
@@ -94,7 +96,7 @@ const Assign = () => {
 
   const calculateProgress = () => {
     return Math.floor((verifiersArr.length / 3) * 100)
-  }  
+  }
 
   const handleSubmit = async () => {
     const config: Config = {
@@ -142,8 +144,13 @@ const Assign = () => {
         </div>
         <div className="grid items-center w-full gap-10 pt-8">
           <div className="grid w-full  items-center gap-1.5">
-            <Label >Private Key</Label>
-            <Input type="password" id="privateKey" placeholder="" onChange={handlePkInputChange}/>
+            <Label>Private Key</Label>
+            <Input
+              type="password"
+              id="privateKey"
+              placeholder=""
+              onChange={handlePkInputChange}
+            />
           </div>
           <div className="grid gap-1.5">
             <Progress value={calculateProgress()} />
@@ -152,7 +159,7 @@ const Assign = () => {
             </Label>
           </div>
           <div className="grid w-full items-center gap-1.5">
-            <Label >Verifier's Wallet Address</Label>
+            <Label>Verifier's Wallet Address</Label>
             <div className="flex items-center w-full space-x-4">
               <Input
                 type="text"
@@ -190,7 +197,11 @@ const Assign = () => {
             ))}
           </div>
           <div className="flex justify-end">
-            <Button type="submit" disabled={submitButtonDisabled} onClick={handleSubmit}>
+            <Button
+              type="submit"
+              disabled={submitButtonDisabled}
+              onClick={handleSubmit}
+            >
               Confirm verifiers
             </Button>
           </div>
