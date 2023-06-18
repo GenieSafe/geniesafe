@@ -6,6 +6,7 @@ import { apiHandler } from '../../utils/api'
 import prisma from '../../utils/prisma'
 import { validateRequest } from '../../utils/yup'
 import { Beneficiary, Validator, Will } from '@prisma/client'
+import { PrismaClientInitializationError } from '@prisma/client/runtime'
 
 /**
  * Handler for retrieving a will.
@@ -119,6 +120,7 @@ const createWill: NextApiHandler = async (req, res) => {
     req.body
 
   try {
+
     // Create will
     const newWill = await prisma.will.create({
       data: {
