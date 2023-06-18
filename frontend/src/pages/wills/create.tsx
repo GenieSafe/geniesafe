@@ -1,5 +1,3 @@
-'use client'
-
 import React, { ChangeEvent, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -19,8 +17,8 @@ import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { Trash2 } from 'lucide-react'
 import { Card, CardContent } from '../../components/ui/card'
-import useConfirmationPrompt from '../../utils/useConfirmationPrompt'
 import { useAccount } from 'wagmi'
+import { Beneficiary, Validator, Will } from '../../../types/interfaces'
 
 const formSchema = z.object({
   willTitle: z
@@ -39,23 +37,7 @@ const formSchema = z.object({
     }),
 })
 
-interface Beneficiary {
-  name: string
-  walletAddress: string
-  percentage: number
-}
-interface Validator {
-  name: string
-  walletAddress: string
-}
 
-interface Will {
-  willTitle: string
-  identityNumber: string
-  walletAddress: string
-  beneficiaries: Beneficiary[]
-  validators: Validator[]
-}
 
 const CreateWill = () => {
   // 1. Define your form.
@@ -203,7 +185,7 @@ const CreateWill = () => {
                 </FormItem>
               )}
             />
-            {/* <FormField
+            <FormField
               control={form.control}
               name="identityNumber"
               render={({ field }) => (
@@ -215,8 +197,8 @@ const CreateWill = () => {
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
-            <FormField
+            />
+            {/* <FormField
               control={form.control}
               name="walletAddress"
               render={({ field }) => (
@@ -232,7 +214,7 @@ const CreateWill = () => {
                   </FormControl>
                   <FormMessage />
                 </FormItem>
-              )}
+              )} */}
             />
             <div className="grid gap-4">
               <h2 className="text-2xl font-semibold tracking-tight transition-colorsscroll-m-20">
