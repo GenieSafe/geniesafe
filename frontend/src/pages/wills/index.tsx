@@ -15,10 +15,10 @@ export async function getStaticProps() {
   } = await supabase.auth.getUser()
 
   // const currentUserId = user?.id
-  const currentUserId = '994474fa-d558-4cd4-90e8-d72ae10b884f' // Gus
+  const currentUserId = '91944f58-def7-4ceb-bdab-7eb9e736176a' // Saul
 
   const res = await fetch(
-    `http://localhost:3000/api/will?ownerId=${currentUserId}`
+    `http://localhost:3000/api/will?ownerUserId=${currentUserId}`
   )
   const data = await res.json()
   return { props: { data } }
@@ -42,7 +42,7 @@ const Wills = ({ data }) => {
       </div>
       <div className="container flex flex-col space-y-4">
         {data.data ? (
-          data.data.map((data) => <WillCard key={data.id} will={data} />)
+          data.data.Wills.map((will) => <WillCard key={will.id} will={will} />)
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>
         )}

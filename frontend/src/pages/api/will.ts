@@ -17,15 +17,62 @@ import { PrismaClientInitializationError } from '@prisma/client/runtime'
  * @returns Promise<void>
  */
 const getWill: NextApiHandler = async (req, res) => {
-  const { ownerId: ownerUserId } = req.query
+  const { ownerUserId } = req.query
   const { willId } = req.query
 
+  // If ownerId is provided, return all wills with that ownerId
+  if (ownerUserId) {
+    try {
+      const wills = await prisma.user.findUnique({
+        where: { id: ownerUserId as string },
+        include: {
+          Wills: {
+            include: {
+              Beneficiaries: {
+                include: {
+                  User: true,
+                },
+              },
+              Validators: {
+                include: {
+                  User: true,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (!wills)
+        throw new createHttpError.NotFound(
+          `User (ID: ${ownerUserId}) does not exist!`
+        )
+      res.status(200).json({ data: wills })
+    } catch (err) {
+      console.log(err)
+      throw new createHttpError.NotFound(
+        `Error retrieving wills with ownerId: ${ownerUserId}!`
+      )
+    }
+  }
+
+  // TODO: Make implementation match the one above
   // If willId is provided, return will with that willId
   if (willId) {
     try {
       const will = await prisma.will.findUnique({
-        where: {
-          id: parseInt(willId as string),
+        where: { id: parseInt(willId as string) },
+        include: {
+          Beneficiaries: {
+            include: {
+              User: true,
+            },
+          },
+          Validators: {
+            include: {
+              User: true,
+            },
+          },
         },
       })
       if (!will)
@@ -40,35 +87,6 @@ const getWill: NextApiHandler = async (req, res) => {
       )
     }
   }
-
-  // If ownerId is provided, return all wills with that ownerId
-  if (ownerUserId) {
-    try {
-      const wills = await prisma.will.findMany({
-        where: {
-          ownerUserId: ownerUserId.toString(),
-        },
-        orderBy: {
-          updatedAt: 'desc',
-        },
-      })
-      if (!wills)
-        throw new createHttpError.NotFound(
-          `User (ID: ${ownerUserId}) does not exist!`
-        )
-      res.status(200).json({ data: wills })
-    } catch (err) {
-      console.log(err)
-      throw new createHttpError.NotFound(
-        `Error retrieving wills with ownerId: ${ownerUserId}!`
-      )
-    }
-  } else {
-    // Else if ownerId is not provided or doesn't exist, throw an error
-    throw new createHttpError.NotFound(
-      `Query parameter (ownerId or willId) not provided!`
-    )
-  }
 }
 
 /**
@@ -82,7 +100,6 @@ const willSchema = Yup.object().shape({
     .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
   beneficiaries: Yup.array().of(
     Yup.object().shape({
-      name: Yup.string().required('Beneficiary name is required!'),
       walletAddress: Yup.string()
         .required('Beneficiary wallet address is required!')
         .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
@@ -94,7 +111,6 @@ const willSchema = Yup.object().shape({
   ),
   validators: Yup.array().of(
     Yup.object().shape({
-      name: Yup.string().required('Validator name is required!'),
       walletAddress: Yup.string()
         .required('Owner wallet address is required!')
         .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),

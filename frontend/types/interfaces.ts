@@ -23,5 +23,5 @@ export interface Verifier {
 export interface Config {
   ownerId: string
   privateKey: string
-  verifiers: Verifier[]
+  verifiers: object[]
 }

@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router'
 import { Config, Verifier } from '../../../../types/interfaces'
 import { Label } from '../../../components/ui/label'
 import { Progress } from '../../../components/ui/progress'
@@ -7,24 +6,24 @@ import { useState, ChangeEvent, useEffect } from 'react'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Input } from '../../../components/ui/input'
+import router from 'next/router'
 
 // export async function getStaticPaths() {
 //   return {
 //     paths: [
 //       // String variant:
-//       '/safeguard/edit/1',
+//       '/safeguard/edit/91944f58-def7-4ceb-bdab-7eb9e736176a',
 //       // Object variant:
-//       { params: { id: '2' } },
+//       { params: { id: '91944f58-def7-4ceb-bdab-7eb9e736176a' } },
 //     ],
 //     fallback: true,
 //   }
 // }
 
-// export async function getStaticProps(context) {
-//   const { params } = context.params.id
+// export async function getStaticProps({params}) {
 //   try {
 //     // Fetch data from an API or any other data source
-//     const response = await fetch('https://api.example.com/data'+params)
+//     const response = await fetch(`https://api/entrust?ownerId=${params.id}`)
 //     const data = await response.json()
 
 //     return {
@@ -32,6 +31,7 @@ import { Input } from '../../../components/ui/input'
 //         data,
 //       },
 //     }
+
 //   } catch (error) {
 //     console.error('Failed to fetch data:', error)
 //     return {
@@ -42,29 +42,42 @@ import { Input } from '../../../components/ui/input'
 //   }
 // }
 
-export default function EditConfig() {
-  const router = useRouter()
-  // const [data, setData] = useState()
+export async function getServerSideProps(context) {
+  try {
+    const res = await fetch(
+      `http://localhost:3000/api/entrust?ownerId=${context.query.id}`
+    )
+    const data = await res.json()
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     // Fetch data from an API or any other data source
-  //     const response = await fetch(
-  //       `http://localhost:3000/api/entrust?ownerId=${router.query.id}`
-  //     )
-  //     const result = await response.json()
-  //     setData(result)
-  //   }
+    return { props: { data } }
+  } catch (err) {
+    console.error('Failed to fetch data:', err)
+    return {
+      props: {
+        data: context.query.id,
+      },
+    }
+  }
+}
 
-  //   fetchData()
-  // }, [])
+export default function EditConfig({ data }) {
 
   const [verifiersArr, setVerifiersArr] = useState<Verifier[]>([])
   const [verifiersNameArr, setVerifiersNameArr] = useState<string[]>([])
   const [verifierInputVal, setVerifierInputVal] = useState('')
   const [pkInputVal, setPkInputVal] = useState('')
 
-  // setVerifiersArr([...verifiersArr, data.data[0].Verifiers])
+  useEffect(() => {
+    data.data[0].Verifiers.map((verifier) => {
+      setVerifiersNameArr((prevVerifiersNameArr) => [
+        ...prevVerifiersNameArr,
+        verifier.User.firstName + ' ' + verifier.User.lastName,
+      ]);
+    });
+
+    setVerifiersArr(data.data[0].Verifiers)
+    setPkInputVal(data.data[0].privateKey)
+  }, [])
 
   const [submitButtonDisabled, setSubmitButtonDisabled] = useState(true)
   const handleVerifierInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -138,20 +151,25 @@ export default function EditConfig() {
   }
 
   const handleSubmit = async () => {
+    const verifierUserIds = verifiersArr.map(({ verifierUserId }) => ({ verifierUserId }));
+
     const config: Config = {
       ownerId: '91944f58-def7-4ceb-bdab-7eb9e736176a',
       privateKey: pkInputVal,
-      verifiers: verifiersArr,
+      verifiers: verifierUserIds,
     }
-
+    
     try {
-      const response = await fetch('http://localhost:3000/api/entrust', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(config),
-      })
+      const response = await fetch(
+        `http://localhost:3000//api/entrust?walletRecoveryConfigId=${data.data[0].id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(config),
+        }
+      )
 
       if (response.ok) {
         // API call was successful
@@ -170,16 +188,14 @@ export default function EditConfig() {
 
   function handleDelete(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault()
-    const deletedConfig = deleteConfig(router.query.id)
-    console.log(deletedConfig)
-    console.log(router.query.id)
+    const deletedConfig = deleteConfig(data.data[0].ownerId)
   }
 
-  const deleteConfig = async (walletRecoveryConfigId) => {
+  const deleteConfig = async (ownerUserId: string) => {
     try {
       const response = await fetch(
-        'http://localhost:3000/api/entrust?walletRecoveryConfigId=' +
-          walletRecoveryConfigId,
+        'http://localhost:3000/api/entrust?ownerUserId=' +
+          ownerUserId,
         {
           method: 'DELETE',
           headers: {
@@ -207,6 +223,7 @@ export default function EditConfig() {
     <>
       <div className="container pb-8">
         <div className="flex flex-col gap-4">
+          <p>Editing configuration</p>
           <h1 className="text-4xl font-bold tracking-tight scroll-m-20 lg:text-5xl">
             Safeguard your wallet
           </h1>
@@ -223,6 +240,7 @@ export default function EditConfig() {
               id="privateKey"
               placeholder=""
               onChange={handlePkInputChange}
+              value={pkInputVal}
             />
           </div>
           <div className="grid gap-1.5">

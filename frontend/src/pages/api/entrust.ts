@@ -22,6 +22,7 @@ const getConfig: NextApiHandler = async (req, res) => {
         select: {
           id: true,
           ownerId: true,
+          privateKey: true,
           createdAt: true,
           updatedAt: true,
           isActive: true,
@@ -113,22 +114,22 @@ const createConfig: NextApiHandler = async (req, res) => {
 }
 
 const deleteConfig: NextApiHandler = async (req, res) => {
-  const { walletRecoveryConfigId } = req.query
+  const { ownerUserId } = req.query
 
   try {
     const deletedConfig = await prisma.walletRecoveryConfig.delete({
       where: {
-        id: parseInt(walletRecoveryConfigId as string),
+        ownerId: ownerUserId,
       },
     })
     res.status(200).json({
-      message: `Successfully deleted config with ID: ${walletRecoveryConfigId}`,
+      message: `Successfully deleted config with ID: ${ownerUserId}`,
       data: deletedConfig,
     })
   } catch (err) {
     console.log(err)
     throw new createHttpError.NotFound(
-      `Error deleting config with ID: ${walletRecoveryConfigId}! Check if config exists.`
+      `Error deleting config with ID: ${ownerUserId}! Check if config exists.`
     )
   }
 }
@@ -145,11 +146,13 @@ const updateConfig: NextApiHandler = async (req, res) => {
       data: {
         ...rest,
         Verifiers: {
-          update: {
-            userId: verifiers[0].userId,
-          },
-        },
-      },
+          // delete before creating new verifiers
+          deleteMany: {},
+          createMany: {
+            data: verifiers,
+          }
+        }
+      }
     })
     res.status(200).json({
       message: `Successfully updated config with ID: ${walletRecoveryConfigId}`,

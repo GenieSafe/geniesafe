@@ -21,13 +21,22 @@ import { z } from 'zod'
 import { Will, Beneficiary } from '@prisma/client'
 import { useAccount } from 'wagmi'
 
-function getWill(userId: string, willId: number) {
-  return fetch(
-    `http://localhost:3000/api/will?ownerId=${userId}&willId=${willId}`,
-    {
-      method: 'GET',
+export async function getServerSideProps(context) {
+  try {
+    const res = await fetch(
+      `http://localhost:3000/api/will?willId=${context.query.id}`
+    )
+    const data = await res.json()
+
+    return { props: { data } }
+  } catch (err) {
+    console.error('Failed to fetch data:', err)
+    return {
+      props: {
+        data: context.query.id,
+      },
     }
-  ).then((res) => res.json())
+  }
 }
 
 const formSchema = z.object({
@@ -47,10 +56,8 @@ const formSchema = z.object({
     }),
 })
 
-export default function EditWill() {
+export default function EditWill({ data }) {
   const router = useRouter()
-  const tempUserId = '1136348d-3ec7-4d12-95f2-234748b26213'
-  const [will, setWill] = useState()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,25 +67,8 @@ export default function EditWill() {
     },
   })
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await getWill(tempUserId, router.query.id)
-        if (response.data) {
-          setWill(response.data)
-        } else {
-          console.error('No data found in the response.')
-        }
-      } catch (error) {
-        console.error('Error fetching wills:', error)
-      }
-    }
-
-    fetchData()
-  }, [])
-
+  // console.log(data)
   const updateData = async (data: Will) => {
-    console.log(data)
     try {
       const response = await fetch(
         `http://localhost:3000/api/will?willId=${router.query.id}`,
@@ -109,12 +99,29 @@ export default function EditWill() {
     }
   }
 
+  const [title, setTitle] = useState('')
   const [beneficiariesArr, setBeneficiariesArr] = useState<Beneficiary[]>([])
-  const [benWalletAddressFieldVal, setBenWalletAddressFieldVal] = useState('')
+  const [validatorsArr, setValidatorsArr] = useState<Validator[]>([])
+  const [beneficiaryWalletAddressFieldVal, setBenWalletAddressFieldVal] = useState('')
   const [percentFieldVal, setPercentFieldVal] = useState('')
   const [totalPercent, setTotalPercent] = useState(0)
 
-  const handleBenWalletAddressFieldChange = (
+  useEffect(() => {
+    setTitle(data.data.title)
+    setBeneficiariesArr(data.data.Beneficiaries)
+    setValidatorsArr(data.data.Validators)
+  }, [])
+
+  // console.log(data)
+  // console.log(title)
+  // console.log(beneficiariesArr)
+  // console.log(validatorsArr)
+
+  const handleTitleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value)
+  }
+
+  const handleBeneficiaryWalletAddressFieldChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setBenWalletAddressFieldVal(e.target.value)
@@ -126,14 +133,13 @@ export default function EditWill() {
   const handleAddBeneficiary = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
 
-    if (benWalletAddressFieldVal !== '' && parseInt(percentFieldVal) !== 0) {
+    if (beneficiaryWalletAddressFieldVal !== '' && parseInt(percentFieldVal) !== 0) {
       if (totalPercent + parseInt(percentFieldVal) <= 100) {
-        const newObj: Beneficiary = {
-          name: 'test', //TODO: replace with name after fetch from API
-          walletAddress: benWalletAddressFieldVal,
+        const newBeneficiaryObj: Beneficiary = {
+          walletAddress: beneficiaryWalletAddressFieldVal,
           percentage: parseInt(percentFieldVal),
         }
-        setBeneficiariesArr([...beneficiariesArr, newObj])
+        setBeneficiariesArr([...beneficiariesArr, newBeneficiaryObj])
         setTotalPercent(totalPercent + parseInt(percentFieldVal))
       } else {
         alert('Total percentage cannot exceed 100%')
@@ -157,7 +163,6 @@ export default function EditWill() {
   }
 
   //adding validators
-  const [validatorsArr, setValidatorsArr] = useState<Validator[]>([])
   const [valWalletAddressFieldVal, setValWalletAddressFieldVal] = useState('')
 
   const handleValWalletAddressFieldChange = (
@@ -265,7 +270,7 @@ export default function EditWill() {
       <div className="container grid gap-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
+            {/* <FormField
               control={form.control}
               name="willTitle"
               render={({ field }) => (
@@ -277,25 +282,17 @@ export default function EditWill() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
-            {/* <FormField
-              control={form.control}
-              name="walletAddress"
-              render={({ field }) => (
-                  <FormItem>
-                  <FormLabel>Wallet Address</FormLabel>
-                  <FormControl>
-                  <Input
-                  placeholder={address}
-                  value={address}
-                  {...field}
-                  readOnly
-                  />
-                  </FormControl>
-                  <FormMessage />
-                  </FormItem>
-                  )} 
-                />*/}
+            /> */}
+            <div className="grid w-full  items-center gap-1.5">
+              <Label>Title</Label>
+              <Input
+                type="text"
+                id="title"
+                placeholder=""
+                onChange={handleTitleFieldChange}
+                value={title}
+              />
+            </div>
             <div className="grid gap-4">
               <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
                 Beneficiaries
@@ -307,8 +304,8 @@ export default function EditWill() {
                     type="text"
                     name="field1"
                     placeholder="0x12345..."
-                    value={benWalletAddressFieldVal}
-                    onChange={handleBenWalletAddressFieldChange}
+                    value={beneficiaryWalletAddressFieldVal}
+                    onChange={handleBeneficiaryWalletAddressFieldChange}
                   />
                 </div>
                 <div className="grid w-full items-center gap-1.5 col-span-5">
@@ -324,14 +321,37 @@ export default function EditWill() {
                 <Button onClick={handleAddBeneficiary}>Add</Button>
               </div>
               <div className="grid gap-4">
-                {beneficiariesArr.map((ben, index) => (
+                {beneficiariesArr.map((beneficiary, index) => (
                   <>
                     <Card className="dark" key={index}>
                       <CardContent className="flex items-center justify-between pt-6">
                         <div className="flex items-center gap-12">
-                          <p className="leading-7 ">{ben.name}</p>
-                          <p className="leading-7 ">{ben.walletAddress}</p>
-                          <p className="leading-7">{ben.percentage}%</p>
+                          {/* TODO: Refactor style into a CSS class */}
+                          <p
+                            className="leading-7 "
+                            style={{
+                              minWidth: '10rem',
+                              maxWidth: '10rem',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {beneficiary.User?.firstName}{' '}
+                            {beneficiary.User?.lastName}
+                          </p>
+                          <p
+                            className="leading-7 "
+                            style={{
+                              maxWidth: '10rem',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {beneficiary.User?.walletAddress}
+                          </p>
+                          <p className="leading-7">{beneficiary.percentage}%</p>
                         </div>
                         <Button
                           size={'sm'}
@@ -349,6 +369,7 @@ export default function EditWill() {
                 ))}
               </div>
             </div>
+
             <div className="grid gap-4">
               <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
                 Validators
@@ -372,17 +393,62 @@ export default function EditWill() {
                 </Button>
               </div>
               <div className="grid gap-4">
-                {validatorsArr.map((val, index) => (
+                {validatorsArr.map((validator, index) => (
+                  // <>
+                  //   <Card className="dark" key={index}>
+                  //     <CardContent className="flex items-center justify-between pt-6">
+                  //       <div className="flex items-center gap-12">
+                  //         <p className="leading-7 ">
+                  //           {validator.User?.walletAddress}
+                  //         </p>
+                  //       </div>
+                  //       <Button
+                  //         size={'sm'}
+                  //         variant={'destructive'}
+                  //         className="grid col-span-1"
+                  //         onClick={(event) =>
+                  //           handleDeleteValidator(event, index)
+                  //         }
+                  //       >
+                  //         <Trash2 className="w-4 h-4" />
+                  //       </Button>
+                  //     </CardContent>
+                  //   </Card>
+                  // </>
                   <>
                     <Card className="dark" key={index}>
                       <CardContent className="flex items-center justify-between pt-6">
                         <div className="flex items-center gap-12">
-                          <p className="leading-7 ">{val.walletAddress}</p>
+                          {/* TODO: Refactor style into a CSS class */}
+                          <p
+                            className="leading-7 "
+                            style={{
+                              minWidth: '10rem',
+                              maxWidth: '10rem',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {validator.User?.firstName}{' '}
+                            {validator.User?.lastName}
+                          </p>
+                          <p
+                            className="leading-7 "
+                            style={{
+                              maxWidth: '10rem',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {validator.User?.walletAddress}
+                          </p>
                         </div>
                         <Button
                           size={'sm'}
                           variant={'destructive'}
-                          className="grid col-span-1"
+                          className="col-span-1"
                           onClick={(event) =>
                             handleDeleteValidator(event, index)
                           }

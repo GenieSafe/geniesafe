@@ -8,9 +8,9 @@ import {
   CardContent,
 } from '../../components/ui/card'
 
+//TODO: replace with current session userId
 const tempId = '91944f58-def7-4ceb-bdab-7eb9e736176a'
 export async function getStaticProps() {
-  //TODO: replace with current session userId
   const res = await fetch(`http://localhost:3000/api/entrust?ownerId=${tempId}`)
   var data = await res.json()
   return { props: { data } }
@@ -38,7 +38,13 @@ const Safeguard = ({ data }: any) => {
                     <CardTitle className="flex justify-between text-2xl">
                       Verifiers
                       <Button size={'sm'} asChild>
-                        <Link href={`/safeguard/edit/${data.data[0].id}`}>
+                        <Link href={`/safeguard/edit/${data.data[0].ownerId}`}>
+                        {/* <Link
+                          href={{
+                            pathname: '/safeguard/edit/[id]',
+                            query: data.data[0].ownerId, // the data
+                          }}
+                        > */}
                           <Edit3 className="w-4 h-4" />
                         </Link>
                       </Button>
