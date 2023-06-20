@@ -38,7 +38,13 @@ const Safeguard = ({ data }: any) => {
                     <CardTitle className="flex justify-between text-2xl">
                       Verifiers
                       <Button size={'sm'} asChild>
-                        <Link href={`/safeguard/edit/${data.data[0].id}`}>
+                        <Link href={`/safeguard/edit/${data.data[0].ownerId}`}>
+                        {/* <Link
+                          href={{
+                            pathname: '/safeguard/edit/[id]',
+                            query: data.data[0].ownerId, // the data
+                          }}
+                        > */}
                           <Edit3 className="w-4 h-4" />
                         </Link>
                       </Button>
