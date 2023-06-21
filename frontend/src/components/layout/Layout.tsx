@@ -38,29 +38,6 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
           <header>
             <div className="container grid items-center justify-between grid-cols-3 py-4">
               <div className="flex items-center justify-start">
-                <Link className={buttonVariants({ variant: 'link' })} href="/">
-                  Dashboard
-                </Link>
-                <Link
-                  className={buttonVariants({ variant: 'link' })}
-                  href="/wills"
-                >
-                  Will
-                </Link>
-                {/* <Link className={buttonVariants({ variant: 'link' })} href="">
-                  Asset
-                </Link>
-                <Link className={buttonVariants({ variant: 'link' })} href="">
-                  Inheritance
-                </Link> */}
-                <Link
-                  className={buttonVariants({ variant: 'link' })}
-                  href="/safeguard"
-                >
-                  Safeguard
-                </Link>
-              </div>
-              <div className="flex items-center justify-center">
                 <ConnectButton.Custom>
                   {({
                     account,
@@ -155,6 +132,29 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
                     )
                   }}
                 </ConnectButton.Custom>
+              </div>
+              <div className="flex items-center justify-center">
+                <Link className={buttonVariants({ variant: 'link' })} href="/">
+                  Dashboard
+                </Link>
+                <Link
+                  className={buttonVariants({ variant: 'link' })}
+                  href="/wills"
+                >
+                  Will
+                </Link>
+                {/* <Link className={buttonVariants({ variant: 'link' })} href="">
+                  Asset
+                </Link>
+                <Link className={buttonVariants({ variant: 'link' })} href="">
+                  Inheritance
+                </Link> */}
+                <Link
+                  className={buttonVariants({ variant: 'link' })}
+                  href="/safeguard"
+                >
+                  Safeguard
+                </Link>
               </div>
               <div className="flex items-center justify-end space-x-2">
                 <small className="text-sm font-medium leading-none">
