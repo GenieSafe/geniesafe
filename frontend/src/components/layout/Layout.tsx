@@ -36,39 +36,8 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
         <>
           <Head customMeta={customMeta} />
           <header>
-            <div className="container flex items-center justify-between py-4">
-              <div className="flex items-center justify-between">
-                <Link className={buttonVariants({ variant: 'link' })} href="/">
-                  Dashboard
-                </Link>
-                <Link
-                  className={buttonVariants({ variant: 'link' })}
-                  href="/wills"
-                >
-                  Will
-                </Link>
-                {/* <Link className={buttonVariants({ variant: 'link' })} href="">
-                  Asset
-                </Link>
-                <Link className={buttonVariants({ variant: 'link' })} href="">
-                  Inheritance
-                </Link> */}
-                <Link
-                  className={buttonVariants({ variant: 'link' })}
-                  href="/safeguard"
-                >
-                  Safeguard
-                </Link>
-              </div>
-              <div className="flex items-center justify-between space-x-4">
-                <small className="text-sm font-medium leading-none">
-                  Hi, {session.user.email}!
-                </small>
-                <Button variant={'ghost'} onClick={handleSignOut}>
-                  Logout
-                  <LogOut className="w-4 h-4 ml-2" />
-                </Button>
-                {/* <ConnectButton /> */}
+            <div className="container grid items-center justify-between grid-cols-3 py-4">
+              <div className="flex items-center justify-start">
                 <ConnectButton.Custom>
                   {({
                     account,
@@ -163,6 +132,38 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
                     )
                   }}
                 </ConnectButton.Custom>
+              </div>
+              <div className="flex items-center justify-center">
+                <Link className={buttonVariants({ variant: 'link' })} href="/">
+                  Dashboard
+                </Link>
+                <Link
+                  className={buttonVariants({ variant: 'link' })}
+                  href="/wills"
+                >
+                  Will
+                </Link>
+                {/* <Link className={buttonVariants({ variant: 'link' })} href="">
+                  Asset
+                </Link>
+                <Link className={buttonVariants({ variant: 'link' })} href="">
+                  Inheritance
+                </Link> */}
+                <Link
+                  className={buttonVariants({ variant: 'link' })}
+                  href="/safeguard"
+                >
+                  Safeguard
+                </Link>
+              </div>
+              <div className="flex items-center justify-end space-x-2">
+                <small className="text-sm font-medium leading-none">
+                  Hi, {session.user.email}!
+                </small>
+                <Button variant={'link'} onClick={handleSignOut}>
+                  Logout
+                  <LogOut className="w-4 h-4 ml-2" />
+                </Button>
               </div>
             </div>
           </header>

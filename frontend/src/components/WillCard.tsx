@@ -33,7 +33,10 @@ export function WillCard({ className, will }: CardProps) {
                   <CardDescription className="text-foreground">
                     Will contract deployed to
                     {will.deployedAtBlock !== null ? (
-                      <span className="font-semibold"> {will.deployedAtBlock}</span>
+                      <span className="font-semibold">
+                        {' '}
+                        {will.deployedAtBlock}
+                      </span>
                     ) : (
                       <span className="font-semibold"> N/A</span>
                     )}
@@ -53,35 +56,97 @@ export function WillCard({ className, will }: CardProps) {
                 <div className="grid gap-4">
                   <p className="font-bold">Beneficiaries</p>
                   <div className="flex gap-4 overflow-x-auto">
-                    {/* TODO: Retrieve list of beneficiaries before rendering these cards */}
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="flex flex-row gap-8">
-                          <div className="flex flex-col">
-                            <p className="text-lg font-semibold">Ali bin Abu</p>
-                            <p>0x1234567890</p>
-                            <p>Brother</p>
-                          </div>
-                          <div className="flex flex-col items-center justify-center">
-                            <p className="text-2xl font-bold">50%</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    {will.Beneficiaries ? (
+                      will.Beneficiaries.map((beneficiary) => (
+                        <Card key={beneficiary.id}>
+                          <CardContent className="pt-6">
+                            <div className="flex flex-row gap-8">
+                              <div className="flex flex-col">
+                                {/* TODO: Refactor style into a CSS class */}
+                                <p
+                                  className="text-lg font-semibold"
+                                  style={{
+                                    maxWidth: '6rem',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  {`${beneficiary.User.firstName} ${beneficiary.User.lastName}`}
+                                </p>
+                                <p
+                                  style={{
+                                    maxWidth: '6rem',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  {beneficiary.User.walletAddress}
+                                </p>
+                                <p>{beneficiary.relation}</p>
+                              </div>
+                              <div className="flex flex-col items-center justify-center">
+                                <p className="text-lg font-bold">
+                                  {beneficiary.percentage}%
+                                </p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    ) : (
+                      <p className="">No beneficiaries found.</p>
+                    )}
                   </div>
                 </div>
+
                 <div className="flex flex-col gap-4">
                   <p className="font-bold">Validators</p>
-                  <div className="flex gap-4">
-                    {/* TODO: Retrieve list of validators before rendering these cards */}
-                    <Card className="">
-                      <CardContent className="pt-6">
-                        <div className="flex flex-row gap-8">
-                          <p>Ali bin Abu</p>
-                          <CheckCircle2 className="text-success"></CheckCircle2>
-                        </div>
-                      </CardContent>
-                    </Card>
+                  <div className="flex gap-4 overflow-x-auto">
+                    {will.Validators ? (
+                      will.Validators.map((validator) => (
+                        <Card key={validator.id}>
+                          <CardContent className="pt-6">
+                            <div className="flex flex-row gap-8">
+                              <div className="flex flex-col">
+                                {/* TODO: Refactor style into a CSS class */}
+                                <p
+                                  className="text-lg font-semibold"
+                                  style={{
+                                    maxWidth: '6rem',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  {`${validator.User.firstName} ${validator.User.lastName}`}
+                                </p>
+                                <p
+                                  style={{
+                                    maxWidth: '6rem',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  {validator.User.walletAddress}
+                                </p>
+                                <p>{validator.relation}</p>
+                              </div>
+
+                              {validator.isValidated ? (
+                                <CheckCircle2 className="text-success"></CheckCircle2>
+                              ) : (
+                                <CheckCircle2 className="text-destructive"></CheckCircle2>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    ) : (
+                      <p className="">No validators found.</p>
+                    )}
                   </div>
                 </div>
               </CardContent>
