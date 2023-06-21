@@ -8,20 +8,30 @@ import Link from 'next/link'
 import { useSession } from '@supabase/auth-helpers-react'
 import { supabase } from '../../utils/supabase'
 
+import { currentUserId } from '../../lib/global'
+
 export async function getStaticProps() {
   //TODO: replace with current session userId. How to retrieve?
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  // const currentUserId = user?.id
-  const currentUserId = '91944f58-def7-4ceb-bdab-7eb9e736176a' // Saul
+    // const currentUserId = user?.id
 
-  const res = await fetch(
-    `http://localhost:3000/api/will?ownerUserId=${currentUserId}`
-  )
-  const data = await res.json()
-  return { props: { data } }
+    const res = await fetch(
+      `http://localhost:3000/api/will?ownerUserId=${currentUserId}`
+    )
+    const data = await res.json()
+    return { props: { data } }
+  } catch (err) {
+    console.error('Failed to fetch data:', err)
+    return {
+      props: {
+        data: null,
+      },
+    }
+  }
 }
 
 const Wills = ({ data }) => {
@@ -41,7 +51,7 @@ const Wills = ({ data }) => {
         </Button>
       </div>
       <div className="container flex flex-col space-y-4">
-        {data.data ? (
+        {data.data.Wills.length ? (
           data.data.Wills.map((will) => <WillCard key={will.id} will={will} />)
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>

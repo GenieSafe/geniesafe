@@ -54,7 +54,7 @@ const getConfig: NextApiHandler = async (req, res) => {
       )
     }
   } else {
-    throw new createHttpError.NotFound(`No walletRecoveryConfigId provided!`)
+    throw new createHttpError.NotFound(`No ownerId provided!`)
   }
 }
 
@@ -150,9 +150,9 @@ const updateConfig: NextApiHandler = async (req, res) => {
           deleteMany: {},
           createMany: {
             data: verifiers,
-          }
-        }
-      }
+          },
+        },
+      },
     })
     res.status(200).json({
       message: `Successfully updated config with ID: ${walletRecoveryConfigId}`,

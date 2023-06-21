@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Validator } from 'react'
+import { ChangeEvent, useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import {
   Form,
@@ -11,15 +11,16 @@ import {
   FormMessage,
 } from '../../../components/ui/form'
 import { Label } from '@radix-ui/react-label'
-import { Trash2 } from 'lucide-react'
+import { Construction, Trash2 } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Input } from '../../../components/ui/input'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Will, Beneficiary } from '@prisma/client'
+import { Beneficiary, Validator, Will } from '../../../../types/interfaces'
 import { useAccount } from 'wagmi'
+import { use } from 'chai'
 
 export async function getServerSideProps(context) {
   try {
@@ -40,115 +41,91 @@ export async function getServerSideProps(context) {
 }
 
 const formSchema = z.object({
-  willTitle: z
-    .string({ required_error: 'Will title is required' })
-    .min(5)
-    .max(30),
-  // identityNumber: z
-  //   .string({ required_error: 'Identity Number is required' })
-  //   .regex(/^(\d{6}-\d{2}-\d{4})$/, {
-  //     message: `Identity number must contain '-'`,
-  //   }),
-  walletAddress: z
-    .string({ required_error: 'Wallet address is required' })
-    .regex(/^0x[a-fA-F0-9]{40}$/, {
-      message: 'Invalid Ethereum wallet address',
-    }),
+  title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
 })
 
 export default function EditWill({ data }) {
-  const router = useRouter()
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      willTitle: '',
-      walletAddress: '',
+      title: data.data.title,
     },
   })
 
-  // console.log(data)
-  const updateData = async (data: Will) => {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/api/will?willId=${router.query.id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            data,
-          }),
-        }
-      )
+  const router = useRouter()
 
-      if (response.ok) {
-        // Request was successful
-        // Handle the response here
-        console.log('success')
-      } else {
-        // Request failed
-        // Handle the error here
-        console.log('fail')
-      }
-    } catch (error) {
-      // An error occurred during the request
-      // Handle the error here
-      console.log('error update')
-    }
-  }
-
-  const [title, setTitle] = useState('')
   const [beneficiariesArr, setBeneficiariesArr] = useState<Beneficiary[]>([])
-  const [validatorsArr, setValidatorsArr] = useState<Validator[]>([])
-  const [beneficiaryWalletAddressFieldVal, setBenWalletAddressFieldVal] = useState('')
-  const [percentFieldVal, setPercentFieldVal] = useState('')
-  const [totalPercent, setTotalPercent] = useState(0)
+  const [beneficiariesCardArr, setBeneficiariesCardArr] = useState<
+    tempBeneficiary[]
+  >([])
+  const [beneficiaryInputVal, setBeneficiaryInputVal] = useState('')
+  const [percentageInputVal, setPercentageInputVal] = useState('')
+  const [totalPercentage, setTotalPercentage] = useState(0)
 
-  useEffect(() => {
-    setTitle(data.data.title)
-    setBeneficiariesArr(data.data.Beneficiaries)
-    setValidatorsArr(data.data.Validators)
-  }, [])
-
-  // console.log(data)
-  // console.log(title)
-  // console.log(beneficiariesArr)
-  // console.log(validatorsArr)
-
-  const handleTitleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value)
-  }
-
-  const handleBeneficiaryWalletAddressFieldChange = (
+  const handleBeneficiaryInputValChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setBenWalletAddressFieldVal(e.target.value)
+    setBeneficiaryInputVal(e.target.value)
   }
   const handlePercentFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPercentFieldVal(e.target.value)
+    setPercentageInputVal(e.target.value)
   }
 
-  const handleAddBeneficiary = (e: React.MouseEvent<HTMLButtonElement>) => {
+  interface tempBeneficiary {
+    beneficiaryName: string
+    percentage: number
+    walletAddress: string
+  }
+
+  const handleAddBeneficiary = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
     e.preventDefault()
 
-    if (beneficiaryWalletAddressFieldVal !== '' && parseInt(percentFieldVal) !== 0) {
-      if (totalPercent + parseInt(percentFieldVal) <= 100) {
-        const newBeneficiaryObj: Beneficiary = {
-          walletAddress: beneficiaryWalletAddressFieldVal,
-          percentage: parseInt(percentFieldVal),
+    if (beneficiaryInputVal !== '' && parseInt(percentageInputVal) !== 0) {
+      if (totalPercentage + parseInt(percentageInputVal) <= 100) {
+        try {
+          const response = await fetch(
+            'http://localhost:3000/api/user?walletAddress=' +
+              beneficiaryInputVal,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          )
+
+          if (response.ok) {
+            const data = await response.json()
+            const newObj: Beneficiary = {
+              beneficiaryUserId: data.data.id,
+              percentage: parseInt(percentageInputVal),
+            }
+
+            const tempBeneficiary: tempBeneficiary = {
+              beneficiaryName: data.data.firstName + ' ' + data.data.lastName,
+              percentage: parseInt(percentageInputVal),
+              walletAddress: data.data.walletAddress,
+            }
+
+            setBeneficiariesArr([...beneficiariesArr, newObj])
+            setTotalPercentage(totalPercentage + parseInt(percentageInputVal))
+            setBeneficiariesCardArr([...beneficiariesCardArr, tempBeneficiary])
+          } else {
+            console.log('user fetch fail')
+          }
+        } catch (error) {
+          console.log(error)
         }
-        setBeneficiariesArr([...beneficiariesArr, newBeneficiaryObj])
-        setTotalPercent(totalPercent + parseInt(percentFieldVal))
       } else {
         alert('Total percentage cannot exceed 100%')
       }
     }
 
     // Clear the input fields
-    setBenWalletAddressFieldVal('')
-    setPercentFieldVal('')
+    setBeneficiaryInputVal('')
+    setPercentageInputVal('')
   }
 
   const handleDeleteBeneficiary = (
@@ -157,37 +134,62 @@ export default function EditWill({ data }) {
   ) => {
     e.preventDefault()
     const newArr = [...beneficiariesArr]
-    setTotalPercent(totalPercent - newArr[index].percentage)
+    const newCardArr = [...beneficiariesCardArr]
+    setTotalPercentage(totalPercentage - newArr[index].percentage)
     newArr.splice(index, 1)
+    newCardArr.splice(index, 1)
     setBeneficiariesArr(newArr)
+    setBeneficiariesCardArr(newCardArr)
   }
 
-  //adding validators
-  const [valWalletAddressFieldVal, setValWalletAddressFieldVal] = useState('')
+  const [validatorsArr, setValidatorsArr] = useState<Validator[]>([])
+  const [validatorsNameArr, setValidatorsNameArr] = useState<string[]>([])
+  const [validatorInputVal, setValidatorInputVal] = useState('')
 
-  const handleValWalletAddressFieldChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setValWalletAddressFieldVal(e.target.value)
+  const handleValidatorInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setValidatorInputVal(e.target.value)
   }
 
-  const handleAddValidator = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddValidator = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
+    if (validatorInputVal.trim() !== '') {
+      try {
+        const response = await fetch(
+          'http://localhost:3000/api/user?walletAddress=' + validatorInputVal,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )
 
-    if (validatorsArr.length < 3) {
-      if (valWalletAddressFieldVal !== '') {
-        const newObj: Validator = {
-          name: 'test', //TODO: replace with name after fetch from API
-          walletAddress: valWalletAddressFieldVal,
+        if (response.ok) {
+          const data = await response.json()
+          const newObj: Validator = {
+            validatorUserId: data.data.id,
+          }
+          setValidatorsArr([...validatorsArr, newObj])
+          setValidatorsNameArr([
+            ...validatorsNameArr,
+            data.data.firstName + ' ' + data.data.lastName,
+          ])
+
+          if (validatorsNameArr.length >= 2) {
+            setValidatorInputVal('')
+          } else {
+            setValidatorInputVal('')
+          }
+        } else {
+          // API call failed
+          // Handle the error
+          console.log('user fetch fail')
         }
-        setValidatorsArr([...validatorsArr, newObj])
+      } catch (error) {
+        // Handle any network or other errors
+        console.log(error)
       }
-    } else {
-      alert('Maximum number of validators reached')
     }
-
-    // Clear the input fields
-    setValWalletAddressFieldVal('')
   }
 
   const handleDeleteValidator = (
@@ -195,34 +197,49 @@ export default function EditWill({ data }) {
     index: number
   ) => {
     e.preventDefault()
-    const newArr = [...validatorsArr]
-    newArr.splice(index, 1)
-    setValidatorsArr(newArr)
+    const upValidatorsArr = [...validatorsArr]
+    const upValidatorsNameArr = [...validatorsNameArr]
+    upValidatorsArr.splice(index, 1)
+    upValidatorsNameArr.splice(index, 1)
+    setValidatorsArr(upValidatorsArr)
+    setValidatorsNameArr(upValidatorsNameArr)
   }
 
-  const USER_GUS = '994474fa-d558-4cd4-90e8-d72ae10b884f'
+  const updateWill = async (will: Will, willId: number) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/will?willId=${willId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(will),
+        }
+      )
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    // console.log(values)
-
-    // Get the current account address
-    const { address } = useAccount()
-
-    const will: Will = {
-      ownerUserId: USER_GUS,
-      title: values.willTitle,
-      walletAddress: address as string,
-      beneficiaries: beneficiariesArr,
-      validators: validatorsArr,
+      if (response.ok) {
+        console.log('will updated')
+        router.push('/wills')
+      } else {
+        console.log('will update failed')
+      }
+    } catch (error) {
+      console.log(error)
     }
-
-    updateData(will)
-    console.log(will)
   }
 
-  async function deleteWill(willId: number) {
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    const will = {
+      title: values.title,
+      Beneficiaries: beneficiariesArr,
+      Validators: validatorsArr,
+    }
+    console.log(will)
+    updateWill(will, data.data.id)
+  }
+
+  const deleteWill = async (willId: number) => {
     try {
       const response = await fetch(
         `http://localhost:3000/api/will?willId=${willId}`,
@@ -235,30 +252,48 @@ export default function EditWill({ data }) {
       )
 
       if (response.ok) {
-        // Request was successful
-        // Handle the response here
-        console.log('success')
+        console.log('will deleted')
         router.push('/wills')
       } else {
-        // Request failed
-        // Handle the error here
-        console.log('fail')
+        console.log('will delete failed')
       }
     } catch (error) {
-      // An error occurred during the request
-      // Handle the error here
-      console.log('error delete')
+      console.log(error)
     }
   }
 
-  function onDelete(
-    event: MouseEvent<HTMLButtonElement, MouseEvent>
-  ): Promise<void> {
-    event.preventDefault()
-    const deletedWill = deleteWill(parseInt(router.query.id as string))
-    console.log(`deletedWill: ${deletedWill}`)
-    console.log(router.query.id)
+  const onDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    const deletedWill = await deleteWill(data.data.id)
   }
+
+  useEffect(() => {
+    data.data.Beneficiaries.map((beneficiary) => {
+      setBeneficiariesArr((prevBeneficiariesArr) => [
+        ...prevBeneficiariesArr,
+        beneficiary,
+      ])
+
+      const beneficiaryCardObj: tempBeneficiary = {
+        beneficiaryName:
+          beneficiary.User.firstName + ' ' + beneficiary.User.lastName,
+        percentage: beneficiary.percentage,
+        walletAddress: beneficiary.User.walletAddress,
+      }
+
+      setBeneficiariesCardArr((prevBeneficiariesCardArr) => [
+        ...prevBeneficiariesCardArr,
+        beneficiaryCardObj,
+      ])
+    })
+
+    data.data.Validators.map((validator) => {
+      setValidatorsNameArr((prevValidatorsNameArr) => [
+        ...prevValidatorsNameArr,
+        validator.User.firstName + ' ' + validator.User.lastName,
+      ])
+    })
+    setValidatorsArr(data.data.Validators)
+  }, [])
 
   return (
     <>
@@ -271,8 +306,21 @@ export default function EditWill({ data }) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             {/* <FormField
+            control={form.control}
+            name="willTitle"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Will Title</FormLabel>
+                <FormControl>
+                  <Input placeholder="My First Will" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          /> */}
+            <FormField
               control={form.control}
-              name="willTitle"
+              name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Will Title</FormLabel>
@@ -282,17 +330,7 @@ export default function EditWill({ data }) {
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
-            <div className="grid w-full  items-center gap-1.5">
-              <Label>Title</Label>
-              <Input
-                type="text"
-                id="title"
-                placeholder=""
-                onChange={handleTitleFieldChange}
-                value={title}
-              />
-            </div>
+            />
             <div className="grid gap-4">
               <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
                 Beneficiaries
@@ -304,8 +342,8 @@ export default function EditWill({ data }) {
                     type="text"
                     name="field1"
                     placeholder="0x12345..."
-                    value={beneficiaryWalletAddressFieldVal}
-                    onChange={handleBeneficiaryWalletAddressFieldChange}
+                    value={beneficiaryInputVal}
+                    onChange={handleBeneficiaryInputValChange}
                   />
                 </div>
                 <div className="grid w-full items-center gap-1.5 col-span-5">
@@ -314,58 +352,55 @@ export default function EditWill({ data }) {
                     type="number"
                     name="field2"
                     placeholder="100"
-                    value={percentFieldVal}
+                    value={percentageInputVal}
                     onChange={handlePercentFieldChange}
                   />
                 </div>
                 <Button onClick={handleAddBeneficiary}>Add</Button>
               </div>
               <div className="grid gap-4">
-                {beneficiariesArr.map((beneficiary, index) => (
-                  <>
-                    <Card className="dark" key={index}>
-                      <CardContent className="flex items-center justify-between pt-6">
-                        <div className="flex items-center gap-12">
-                          {/* TODO: Refactor style into a CSS class */}
-                          <p
-                            className="leading-7 "
-                            style={{
-                              minWidth: '10rem',
-                              maxWidth: '10rem',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {beneficiary.User?.firstName}{' '}
-                            {beneficiary.User?.lastName}
-                          </p>
-                          <p
-                            className="leading-7 "
-                            style={{
-                              maxWidth: '10rem',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {beneficiary.User?.walletAddress}
-                          </p>
-                          <p className="leading-7">{beneficiary.percentage}%</p>
-                        </div>
-                        <Button
-                          size={'sm'}
-                          variant={'destructive'}
-                          className="col-span-1"
-                          onClick={(event) =>
-                            handleDeleteBeneficiary(event, index)
-                          }
+                {beneficiariesCardArr.map((beneficiary, index) => (
+                  <Card className="dark" key={index}>
+                    <CardContent className="flex items-center justify-between pt-6">
+                      <div className="flex items-center gap-12">
+                        {/* TODO: Refactor style into a CSS class */}
+                        <p
+                          className="leading-7 "
+                          style={{
+                            minWidth: '10rem',
+                            maxWidth: '10rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </>
+                          {beneficiary.beneficiaryName}
+                        </p>
+                        <p
+                          className="leading-7 "
+                          style={{
+                            maxWidth: '10rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {beneficiary.walletAddress}
+                        </p>
+                        <p className="leading-7">{beneficiary.percentage}%</p>
+                      </div>
+                      <Button
+                        size={'sm'}
+                        variant={'destructive'}
+                        className="col-span-1"
+                        onClick={(event) =>
+                          handleDeleteBeneficiary(event, index)
+                        }
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </div>
@@ -381,8 +416,8 @@ export default function EditWill({ data }) {
                     type="text"
                     name="field1"
                     placeholder="0x12345..."
-                    value={valWalletAddressFieldVal}
-                    onChange={handleValWalletAddressFieldChange}
+                    value={validatorInputVal}
+                    onChange={handleValidatorInputChange}
                   />
                 </div>
                 <Button
@@ -393,71 +428,34 @@ export default function EditWill({ data }) {
                 </Button>
               </div>
               <div className="grid gap-4">
-                {validatorsArr.map((validator, index) => (
-                  // <>
-                  //   <Card className="dark" key={index}>
-                  //     <CardContent className="flex items-center justify-between pt-6">
-                  //       <div className="flex items-center gap-12">
-                  //         <p className="leading-7 ">
-                  //           {validator.User?.walletAddress}
-                  //         </p>
-                  //       </div>
-                  //       <Button
-                  //         size={'sm'}
-                  //         variant={'destructive'}
-                  //         className="grid col-span-1"
-                  //         onClick={(event) =>
-                  //           handleDeleteValidator(event, index)
-                  //         }
-                  //       >
-                  //         <Trash2 className="w-4 h-4" />
-                  //       </Button>
-                  //     </CardContent>
-                  //   </Card>
-                  // </>
-                  <>
-                    <Card className="dark" key={index}>
-                      <CardContent className="flex items-center justify-between pt-6">
-                        <div className="flex items-center gap-12">
-                          {/* TODO: Refactor style into a CSS class */}
-                          <p
-                            className="leading-7 "
-                            style={{
-                              minWidth: '10rem',
-                              maxWidth: '10rem',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {validator.User?.firstName}{' '}
-                            {validator.User?.lastName}
-                          </p>
-                          <p
-                            className="leading-7 "
-                            style={{
-                              maxWidth: '10rem',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {validator.User?.walletAddress}
-                          </p>
-                        </div>
-                        <Button
-                          size={'sm'}
-                          variant={'destructive'}
-                          className="col-span-1"
-                          onClick={(event) =>
-                            handleDeleteValidator(event, index)
-                          }
+                {validatorsNameArr.map((validator, index) => (
+                  <Card className="dark" key={index}>
+                    <CardContent className="flex items-center justify-between pt-6">
+                      <div className="flex items-center gap-12">
+                        {/* TODO: Refactor style into a CSS class */}
+                        <p
+                          className="leading-7 "
+                          style={{
+                            minWidth: '10rem',
+                            maxWidth: '10rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </>
+                          {validator}
+                        </p>
+                      </div>
+                      <Button
+                        size={'sm'}
+                        variant={'destructive'}
+                        className="col-span-1"
+                        onClick={(event) => handleDeleteValidator(event, index)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </div>
@@ -470,7 +468,8 @@ export default function EditWill({ data }) {
               >
                 Delete
               </Button>
-              <Button size={'lg'} type="submit" onClick={onSubmit}>
+              {/* <Button size={'lg'} type="submit" onClick={onSubmit}> */}
+              <Button size={'lg'} type="submit">
                 Submit
               </Button>
             </div>
