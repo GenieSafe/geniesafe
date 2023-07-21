@@ -13,7 +13,7 @@ import { publicProvider } from 'wagmi/providers/public'
 import { SessionContextProvider, Session } from '@supabase/auth-helpers-react'
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
 import { useState } from 'react'
-import '../../styles/global.css'
+import '../styles/global.css'
 import { Layout } from '../components/layout/Layout'
 
 const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || ''
