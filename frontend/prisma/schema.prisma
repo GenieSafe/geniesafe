@@ -40,7 +40,7 @@ model Will {
   deployedAtBlock String?
   Beneficiaries   Beneficiary[]
   Validators      Validator[]
-  Owner           User          @relation(fields: [ownerUserId], references: [id])
+  Owner           User          @relation(fields: [ownerUserId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@schema("public")
 }
@@ -50,10 +50,8 @@ model Beneficiary {
   willId            Int
   percentage        Float
   beneficiaryUserId String? @db.Uuid
-  name              String?
-  walletAddress     String?
-  User              User?   @relation(fields: [beneficiaryUserId], references: [id])
-  Will              Will    @relation(fields: [willId], references: [id])
+  User              User?   @relation(fields: [beneficiaryUserId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  Will              Will    @relation(fields: [willId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@schema("public")
 }
@@ -61,11 +59,10 @@ model Beneficiary {
 model Validator {
   id              Int     @id @default(autoincrement())
   willId          Int
+  isValidated     Boolean @default(false)
   validatorUserId String? @db.Uuid
-  name            String?
-  walletAddress   String?
-  User            User?   @relation(fields: [validatorUserId], references: [id])
-  Will            Will    @relation(fields: [willId], references: [id])
+  User            User?   @relation(fields: [validatorUserId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  Will            Will    @relation(fields: [willId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@schema("public")
 }
@@ -76,7 +73,7 @@ model Verifier {
   walletRecoveryConfigId Int
   isVerified             Boolean              @default(false)
   verifiedAt             DateTime?
-  User                   User                 @relation(fields: [verifierUserId], references: [id])
+  User                   User                 @relation(fields: [verifierUserId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   WalletRecoveryConfig   WalletRecoveryConfig @relation(fields: [walletRecoveryConfigId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@schema("public")
@@ -91,14 +88,14 @@ model Relationship {
 
 model WalletRecoveryConfig {
   id         Int        @id @default(autoincrement())
-  ownerId    String     @db.Uuid
+  ownerId    String     @unique @db.Uuid
   privateKey String?
   createdAt  DateTime?  @default(now())
   updatedAt  DateTime?  @default(now())
   isActive   Boolean    @default(false)
   isVerified Boolean    @default(false)
   Verifiers  Verifier[]
-  owner      User       @relation(fields: [ownerId], references: [id])
+  owner      User       @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@schema("public")
 }

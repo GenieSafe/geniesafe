@@ -17,15 +17,62 @@ import { PrismaClientInitializationError } from '@prisma/client/runtime'
  * @returns Promise<void>
  */
 const getWill: NextApiHandler = async (req, res) => {
-  const { ownerId: ownerUserId } = req.query
+  const { ownerUserId } = req.query
   const { willId } = req.query
 
+  // If ownerId is provided, return all wills with that ownerId
+  if (ownerUserId) {
+    try {
+      const wills = await prisma.user.findUnique({
+        where: { id: ownerUserId as string },
+        include: {
+          Wills: {
+            include: {
+              Beneficiaries: {
+                include: {
+                  User: true,
+                },
+              },
+              Validators: {
+                include: {
+                  User: true,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (!wills)
+        throw new createHttpError.NotFound(
+          `User (ID: ${ownerUserId}) does not exist!`
+        )
+      res.status(200).json({ data: wills })
+    } catch (err) {
+      console.log(err)
+      throw new createHttpError.NotFound(
+        `Error retrieving wills with ownerId: ${ownerUserId}!`
+      )
+    }
+  }
+
+  // TODO: Make implementation match the one above
   // If willId is provided, return will with that willId
   if (willId) {
     try {
       const will = await prisma.will.findUnique({
-        where: {
-          id: parseInt(willId as string),
+        where: { id: parseInt(willId as string) },
+        include: {
+          Beneficiaries: {
+            include: {
+              User: true,
+            },
+          },
+          Validators: {
+            include: {
+              User: true,
+            },
+          },
         },
       })
       if (!will)
@@ -40,35 +87,6 @@ const getWill: NextApiHandler = async (req, res) => {
       )
     }
   }
-
-  // If ownerId is provided, return all wills with that ownerId
-  if (ownerUserId) {
-    try {
-      const wills = await prisma.will.findMany({
-        where: {
-          ownerUserId: ownerUserId.toString(),
-        },
-        orderBy: {
-          updatedAt: 'desc',
-        },
-      })
-      if (!wills)
-        throw new createHttpError.NotFound(
-          `User (ID: ${ownerUserId}) does not exist!`
-        )
-      res.status(200).json({ data: wills })
-    } catch (err) {
-      console.log(err)
-      throw new createHttpError.NotFound(
-        `Error retrieving wills with ownerId: ${ownerUserId}!`
-      )
-    }
-  } else {
-    // Else if ownerId is not provided or doesn't exist, throw an error
-    throw new createHttpError.NotFound(
-      `Query parameter (ownerId or willId) not provided!`
-    )
-  }
 }
 
 /**
@@ -82,10 +100,12 @@ const willSchema = Yup.object().shape({
     .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
   beneficiaries: Yup.array().of(
     Yup.object().shape({
-      name: Yup.string().required('Beneficiary name is required!'),
-      walletAddress: Yup.string()
-        .required('Beneficiary wallet address is required!')
-        .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
+      // walletAddress: Yup.string()
+      //   .required('Beneficiary wallet address is required!')
+      //   .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
+      beneficiaryUserId: Yup.string().required(
+        'Beneficiary user ID is required!'
+      ),
       percentage: Yup.number()
         .required('Beneficiary percentage is required!')
         .min(0, 'Percentage must be greater than or equal to 0!')
@@ -94,10 +114,10 @@ const willSchema = Yup.object().shape({
   ),
   validators: Yup.array().of(
     Yup.object().shape({
-      name: Yup.string().required('Validator name is required!'),
-      walletAddress: Yup.string()
-        .required('Owner wallet address is required!')
-        .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
+      // walletAddress: Yup.string()
+      //   .required('Owner wallet address is required!')
+      //   .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
+      validatorUserId: Yup.string().required('Validator user ID is required!'),
     })
   ),
 })
@@ -131,21 +151,20 @@ const createWill: NextApiHandler = async (req, res) => {
     // Create beneficiaries
     const newBeneficiaries = await Promise.all(
       beneficiaries.map(async (beneficiary: Beneficiary) => {
-        const { name, walletAddress, percentage } = beneficiary
+        const { beneficiaryUserId, percentage } = beneficiary
 
-        // Retrieve beneficiary user ID by wallet address
-        const beneficiaryUserId = await prisma.user.findUnique({
-          where: {
-            walletAddress: walletAddress as unknown as string,
-          },
-          select: {
-            id: true,
-          },
-        })
+        // // Retrieve beneficiary user ID by wallet address
+        // const beneficiaryUserId = await prisma.user.findUnique({
+        //   where: {
+        //     walletAddress: beneficiaryUserId as unknown as string,
+        //   },
+        //   select: {
+        //     id: true,
+        //   },
+        // })
 
         const newBeneficiary = await prisma.beneficiary.create({
           data: {
-            name: beneficiary.name,
             percentage: beneficiary.percentage,
             Will: {
               connect: {
@@ -154,7 +173,7 @@ const createWill: NextApiHandler = async (req, res) => {
             },
             User: {
               connect: {
-                id: beneficiaryUserId?.id as unknown as string,
+                id: beneficiaryUserId as unknown as string,
               },
             },
           },
@@ -166,20 +185,19 @@ const createWill: NextApiHandler = async (req, res) => {
     // Create validators
     const newValidators = await Promise.all(
       validators.map(async (validator: Validator) => {
-        const { name, walletAddress } = validator
+        const { validatorUserId } = validator
 
-        const validatorUserId = await prisma.user.findUnique({
-          where: {
-            walletAddress: walletAddress as unknown as string,
-          },
-          select: {
-            id: true,
-          },
-        })
+        // const validatorUserId = await prisma.user.findUnique({
+        //   where: {
+        //     id: validatorUserId as unknown as string,
+        //   },
+        //   select: {
+        //     id: true,
+        //   },
+        // })
 
         const newValidator = await prisma.validator.create({
           data: {
-            name: validator.name,
             Will: {
               connect: {
                 id: newWill.id,
@@ -187,7 +205,7 @@ const createWill: NextApiHandler = async (req, res) => {
             },
             User: {
               connect: {
-                id: validatorUserId?.id as unknown as string,
+                id: validatorUserId as unknown as string,
               },
             },
           },
@@ -249,8 +267,31 @@ const updateWill: NextApiHandler = async (req, res) => {
       },
       data: {
         ...req.body,
+        updatedAt: new Date(), // Add this line to update the updatedAt field
+        Beneficiaries: {
+          deleteMany: {},
+          createMany: {
+            data: req.body.Beneficiaries.map((beneficiary) => ({
+              beneficiaryUserId: beneficiary.beneficiaryUserId,
+              percentage: beneficiary.percentage,
+            })),
+          },
+        },
+        Validators: {
+          deleteMany: {},
+          createMany: {
+            data: req.body.Validators.map((validator) => ({
+              validatorUserId: validator.validatorUserId,
+            })),
+          },
+        },
+      },
+      include: {
+        Beneficiaries: true,
+        Validators: true,
       },
     })
+
     res.status(200).json({
       message: `Successfully updated will with ID: ${willId}`,
       data: updatedWill,
