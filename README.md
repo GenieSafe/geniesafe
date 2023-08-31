@@ -3,29 +3,27 @@ Built by [Alif](https://github.com/alifmazli) and [Syaamil](https://github.com/e
 
 ## Getting Started
 
-Use Yarn to avoid dependency collisions: [Yarn](https://classic.yarnpkg.com/en/docs/install)
-
 ```bash
 git clone https://github.com/GenieSafe/geniesafe.git
 cd geniesafe
 
-yarn install
+npm i
 
 # Start up the Hardhat Network
-yarn chain
+npm run chain
 ```
 
-Here we just install the npm project's dependencies, and by running `yarn chain` we spin up an instance of Hardhat Network that you can connect to using MetaMask. In a different terminal in the same directory, run:
+Here we just install the npm project's dependencies, and by running `npm run chain` we spin up an instance of Hardhat Network that you can connect to using MetaMask. In a different terminal in the same directory, run:
 
 ```bash
-yarn deploy
+npm run deploy
 ```
 
 This will deploy the contract to Hardhat Network. After this completes run:
 
 ```bash
 cd frontend
-yarn install
+npm install
 ```
 
 This will install the frontend packages. We also need to set up the local configuration file.
@@ -37,7 +35,7 @@ copy .env.example .env
 This will create a file called `.env`. Open up that file and fill in the environment variables.
 
 ```bash
-yarn dev
+npm run dev
 ```
 
 This will start up the Next.js development server. Your site will be available at http://localhost:3000/
@@ -56,15 +54,14 @@ To interact with the local contract, be sure to switch your MetaMask Network to 
 ##### 1. `main`
 
 - Stable, deployment branch
-- Merged with `develop` at the end of a major/minor version release
-- Example: After code review for GenieSafe 1.0 is completed
+- Merged with `dev` at the end of a major/minor release
 - **Do not** directly commit to this branch
 
-##### 2. `develop`
+##### 2. `dev`
 
 - Development branch
 - Main branch used in development
-- Branches off to other `user_story` and `task` branch
+- Branches off to other branches
 
 #### Temporary branches
 
@@ -74,9 +71,8 @@ To interact with the local contract, be sure to switch your MetaMask Network to 
 
 ##### Categories
 
-- `feature` is for adding, refactoring or removing a feature
-- `bugfix` is for fixing a bug
-- `hotfix` is for changing code with a temporary solution and/or without following the usual process (usually because of an emergency)
+- `feat` is for adding, refactoring or removing a feature
+- `fix` is for fixing a bug
 - `test` is for experimenting outside of an issue/ticket
 
 ##### Reference
@@ -91,12 +87,12 @@ By default, you can use the title of the issue/ticket you are working on. Just r
 
 #### Naming pattern
 ```bash
-git checkout -b <category>/<reference>/<description-in-kebab-case>
+git checkout -b <category>/<issue-no>/<description-in-kebab-case>
 ```
 
 ##### Examples
 
-- You need to add, refactor or remove a feature: `git branch feature/issue-42/create-new-button-component`
-- You need to fix a bug: `git branch bugfix/issue-342/button-overlap-form-on-mobile`
-- You need to fix a bug really fast (possibly with a temporary solution): `git branch hotfix/no-ref/registration-form-not-working`
-- You need to experiment outside of an issue/ticket: `git branch test/no-ref refactor-components-with-atomic-design`
+- You need to add, refactor or remove a feature: `git branch feat/WIE-42/create-new-button-component`
+- You need to fix a bug: `git branch bugfix/WIE-342/button-overlap-form-on-mobile`
+- You need to fix a bug really fast (possibly with a temporary solution): `git branch fix/no-ref/registration-form-not-working`
+- You need to experiment outside of an issue/ticket: `git branch test/no-ref/refactor-components-with-atomic-design`
