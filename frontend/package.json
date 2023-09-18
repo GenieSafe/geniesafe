@@ -1,6 +1,6 @@
 {
-  "name": "nextjs-ethereum-starter-frontend",
-  "author": "@hunterhchang",
+  "name": "geniesafe-frontend",
+  "author": "@alifmazli",
   "license": "MIT",
   "version": "1.0.0",
   "scripts": {
@@ -48,7 +48,7 @@
     "react-hook-form": "^7.44.3",
     "tailwind-merge": "^1.13.1",
     "tailwindcss-animate": "^1.0.6",
-    "wagmi": "^0.8.5",
+    "wagmi": "^0.8.5  35680",
     "yup": "^1.2.0",
     "zod": "^3.21.4"
   },
