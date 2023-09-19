@@ -40,7 +40,9 @@ npm run dev
 
 This will start up the Next.js development server. Your site will be available at http://localhost:3000/
 
-To interact with the local contract, be sure to switch your MetaMask Network to `Localhost 8545`
+### Metamask
+
+To interact with the local contract, be sure to switch your MetaMask network to Hardhat network (`Localhost 8545`). Follow this [guide](https://medium.com/@kaishinaw/connecting-metamask-with-a-local-hardhat-network-7d8cea604dc6) to setup manually.
 
 ## Development Conventions
 
