@@ -22,6 +22,7 @@ import { Beneficiary, Validator, Will } from '../../../types/interfaces'
 import { useAccount } from 'wagmi'
 import { currentUserId } from '../../lib/global'
 
+// @ts-ignore
 export async function getServerSideProps(context) {
   try {
     const res = await fetch(
@@ -44,6 +45,7 @@ const formSchema = z.object({
   title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
 })
 
+// @ts-ignore
 export default function EditWill({ data }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
