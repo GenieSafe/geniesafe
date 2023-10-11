@@ -117,13 +117,21 @@ const deleteConfig: NextApiHandler = async (req, res) => {
   const { ownerUserId } = req.query
 
   try {
+    if (!ownerUserId) {
+      throw new createHttpError.BadRequest(`ownerUserId is required`)
+    }
+
+    // If ownerUserId is an array, you can choose how to handle it. This example takes the first element.
+    const ownerId = Array.isArray(ownerUserId) ? ownerUserId[0] : ownerUserId
+
     const deletedConfig = await prisma.walletRecoveryConfig.delete({
       where: {
-        ownerId: ownerUserId,
+        ownerId: ownerId,
       },
     })
+
     res.status(200).json({
-      message: `Successfully deleted config with ID: ${ownerUserId}`,
+      message: `Successfully deleted config with ID: ${ownerId}`,
       data: deletedConfig,
     })
   } catch (err) {
