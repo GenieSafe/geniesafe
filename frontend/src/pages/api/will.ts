@@ -271,7 +271,7 @@ const updateWill: NextApiHandler = async (req, res) => {
         Beneficiaries: {
           deleteMany: {},
           createMany: {
-            data: req.body.Beneficiaries.map((beneficiary) => ({
+            data: req.body.Beneficiaries.map((beneficiary: Beneficiary) => ({
               beneficiaryUserId: beneficiary.beneficiaryUserId,
               percentage: beneficiary.percentage,
             })),
@@ -280,7 +280,7 @@ const updateWill: NextApiHandler = async (req, res) => {
         Validators: {
           deleteMany: {},
           createMany: {
-            data: req.body.Validators.map((validator) => ({
+            data: req.body.Validators.map((validator: Validator) => ({
               validatorUserId: validator.validatorUserId,
             })),
           },
