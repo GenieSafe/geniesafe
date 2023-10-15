@@ -7,7 +7,7 @@ export interface User {
 }
 
 export interface Will {
-  id: string
+  id?: string
   ownerUserId: string
   title: string
   deployedAtBlock: string
@@ -20,12 +20,12 @@ export interface Will {
 export interface Beneficiary {
   beneficiaryUserId: string;
   percentage: number
-  User: User
+  User?: User
 }
 export interface Validator {
   validatorUserId: string
   isValidated: boolean
-  User: User
+  User?: User
 }
 
 export interface Verifier {

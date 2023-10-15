@@ -60,15 +60,15 @@ export function WillCard({ will }: { will: Will }) {
                   <div className="flex gap-4 overflow-x-auto">
                     {will.Beneficiaries ? (
                       will.Beneficiaries.map((Beneficiary) => (
-                        <Card key={Beneficiary.User.id}>
+                        <Card key={Beneficiary.User?.id}>
                           <CardContent className="pt-6">
                             <div className="flex flex-row gap-8">
                               <div className="flex flex-col w-24">
                                 <p className="text-lg font-semibold truncate">
-                                  {`${Beneficiary.User.firstName} ${Beneficiary.User.lastName}`}
+                                  {`${Beneficiary.User?.firstName} ${Beneficiary.User?.lastName}`}
                                 </p>
                                 <p className="truncate">
-                                  {Beneficiary.User.walletAddress}
+                                  {Beneficiary.User?.walletAddress}
                                 </p>
                               </div>
                               <div className="flex flex-col items-center justify-center">
@@ -91,15 +91,15 @@ export function WillCard({ will }: { will: Will }) {
                   <div className="flex gap-4 overflow-x-auto">
                     {will.Validators ? (
                       will.Validators.map((Validator) => (
-                        <Card key={Validator.User.id}>
+                        <Card key={Validator.User?.id}>
                           <CardContent className="pt-6">
                             <div className="flex flex-row items-center gap-8">
                               <div className="flex flex-col w-24">
                                 <p className="text-lg font-semibold truncate">
-                                  {`${Validator.User.firstName} ${Validator.User.lastName}`}
+                                  {`${Validator.User?.firstName} ${Validator.User?.lastName}`}
                                 </p>
                                 <p className="truncate">
-                                  {Validator.User.walletAddress}
+                                  {Validator.User?.walletAddress}
                                 </p>
                               </div>
 
