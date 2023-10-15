@@ -46,7 +46,7 @@ const getConfig: NextApiHandler = async (req, res) => {
         throw new createHttpError.NotFound(
           `User (ID: ${ownerId}) does not exist!`
         )
-      res.status(200).json({ data: config })
+      res.status(200).json(config)
     } catch (err) {
       console.log(err)
       throw new createHttpError.NotFound(

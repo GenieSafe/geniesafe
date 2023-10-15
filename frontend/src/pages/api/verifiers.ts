@@ -37,10 +37,7 @@ const getVerifiers: NextApiHandler = async (req, res) => {
         },
       },
     })
-    res.status(200).json({
-      message: `Successfully retrieved verifiers for config with ID: ${walletRecoveryConfigId}`,
-      data: verifiers,
-    })
+    res.status(200).json(verifiers)
   } catch (err) {
     console.log(err)
     throw new createHttpError.NotFound(

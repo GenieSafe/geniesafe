@@ -47,7 +47,7 @@ const getWill: NextApiHandler = async (req, res) => {
         throw new createHttpError.NotFound(
           `User (ID: ${ownerUserId}) does not exist!`
         )
-      res.status(200).json({ data: wills })
+      res.status(200).json(wills.Wills)
     } catch (err) {
       console.log(err)
       throw new createHttpError.NotFound(
