@@ -29,7 +29,7 @@ const getUserByWalletAddress: NextApiHandler = async (req, res) => {
         throw new createHttpError.NotFound(
           `User with wallet address ${walletAddress}) does not exist!`
         )
-      res.status(200).json({ data: user })
+      res.status(200).json(user)
     } catch (err) {
       console.log(err)
       throw new createHttpError.NotFound(
