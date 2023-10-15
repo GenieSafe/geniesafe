@@ -1,4 +1,6 @@
-import { CheckCircle2, Edit, Edit2 } from 'lucide-react'
+import Link from 'next/link'
+
+import { CheckCircle2 } from 'lucide-react'
 
 import {
   Card,
@@ -8,19 +10,19 @@ import {
   CardHeader,
   CardTitle,
 } from '../components/ui/card'
-import { Badge } from './ui/badge'
-import Link from 'next/link'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip'
-import { Separator } from './ui/separator'
+import { Badge } from './ui/badge'
 
-type CardProps = React.ComponentProps<typeof Card>
+import { Will } from '../../types/interfaces'
 
-export function WillCard({ className, will }: CardProps) {
+// type CardProps = React.ComponentProps<typeof Card>
+
+export function WillCard({ will }: { will: Will }) {
   return (
     <TooltipProvider>
       <Tooltip>
@@ -57,38 +59,21 @@ export function WillCard({ className, will }: CardProps) {
                   <p className="font-bold">Beneficiaries</p>
                   <div className="flex gap-4 overflow-x-auto">
                     {will.Beneficiaries ? (
-                      will.Beneficiaries.map((beneficiary) => (
-                        <Card key={beneficiary.id}>
+                      will.Beneficiaries.map((Beneficiary) => (
+                        <Card key={Beneficiary.User.id}>
                           <CardContent className="pt-6">
                             <div className="flex flex-row gap-8">
-                              <div className="flex flex-col">
-                                {/* TODO: Refactor style into a CSS class */}
-                                <p
-                                  className="text-lg font-semibold"
-                                  style={{
-                                    maxWidth: '6rem',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  {`${beneficiary.User.firstName} ${beneficiary.User.lastName}`}
+                              <div className="flex flex-col w-24">
+                                <p className="text-lg font-semibold truncate">
+                                  {`${Beneficiary.User.firstName} ${Beneficiary.User.lastName}`}
                                 </p>
-                                <p
-                                  style={{
-                                    maxWidth: '6rem',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  {beneficiary.User.walletAddress}
+                                <p className="truncate">
+                                  {Beneficiary.User.walletAddress}
                                 </p>
-                                <p>{beneficiary.relation}</p>
                               </div>
                               <div className="flex flex-col items-center justify-center">
                                 <p className="text-lg font-bold">
-                                  {beneficiary.percentage}%
+                                  {Beneficiary.percentage}%
                                 </p>
                               </div>
                             </div>
@@ -105,37 +90,20 @@ export function WillCard({ className, will }: CardProps) {
                   <p className="font-bold">Validators</p>
                   <div className="flex gap-4 overflow-x-auto">
                     {will.Validators ? (
-                      will.Validators.map((validator) => (
-                        <Card key={validator.id}>
+                      will.Validators.map((Validator) => (
+                        <Card key={Validator.User.id}>
                           <CardContent className="pt-6">
-                            <div className="flex flex-row gap-8">
-                              <div className="flex flex-col">
-                                {/* TODO: Refactor style into a CSS class */}
-                                <p
-                                  className="text-lg font-semibold"
-                                  style={{
-                                    maxWidth: '6rem',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  {`${validator.User.firstName} ${validator.User.lastName}`}
+                            <div className="flex flex-row items-center gap-8">
+                              <div className="flex flex-col w-24">
+                                <p className="text-lg font-semibold truncate">
+                                  {`${Validator.User.firstName} ${Validator.User.lastName}`}
                                 </p>
-                                <p
-                                  style={{
-                                    maxWidth: '6rem',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  {validator.User.walletAddress}
+                                <p className="truncate">
+                                  {Validator.User.walletAddress}
                                 </p>
-                                <p>{validator.relation}</p>
                               </div>
 
-                              {validator.isValidated ? (
+                              {Validator.isValidated ? (
                                 <CheckCircle2 className="text-success"></CheckCircle2>
                               ) : (
                                 <CheckCircle2 className="text-destructive"></CheckCircle2>
