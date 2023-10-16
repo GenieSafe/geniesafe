@@ -8,27 +8,27 @@ import * as Yup from 'yup'
 import { validateRequest } from '../../utils/yup'
 
 const getVerifiers: NextApiHandler = async (req, res) => {
-  const { walletRecoveryConfigId } = req.query
+  const { configId } = req.query
 
   try {
     const verifiers = await prisma.verifier.findMany({
       where: {
-        walletRecoveryConfigId: parseInt(walletRecoveryConfigId as string),
+        configId: parseInt(configId as string),
       },
       select: {
         verifierUserId: true,
         isVerified: true,
         verifiedAt: true,
-        User: {
+        user: {
           select: {
             firstName: true,
             lastName: true,
           },
         },
-        WalletRecoveryConfig: {
+        wallet_recovery_config: {
           select: {
             id: true,
-            ownerId: true,
+            ownerUserId: true,
             createdAt: true,
             updatedAt: true,
             isActive: true,
@@ -40,16 +40,12 @@ const getVerifiers: NextApiHandler = async (req, res) => {
     res.status(200).json(verifiers)
   } catch (err) {
     console.log(err)
-    throw new createHttpError.NotFound(
-      `Error retrieving verifiers for config with ID: ${walletRecoveryConfigId}! Check if config exists.`
-    )
+    throw new createHttpError.InternalServerError(`${err}`)
   }
 }
 
 const verifierSchema = Yup.object().shape({
-  walletRecoveryConfigId: Yup.number().required(
-    'walletRecoveryConfigId is required'
-  ),
+  configId: Yup.number().required('configId is required'),
   // walletAddress: Yup.string()
   //   .required('walletAddress is required')
   //   .matches(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
@@ -59,12 +55,12 @@ const verifierSchema = Yup.object().shape({
 const deleteVerifier: NextApiHandler = async (req, res) => {
   // @ts-ignore
   const data = validateRequest(req.query, verifierSchema)
-  const { walletRecoveryConfigId, verifierUserId } = data
+  const { configId, verifierUserId } = data
   try {
     const deletedVerifier = await prisma.verifier.delete({
       where: {
         // @ts-ignore
-        walletRecoveryConfigId: walletRecoveryConfigId as unknown as number,
+        configId: configId as unknown as number,
         userId: verifierUserId as unknown as number,
       },
     })
@@ -74,9 +70,7 @@ const deleteVerifier: NextApiHandler = async (req, res) => {
     })
   } catch (err) {
     console.log(err)
-    throw new createHttpError.NotFound(
-      `Error deleting verifier with ID: ${verifierUserId}! Check if verifier exists.`
-    )
+    throw new createHttpError.InternalServerError(`${err}`)
   }
 }
 

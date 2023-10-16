@@ -1,25 +1,25 @@
-export interface Will {
+export interface will {
   ownerUserId: string
   title: string
   walletAddress: string
-  beneficiaries: Beneficiary[]
-  validators: Validator[]
+  beneficiaries: beneficiary[]
+  validators: validator[]
 }
 
-export interface Beneficiary {
+export interface beneficiary {
   beneficiaryUserId: string;
   percentage: number
 }
-export interface Validator {
+export interface validator {
   validatorUserId: string
 }
 
-export interface Verifier {
+export interface verifier {
   verifierUserId: string
 }
 
-export interface Config {
+export interface config {
   ownerId: string
   privateKey: string
-  verifiers: object[]
+  verifiers: verifier[]
 }
