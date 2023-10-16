@@ -7,22 +7,43 @@ import {
   CardTitle,
   CardContent,
 } from '../../components/ui/card'
-import { currentUserId } from '../../lib/global'
+import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
+import { config } from '../../../types/interfaces'
+import { verifier } from '../../../types/interfaces'
 
-//TODO: replace with current session userId
-export async function getStaticProps() {
+export const getServerSideProps = (async (context: any) => {
+  // Create authenticated Supabase Client
+  const supabase = createPagesServerClient(context)
+  // Check if we have a session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session)
+    return {
+      redirect: {
+        destination: '/auth/login',
+        permanent: false,
+      },
+    }
   const res = await fetch(
-    `http://localhost:3000/api/entrust?ownerId=${currentUserId}`
+    `http://localhost:3000/api/entrust?ownerUserId=${session.user.id}`
   )
-  var data = await res.json()
-  return { props: { data } }
-}
 
-const Safeguard = ({ data }: any) => {
+  const config = await res.json()
+  return { props: { config } }
+}) satisfies GetServerSideProps<{
+  config: config
+}>
+
+const Safeguard = ({
+  config,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   return (
     <>
       <div className="container flex flex-col gap-8 pb-8">
-        {data.data.length > 0 ? (
+        {config.length > 0 ? (
           <>
             <div className="container pb-8">
               <div className="flex flex-col gap-4 mb-4">
@@ -31,7 +52,7 @@ const Safeguard = ({ data }: any) => {
                 </h1>
                 <p className="mb-4 leading-7">
                   Lost access to your wallet? Notify your Verifiers to verify
-                  your identity and we’ll send you your private key.
+                  your identity and we'll send you your private key.
                 </p>
               </div>
               <div className="grid gap-8">
@@ -40,11 +61,11 @@ const Safeguard = ({ data }: any) => {
                     <CardTitle className="flex justify-between text-2xl">
                       Verifiers
                       <Button size={'sm'} asChild>
-                        <Link href={`/safeguard/edit/${data.data[0].ownerId}`}>
+                        <Link href={`/safeguard/edit/${config.ownerId}`}>
                           {/* <Link
                           href={{
                             pathname: '/safeguard/edit/[id]',
-                            query: data.data[0].ownerId, // the data
+                            query: ownerId, // the data
                           }}
                         > */}
                           <Edit3 className="w-4 h-4" />
@@ -53,17 +74,19 @@ const Safeguard = ({ data }: any) => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex gap-4">
-                    {data.data[0].Verifiers.map((verifier: any, index) => (
-                      <Card key={index} className="bg-primary">
-                        <CardContent className="grid pt-6">
-                          <p className="text-secondary">
-                            {verifier.User.firstName +
-                              ' ' +
-                              verifier.User.lastName}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {config.verifiers.map(
+                      (verifier: verifier, index: number) => (
+                        <Card key={index} className="bg-primary">
+                          <CardContent className="grid pt-6">
+                            <p className="text-secondary">
+                              {verifier.user?.firstName +
+                                ' ' +
+                                verifier.user?.lastName}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      )
+                    )}
                   </CardContent>
                 </Card>
               </div>

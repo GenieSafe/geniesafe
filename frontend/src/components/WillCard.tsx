@@ -18,11 +18,11 @@ import {
 } from './ui/tooltip'
 import { Badge } from './ui/badge'
 
-import { Will } from '../../types/interfaces'
+import { will } from '../../types/interfaces'
 
 // type CardProps = React.ComponentProps<typeof Card>
 
-export function WillCard({ will }: { will: Will }) {
+export function WillCard({ will }: { will: will }) {
   return (
     <TooltipProvider>
       <Tooltip>
@@ -33,7 +33,7 @@ export function WillCard({ will }: { will: Will }) {
                 <div className="space-y-2">
                   <CardTitle className="text-2xl">{will.title}</CardTitle>
                   <CardDescription className="text-foreground">
-                    Will contract deployed to
+                    will contract deployed to
                     {will.deployedAtBlock !== null ? (
                       <span className="font-semibold">
                         {' '}
@@ -56,24 +56,24 @@ export function WillCard({ will }: { will: Will }) {
               </CardHeader>
               <CardContent className="grid gap-6">
                 <div className="grid gap-4">
-                  <p className="font-bold">Beneficiaries</p>
+                  <p className="font-bold">beneficiaries</p>
                   <div className="flex gap-4 overflow-x-auto">
-                    {will.Beneficiaries ? (
-                      will.Beneficiaries.map((Beneficiary) => (
-                        <Card key={Beneficiary.User?.id}>
+                    {will.beneficiaries ? (
+                      will.beneficiaries.map((beneficiary) => (
+                        <Card key={beneficiary.user?.id}>
                           <CardContent className="pt-6">
                             <div className="flex flex-row gap-8">
                               <div className="flex flex-col w-24">
                                 <p className="text-lg font-semibold truncate">
-                                  {`${Beneficiary.User?.firstName} ${Beneficiary.User?.lastName}`}
+                                  {`${beneficiary.user?.firstName} ${beneficiary.user?.lastName}`}
                                 </p>
                                 <p className="truncate">
-                                  {Beneficiary.User?.walletAddress}
+                                  {beneficiary.user?.walletAddress}
                                 </p>
                               </div>
                               <div className="flex flex-col items-center justify-center">
                                 <p className="text-lg font-bold">
-                                  {Beneficiary.percentage}%
+                                  {beneficiary.percentage}%
                                 </p>
                               </div>
                             </div>
@@ -87,23 +87,23 @@ export function WillCard({ will }: { will: Will }) {
                 </div>
 
                 <div className="flex flex-col gap-4">
-                  <p className="font-bold">Validators</p>
+                  <p className="font-bold">validators</p>
                   <div className="flex gap-4 overflow-x-auto">
-                    {will.Validators ? (
-                      will.Validators.map((Validator) => (
-                        <Card key={Validator.User?.id}>
+                    {will.validators ? (
+                    will.validators.map((validator) => (
+                        <Card key={validator.user?.id}>
                           <CardContent className="pt-6">
                             <div className="flex flex-row items-center gap-8">
                               <div className="flex flex-col w-24">
                                 <p className="text-lg font-semibold truncate">
-                                  {`${Validator.User?.firstName} ${Validator.User?.lastName}`}
+                                  {`${validator.user?.firstName} ${validator.user?.lastName}`}
                                 </p>
                                 <p className="truncate">
-                                  {Validator.User?.walletAddress}
+                                  {validator.user?.walletAddress}
                                 </p>
                               </div>
 
-                              {Validator.isValidated ? (
+                              {validator.isValidated ? (
                                 <CheckCircle2 className="text-success"></CheckCircle2>
                               ) : (
                                 <CheckCircle2 className="text-destructive"></CheckCircle2>

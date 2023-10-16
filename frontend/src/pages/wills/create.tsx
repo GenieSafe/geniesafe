@@ -18,12 +18,12 @@ import { Input } from '../../components/ui/input'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Beneficiary, Validator, Will } from '../../../types/interfaces'
+import { beneficiary, validator } from '../../../types/interfaces'
 import { useAccount } from 'wagmi'
 import { currentUserId } from '../../lib/global'
 
 const formSchema = z.object({
-  title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
+  title: z.string({ required_error: 'will title is required' }).min(5).max(30),
 })
 
 // @ts-ignore
@@ -35,7 +35,7 @@ export default function CreateWill() {
 
   const router = useRouter()
 
-  const [beneficiariesArr, setBeneficiariesArr] = useState<Beneficiary[]>([])
+  const [beneficiariesArr, setBeneficiariesArr] = useState<beneficiary[]>([])
   const [beneficiariesCardArr, setBeneficiariesCardArr] = useState<
     tempBeneficiary[]
   >([])
@@ -79,7 +79,7 @@ export default function CreateWill() {
 
           if (response.ok) {
             const data = await response.json()
-            const newObj: Beneficiary = {
+            const newObj: beneficiary = {
               beneficiaryUserId: data.id,
               percentage: parseInt(percentageInputVal),
             }
@@ -123,7 +123,7 @@ export default function CreateWill() {
     setBeneficiariesCardArr(newCardArr)
   }
 
-  const [validatorsArr, setValidatorsArr] = useState<Validator[]>([])
+  const [validatorsArr, setValidatorsArr] = useState<validator[]>([])
   const [validatorsNameArr, setValidatorsNameArr] = useState<string[]>([])
   const [validatorInputVal, setValidatorInputVal] = useState('')
 
@@ -147,7 +147,7 @@ export default function CreateWill() {
 
         if (response.ok) {
           const data = await response.json()
-          const newObj: Validator = {
+          const newObj: validator = {
             validatorUserId: data.id,
             isValidated: false,
           }
@@ -189,7 +189,6 @@ export default function CreateWill() {
 
   // 2. Define a submit handler.
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    
     const will = {
       ownerUserId: currentUserId,
       title: values.title,
@@ -222,7 +221,7 @@ export default function CreateWill() {
     <>
       <div className="container flex items-center justify-between pb-8">
         <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
-          Create Will
+          Create will
         </h1>
       </div>
       <div className="container grid gap-4">
@@ -233,9 +232,9 @@ export default function CreateWill() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Will Title</FormLabel>
+                  <FormLabel>will Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="My First Will" {...field} />
+                    <Input placeholder="My First will" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -247,7 +246,7 @@ export default function CreateWill() {
               </h2>
               <div className="grid items-end grid-cols-11 gap-4">
                 <div className="grid w-full items-center gap-1.5 col-span-5">
-                  <Label htmlFor="email">Beneficiary's Wallet Address</Label>
+                  <Label htmlFor="email">beneficiary's Wallet Address</Label>
                   <Input
                     type="text"
                     name="field1"
@@ -303,7 +302,7 @@ export default function CreateWill() {
               </h2>
               <div className="grid items-end grid-cols-11 gap-4">
                 <div className="grid items-center w-full col-span-10 gap-2">
-                  <Label htmlFor="email">Validator's Wallet Address</Label>
+                  <Label htmlFor="email">validator's Wallet Address</Label>
                   <Input
                     type="text"
                     name="field1"

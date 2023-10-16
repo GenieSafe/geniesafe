@@ -46,7 +46,7 @@ const ActivateWill: NextPage = () => {
           Activate a will
         </h1>
         <p>
-          By activating this person’s will, you are declaring them deceased. The
+          By activating this person's will, you are declaring them deceased. The
           validators of the deceased shall be notified and prompted to validate
           this information before any inheritance is executed.
         </p>

@@ -1,4 +1,4 @@
-import { Config, Verifier } from '../../../../types/interfaces'
+import { config, verifier } from '../../../../types/interfaces'
 import { Label } from '../../../components/ui/label'
 import { Progress } from '../../../components/ui/progress'
 import { Trash2 } from 'lucide-react'
@@ -7,76 +7,37 @@ import { Button } from '../../../components/ui/button'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Input } from '../../../components/ui/input'
 import router from 'next/router'
+import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 
-// export async function getStaticPaths() {
-//   return {
-//     paths: [
-//       // String variant:
-//       '/safeguard/edit/91944f58-def7-4ceb-bdab-7eb9e736176a',
-//       // Object variant:
-//       { params: { id: '91944f58-def7-4ceb-bdab-7eb9e736176a' } },
-//     ],
-//     fallback: true,
-//   }
-// }
+export const getServerSideProps = (async (context: any) => {
+  const res = await fetch(
+    `http://localhost:3000/api/entrust?ownerUserId=${context.query.id}`
+  )
 
-// export async function getStaticProps({params}) {
-//   try {
-//     // Fetch data from an API or any other data source
-//     const response = await fetch(`https://api/entrust?ownerId=${params.id}`)
-//     const data = await response.json()
+  const config = await res.json()
+  return { props: { config } }
+}) satisfies GetServerSideProps<{
+  config: config
+}>
 
-//     return {
-//       props: {
-//         data,
-//       },
-//     }
-
-//   } catch (error) {
-//     console.error('Failed to fetch data:', error)
-//     return {
-//       props: {
-//         data: null,
-//       },
-//     }
-//   }
-// }
-
-export async function getServerSideProps(context) {
-  try {
-    const res = await fetch(
-      `http://localhost:3000/api/entrust?ownerId=${context.query.id}`
-    )
-    const data = await res.json()
-
-    return { props: { data } }
-  } catch (err) {
-    console.error('Failed to fetch data:', err)
-    return {
-      props: {
-        data: context.query.id,
-      },
-    }
-  }
-}
-
-export default function EditConfig({ data }) {
-
-  const [verifiersArr, setVerifiersArr] = useState<Verifier[]>([])
+export default function EditConfig({
+  config,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const [verifiersArr, setVerifiersArr] = useState<verifier[]>([])
   const [verifiersNameArr, setVerifiersNameArr] = useState<string[]>([])
   const [verifierInputVal, setVerifierInputVal] = useState('')
   const [pkInputVal, setPkInputVal] = useState('')
 
   useEffect(() => {
-    data.data[0].Verifiers.map((verifier) => {
+    config.Verifiers.map((verifier: verifier) => {
       setVerifiersNameArr((prevVerifiersNameArr) => [
         ...prevVerifiersNameArr,
-        verifier.User.firstName + ' ' + verifier.User.lastName,
-      ]);
-    });
+        verifier.user?.firstName + ' ' + verifier.user?.lastName,
+      ])
+    })
 
-    setVerifiersArr(data.data[0].Verifiers)
-    setPkInputVal(data.data[0].privateKey)
+    setVerifiersArr(config.Verifiers)
+    setPkInputVal(config.privateKey)
   }, [])
 
   const [submitButtonDisabled, setSubmitButtonDisabled] = useState(true)
@@ -103,13 +64,13 @@ export default function EditConfig({ data }) {
 
         if (response.ok) {
           const data = await response.json()
-          const newObj: Verifier = {
-            verifierUserId: data.data.id,
+          const newObj: verifier = {
+            verifierUserId: data.id,
           }
           setVerifiersArr([...verifiersArr, newObj])
           setVerifiersNameArr([
             ...verifiersNameArr,
-            data.data.firstName + ' ' + data.data.lastName,
+            data.firstName + ' ' + data.lastName,
           ])
 
           if (verifiersArr.length >= 2) {
@@ -151,17 +112,20 @@ export default function EditConfig({ data }) {
   }
 
   const handleSubmit = async () => {
-    const verifierUserIds = verifiersArr.map(({ verifierUserId }) => ({ verifierUserId }));
+    const verifierUserIds = verifiersArr.map(({ verifierUserId }) => ({
+      verifierUserId,
+    }))
 
-    const config: Config = {
-      ownerId: '91944f58-def7-4ceb-bdab-7eb9e736176a',
+    const config: config = {
+      ownerUserId: '91944f58-def7-4ceb-bdab-7eb9e736176a',
       privateKey: pkInputVal,
       verifiers: verifierUserIds,
     }
-    
+
     try {
+      // FIXME: Fix verifier endpoint and verify response body
       const response = await fetch(
-        `http://localhost:3000//api/entrust?walletRecoveryConfigId=${data.data[0].id}`,
+        `http://localhost:3000/api/entrust?walletRecoveryConfigId=${config.id}`,
         {
           method: 'PATCH',
           headers: {
@@ -188,14 +152,13 @@ export default function EditConfig({ data }) {
 
   function handleDelete(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault()
-    const deletedConfig = deleteConfig(data.data[0].ownerId)
+    const deletedConfig = deleteConfig(config.ownerUserId)
   }
 
   const deleteConfig = async (ownerUserId: string) => {
     try {
       const response = await fetch(
-        'http://localhost:3000/api/entrust?ownerUserId=' +
-          ownerUserId,
+        'http://localhost:3000/api/entrust?ownerUserId=' + ownerUserId,
         {
           method: 'DELETE',
           headers: {

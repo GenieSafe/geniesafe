@@ -6,11 +6,10 @@ import { ChangeEvent, useState } from 'react'
 import { Card, CardContent } from '../../components/ui/card'
 import { Trash2 } from 'lucide-react'
 import router from 'next/router'
-import { Config, Verifier } from '../../../types/interfaces'
-
+import { config, verifier } from '../../../types/interfaces'
 
 const Assign = () => {
-  const [verifiersArr, setVerifiersArr] = useState<Verifier[]>([])
+  const [verifiersArr, setVerifiersArr] = useState<verifier[]>([])
   const [verifiersNameArr, setVerifiersNameArr] = useState<string[]>([])
   const [verifierInputVal, setVerifierInputVal] = useState('')
   const [pkInputVal, setPkInputVal] = useState('')
@@ -39,13 +38,13 @@ const Assign = () => {
 
         if (response.ok) {
           const data = await response.json()
-          const newObj: Verifier = {
-            verifierUserId: data.data.id,
+          const newObj: verifier = {
+            verifierUserId: data.id,
           }
           setVerifiersArr([...verifiersArr, newObj])
           setVerifiersNameArr([
             ...verifiersNameArr,
-            data.data.firstName + ' ' + data.data.lastName,
+            data.firstName + ' ' + data.lastName,
           ])
 
           if (verifiersArr.length >= 2) {
@@ -87,8 +86,8 @@ const Assign = () => {
   }
 
   const handleSubmit = async () => {
-    const config: Config = {
-      ownerId: '91944f58-def7-4ceb-bdab-7eb9e736176a',
+    const config: config = {
+      ownerUserId: '91944f58-def7-4ceb-bdab-7eb9e736176a',
       privateKey: pkInputVal,
       verifiers: verifiersArr,
     }

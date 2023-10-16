@@ -18,43 +18,57 @@ import { Input } from '../../../components/ui/input'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Beneficiary, Validator, Will } from '../../../../types/interfaces'
+import { beneficiary, validator, will } from '../../../../types/interfaces'
 import { useAccount } from 'wagmi'
 import { use } from 'chai'
+import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 
-export async function getServerSideProps(context) {
-  try {
-    const res = await fetch(
-      `http://localhost:3000/api/will?willId=${context.query.id}`
-    )
-    const data = await res.json()
+// export async function getServerSideProps(context) {
+//   try {
+//     const res = await fetch(
+//       `http://localhost:3000/api/will?willId=${context.query.id}`
+//     )
+//     const data = await res.json()
 
-    return { props: { data } }
-  } catch (err) {
-    console.error('Failed to fetch data:', err)
-    return {
-      props: {
-        data: context.query.id,
-      },
-    }
-  }
-}
+//     return { props: { data } }
+//   } catch (err) {
+//     console.error('Failed to fetch data:', err)
+//     return {
+//       props: {
+//         data: context.query.id,
+//       },
+//     }
+//   }
+// }
+
+export const getServerSideProps = (async (context: any) => {
+  const res = await fetch(
+    `http://localhost:3000/api/will?willId=${context.query.id}`
+  )
+
+  const will = await res.json()
+  return { props: { will } }
+}) satisfies GetServerSideProps<{
+  will: will
+}>
 
 const formSchema = z.object({
   title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
 })
 
-export default function EditWill({ data }) {
+export default function EditWill({
+  will,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: data.data.title,
+      title: will.title,
     },
   })
 
   const router = useRouter()
 
-  const [beneficiariesArr, setBeneficiariesArr] = useState<Beneficiary[]>([])
+  const [beneficiariesArr, setBeneficiariesArr] = useState<beneficiary[]>([])
   const [beneficiariesCardArr, setBeneficiariesCardArr] = useState<
     tempBeneficiary[]
   >([])
@@ -98,15 +112,15 @@ export default function EditWill({ data }) {
 
           if (response.ok) {
             const data = await response.json()
-            const newObj: Beneficiary = {
-              beneficiaryUserId: data.data.id,
+            const newObj: beneficiary = {
+              beneficiaryUserId: data.id,
               percentage: parseInt(percentageInputVal),
             }
 
             const tempBeneficiary: tempBeneficiary = {
-              beneficiaryName: data.data.firstName + ' ' + data.data.lastName,
+              beneficiaryName: data.firstName + ' ' + data.lastName,
               percentage: parseInt(percentageInputVal),
-              walletAddress: data.data.walletAddress,
+              walletAddress: data.walletAddress,
             }
 
             setBeneficiariesArr([...beneficiariesArr, newObj])
@@ -142,7 +156,7 @@ export default function EditWill({ data }) {
     setBeneficiariesCardArr(newCardArr)
   }
 
-  const [validatorsArr, setValidatorsArr] = useState<Validator[]>([])
+  const [validatorsArr, setValidatorsArr] = useState<validator[]>([])
   const [validatorsNameArr, setValidatorsNameArr] = useState<string[]>([])
   const [validatorInputVal, setValidatorInputVal] = useState('')
 
@@ -166,13 +180,14 @@ export default function EditWill({ data }) {
 
         if (response.ok) {
           const data = await response.json()
-          const newObj: Validator = {
-            validatorUserId: data.data.id,
+          const newObj: validator = {
+            validatorUserId: data.id,
+            isValidated: false,
           }
           setValidatorsArr([...validatorsArr, newObj])
           setValidatorsNameArr([
             ...validatorsNameArr,
-            data.data.firstName + ' ' + data.data.lastName,
+            data.firstName + ' ' + data.lastName,
           ])
 
           if (validatorsNameArr.length >= 2) {
@@ -205,7 +220,7 @@ export default function EditWill({ data }) {
     setValidatorsNameArr(upValidatorsNameArr)
   }
 
-  const updateWill = async (will: Will, willId: number) => {
+  const updateWill = async (will: will, willId: number) => {
     try {
       const response = await fetch(
         `http://localhost:3000/api/will?willId=${willId}`,
@@ -230,13 +245,17 @@ export default function EditWill({ data }) {
   }
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const will = {
+    const willReqBody = {
       title: values.title,
-      Beneficiaries: beneficiariesArr,
-      Validators: validatorsArr,
+      beneficiaries: beneficiariesArr,
+      validators: validatorsArr,
+      isValidated: will.isValidated,
+      isActive: will.isActive,
+      ownerUserId: will.ownerUserId,
+      deployedAtBlock: will.deployedAtBlock,
     }
-    console.log(will)
-    updateWill(will, data.data.id)
+    console.log(willReqBody)
+    updateWill(willReqBody, will.id)
   }
 
   const deleteWill = async (willId: number) => {
@@ -263,36 +282,38 @@ export default function EditWill({ data }) {
   }
 
   const onDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    const deletedWill = await deleteWill(data.data.id)
+    const deletedWill = await deleteWill(will.id)
   }
 
   useEffect(() => {
-    data.data.Beneficiaries.map((beneficiary) => {
+    will.beneficiaries.map((beneficiary: beneficiary) => {
       setBeneficiariesArr((prevBeneficiariesArr) => [
         ...prevBeneficiariesArr,
         beneficiary,
       ])
 
-      const beneficiaryCardObj: tempBeneficiary = {
-        beneficiaryName:
-          beneficiary.User.firstName + ' ' + beneficiary.User.lastName,
-        percentage: beneficiary.percentage,
-        walletAddress: beneficiary.User.walletAddress,
-      }
+      if (beneficiary.user) {
+        const beneficiaryCardObj: tempBeneficiary = {
+          beneficiaryName:
+            beneficiary.user.firstName + ' ' + beneficiary.user.lastName,
+          percentage: beneficiary.percentage,
+          walletAddress: beneficiary.user.walletAddress,
+        }
 
-      setBeneficiariesCardArr((prevBeneficiariesCardArr) => [
-        ...prevBeneficiariesCardArr,
-        beneficiaryCardObj,
-      ])
+        setBeneficiariesCardArr((prevBeneficiariesCardArr) => [
+          ...prevBeneficiariesCardArr,
+          beneficiaryCardObj,
+        ])
+      }
     })
 
-    data.data.Validators.map((validator) => {
+    will.validators.map((validator: validator) => {
       setValidatorsNameArr((prevValidatorsNameArr) => [
         ...prevValidatorsNameArr,
-        validator.User.firstName + ' ' + validator.User.lastName,
+        validator.user?.firstName + ' ' + validator.user?.lastName,
       ])
     })
-    setValidatorsArr(data.data.Validators)
+    setValidatorsArr(will.validators)
   }, [])
 
   return (

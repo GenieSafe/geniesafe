@@ -30,10 +30,12 @@ export interface validator {
 
 export interface verifier {
   verifierUserId: string
+  user?: user
 }
 
 export interface config {
-  ownerId: string
+  id?: string
+  ownerUserId: string
   privateKey: string
   verifiers: verifier[]
 }

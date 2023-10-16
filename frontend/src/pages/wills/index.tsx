@@ -7,7 +7,7 @@ import { Plus } from 'lucide-react'
 import { WillCard } from '../../components/WillCard'
 import { Button } from '../../components/ui/button'
 
-import { Will } from '../../../types/interfaces'
+import { will } from '../../../types/interfaces'
 
 export const getServerSideProps = (async (context) => {
   // Create authenticated Supabase Client
@@ -33,7 +33,7 @@ export const getServerSideProps = (async (context) => {
   return { props: { wills } }
   
 }) satisfies GetServerSideProps<{
-  wills: Will[]
+  wills: will[]
 }>
 
 export default function Wills({
@@ -54,7 +54,7 @@ export default function Wills({
       </div>
       <div className="container flex flex-col space-y-4">
         {wills.length ? (
-          wills.map((will: Will) => <WillCard key={will.id} will={will} />)
+          wills.map((will: will) => <WillCard key={will.id} will={will} />)
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>
         )}
