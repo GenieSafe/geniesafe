@@ -12,7 +12,7 @@ import { mainnet, polygon, optimism, goerli, localhost } from 'wagmi/chains'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import { SessionContextProvider } from '@supabase/auth-helpers-react'
-import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
+import { createPagesBrowserClient, Session } from '@supabase/auth-helpers-nextjs'
 import { useState } from 'react'
 import '../styles/global.css'
 import { Layout } from '../components/layout/Layout'
@@ -53,7 +53,9 @@ const wagmiClient = createClient({
   webSocketProvider,
 })
 
-export default function App({ Component, pageProps }: AppProps) {
+export default function App({ Component, pageProps }: AppProps<{
+  initialSession: Session
+}>) {
   // Create a new supabase browser client on every first render
   const [supabaseClient] = useState(() => createPagesBrowserClient())
 
