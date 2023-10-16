@@ -1,6 +1,6 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Link from 'next/link'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 // import { LocalFaucetButton } from '../LocalFaucetButton'
 import { Head, MetaProps } from './Head'
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
@@ -168,7 +168,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
             </div>
           </header>
           <main>
-            <div className="container mx-auto my-12">{children}</div>
+            <div className="container mx-auto my-12 h-screen">{children}</div>
           </main>
           <footer></footer>
         </>
