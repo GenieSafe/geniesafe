@@ -1,42 +1,44 @@
-import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 
 import { Plus } from 'lucide-react'
 
 import { WillCard } from '../../components/WillCard'
 import { Button } from '../../components/ui/button'
-import Link from 'next/link'
-import { useSession } from '@supabase/auth-helpers-react'
-import { supabase } from '../../utils/supabase'
 
-import { currentUserId } from '../../lib/global'
+import { Will } from '../../../types/interfaces'
 
-export async function getStaticProps() {
-  //TODO: replace with current session userId. How to retrieve?
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+export const getServerSideProps = (async (context) => {
+  // Create authenticated Supabase Client
+  const supabase = createPagesServerClient(context)
+  // Check if we have a session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-    // const currentUserId = user?.id
-
-    const res = await fetch(
-      `http://localhost:3000/api/will?ownerUserId=${currentUserId}`
-    )
-    const data = await res.json()
-    return { props: { data } }
-  } catch (err) {
-    console.error('Failed to fetch data:', err)
+  if (!session)
     return {
-      props: {
-        data: null,
+      redirect: {
+        destination: '/auth/login',
+        permanent: false,
       },
     }
-  }
-}
 
-const Wills = ({ data }) => {
-  const session = useSession()
+  const res = await fetch(
+    `http://localhost:3000/api/will?ownerUserId=${session.user.id}`
+  )
+  
+  const wills = await res.json()
+  return { props: { wills } }
+  
+}) satisfies GetServerSideProps<{
+  wills: Will[]
+}>
 
+export default function Wills({
+  wills,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (
     <>
       <div className="container flex items-center justify-between pb-8">
@@ -51,8 +53,8 @@ const Wills = ({ data }) => {
         </Button>
       </div>
       <div className="container flex flex-col space-y-4">
-        {data.data.Wills.length ? (
-          data.data.Wills.map((will) => <WillCard key={will.id} will={will} />)
+        {wills.length ? (
+          wills.map((will: Will) => <WillCard key={will.id} will={will} />)
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>
         )}
@@ -60,5 +62,3 @@ const Wills = ({ data }) => {
     </>
   )
 }
-
-export default Wills

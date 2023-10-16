@@ -22,36 +22,15 @@ import { Beneficiary, Validator, Will } from '../../../types/interfaces'
 import { useAccount } from 'wagmi'
 import { currentUserId } from '../../lib/global'
 
-// @ts-ignore
-export async function getServerSideProps(context) {
-  try {
-    const res = await fetch(
-      `http://localhost:3000/api/will?willId=${context.query.id}`
-    )
-    const data = await res.json()
-
-    return { props: { data } }
-  } catch (err) {
-    console.error('Failed to fetch data:', err)
-    return {
-      props: {
-        data: context.query.id,
-      },
-    }
-  }
-}
-
 const formSchema = z.object({
   title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
 })
 
 // @ts-ignore
-export default function EditWill({ data }) {
+export default function CreateWill() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: '',
-    },
+    defaultValues: {},
   })
 
   const router = useRouter()
@@ -101,14 +80,14 @@ export default function EditWill({ data }) {
           if (response.ok) {
             const data = await response.json()
             const newObj: Beneficiary = {
-              beneficiaryUserId: data.data.id,
+              beneficiaryUserId: data.id,
               percentage: parseInt(percentageInputVal),
             }
 
             const tempBeneficiary: tempBeneficiary = {
-              beneficiaryName: data.data.firstName + ' ' + data.data.lastName,
+              beneficiaryName: data.firstName + ' ' + data.lastName,
               percentage: parseInt(percentageInputVal),
-              walletAddress: data.data.walletAddress,
+              walletAddress: data.walletAddress,
             }
 
             setBeneficiariesArr([...beneficiariesArr, newObj])
@@ -169,12 +148,13 @@ export default function EditWill({ data }) {
         if (response.ok) {
           const data = await response.json()
           const newObj: Validator = {
-            validatorUserId: data.data.id,
+            validatorUserId: data.id,
+            isValidated: false,
           }
           setValidatorsArr([...validatorsArr, newObj])
           setValidatorsNameArr([
             ...validatorsNameArr,
-            data.data.firstName + ' ' + data.data.lastName,
+            data.firstName + ' ' + data.lastName,
           ])
 
           if (validatorsNameArr.length >= 2) {
@@ -207,19 +187,17 @@ export default function EditWill({ data }) {
     setValidatorsNameArr(upValidatorsNameArr)
   }
 
-  // Get the current account address
-  const { address } = useAccount()
-
   // 2. Define a submit handler.
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const will: Will = {
+    
+    const will = {
       ownerUserId: currentUserId,
       title: values.title,
-      walletAddress: address as string,
       beneficiaries: beneficiariesArr,
       validators: validatorsArr,
+      isActive: false,
+      isValidated: false,
     }
-    console.log(will)
 
     try {
       const res = await fetch('http://localhost:3000/api/will', {
@@ -234,10 +212,6 @@ export default function EditWill({ data }) {
         // API call was successful
         // Do something with the response
         router.push('/wills')
-      } else {
-        // API call failed
-        // Handle the error
-        console.log('fail')
       }
     } catch (err) {
       console.log(err)
@@ -248,25 +222,12 @@ export default function EditWill({ data }) {
     <>
       <div className="container flex items-center justify-between pb-8">
         <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
-          Edit Will
+          Create Will
         </h1>
       </div>
       <div className="container grid gap-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* <FormField
-            control={form.control}
-            name="willTitle"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Will Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="My First Will" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
             <FormField
               control={form.control}
               name="title"
@@ -312,28 +273,10 @@ export default function EditWill({ data }) {
                   <Card className="dark" key={index}>
                     <CardContent className="flex items-center justify-between pt-6">
                       <div className="flex items-center gap-12">
-                        {/* TODO: Refactor style into a CSS class */}
-                        <p
-                          className="leading-7 "
-                          style={{
-                            minWidth: '10rem',
-                            maxWidth: '10rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
+                        <p className="w-40 leading-7 truncate">
                           {beneficiary.beneficiaryName}
                         </p>
-                        <p
-                          className="leading-7 "
-                          style={{
-                            maxWidth: '10rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
+                        <p className="w-40 leading-7 truncate">
                           {beneficiary.walletAddress}
                         </p>
                         <p className="leading-7">{beneficiary.percentage}%</p>
@@ -381,19 +324,7 @@ export default function EditWill({ data }) {
                   <Card className="dark" key={index}>
                     <CardContent className="flex items-center justify-between pt-6">
                       <div className="flex items-center gap-12">
-                        {/* TODO: Refactor style into a CSS class */}
-                        <p
-                          className="leading-7 "
-                          style={{
-                            minWidth: '10rem',
-                            maxWidth: '10rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {validator}
-                        </p>
+                        <p className="w-40 leading-7 truncate">{validator}</p>
                       </div>
                       <Button
                         size={'sm'}
@@ -409,15 +340,7 @@ export default function EditWill({ data }) {
               </div>
             </div>
             <div className="flex gap-[1rem] justify-end">
-              <Button
-                size={'lg'}
-                variant="destructive"
-                type="submit"
-                // onClick={''}
-              >
-                Delete
-              </Button>
-              <Button size={'lg'} type="submit" onClick={onSubmit}>
+              <Button size={'lg'} type="submit" onClick={() => onSubmit}>
                 Submit
               </Button>
             </div>
