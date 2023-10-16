@@ -95,9 +95,6 @@ const getWill: NextApiHandler = async (req, res) => {
 const willSchema = Yup.object().shape({
   ownerUserId: Yup.string().required('Owner user ID is required!'),
   title: Yup.string().required('Title is required!'),
-  walletAddress: Yup.string()
-    .required('Owner wallet address is required!')
-    .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
   beneficiaries: Yup.array().of(
     Yup.object().shape({
       // walletAddress: Yup.string()
@@ -132,7 +129,7 @@ const willSchema = Yup.object().shape({
 const createWill: NextApiHandler = async (req, res) => {
   // @ts-ignore
   const data = validateRequest(req.body, willSchema)
-  const { ownerUserId, title, walletAddress, beneficiaries, validators } =
+  const { ownerUserId, title, beneficiaries, validators } =
     req.body
 
   try {
