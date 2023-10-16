@@ -26,7 +26,7 @@ import type {
   PromiseOrValue,
 } from "../common";
 
-export interface YourContractInterface extends utils.Interface {
+export interface WillInterface extends utils.Interface {
   functions: {
     "greeting()": FunctionFragment;
     "setGreeting(string)": FunctionFragment;
@@ -66,12 +66,12 @@ export type SetGreetingEvent = TypedEvent<
 
 export type SetGreetingEventFilter = TypedEventFilter<SetGreetingEvent>;
 
-export interface YourContract extends BaseContract {
+export interface Will extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: YourContractInterface;
+  interface: WillInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,

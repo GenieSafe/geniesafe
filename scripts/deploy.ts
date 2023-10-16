@@ -17,12 +17,12 @@ async function main() {
   // fs.unlinkSync(`${config.paths.artifacts}/contracts/contractAddress.ts`);
 
   // We get the contract to deploy
-  const YourContract = await ethers.getContractFactory("YourContract");
-  const contract = await YourContract.deploy();
+  const Will = await ethers.getContractFactory("Will");
+  const contract = await Will.deploy();
   await contract.deployed();
-  console.log("YourContract deployed to:", contract.address);
+  console.log("Will deployed to:", contract.address);
 
-  saveFrontendFiles(contract.address, "YourContract");
+  saveFrontendFiles(contract.address, "Will");
 }
 
 // https://github.com/nomiclabs/hardhat-hackathon-boilerplate/blob/master/scripts/deploy.js

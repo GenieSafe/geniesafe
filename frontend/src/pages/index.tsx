@@ -8,12 +8,12 @@ import {
   useProvider,
   useWaitForTransaction,
 } from 'wagmi'
-import { YourContract as LOCAL_CONTRACT_ADDRESS } from '../../artifacts/contracts/contractAddress'
-import YourContract from '../../artifacts/contracts/YourContract.sol/YourContract.json'
+import { Will as LOCAL_CONTRACT_ADDRESS } from '../../artifacts/contracts/contractAddress'
+import Will from '../../artifacts/contracts/Will.sol/Will.json'
 import { Layout } from '../components/layout/Layout'
 // import { useCheckLocalChain } from '../hooks/useCheckLocalChain'
 // import { useIsMounted } from '../hooks/useIsMounted'
-import { YourContract as YourContractType } from '../../types/typechain'
+import { Will as WillType } from '../../types/typechain'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
@@ -100,7 +100,7 @@ const Home = () => {
 
   const { config } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
-    abi: YourContract.abi,
+    abi: Will.abi,
     functionName: 'setGreeting',
     args: [state.inputValue],
     enabled: Boolean(state.inputValue),
@@ -139,9 +139,9 @@ const Home = () => {
     if (provider) {
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
-        YourContract.abi,
+        Will.abi,
         provider
-      ) as YourContractType
+      ) as WillType
       try {
         const data = await contract.greeting()
         dispatch({ type: 'SET_GREETING', greeting: data })

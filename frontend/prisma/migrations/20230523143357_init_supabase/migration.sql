@@ -4,7 +4,7 @@
   - The primary key for the `Beneficiary` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - The primary key for the `Validator` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - The primary key for the `Verifier` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `deployedContractAddress` on the `WillContract` table. All the data in the column will be lost.
+  - You are about to drop the column `deployedContractAddress` on the `Will` table. All the data in the column will be lost.
   - A unique constraint covering the columns `[icNumber]` on the table `Owner` will be added. If there are existing duplicate values, this will fail.
   - A unique constraint covering the columns `[email]` on the table `User` will be added. If there are existing duplicate values, this will fail.
   - Added the required column `icNumber` to the `Owner` table without a default value. This is not possible if the table is not empty.
@@ -33,7 +33,7 @@ ADD COLUMN     "id" SERIAL NOT NULL,
 ADD CONSTRAINT "Verifier_pkey" PRIMARY KEY ("id");
 
 -- AlterTable
-ALTER TABLE "WillContract" DROP COLUMN "deployedContractAddress",
+ALTER TABLE "Will" DROP COLUMN "deployedContractAddress",
 ADD COLUMN     "deployedAddress" TEXT;
 
 -- CreateIndex
