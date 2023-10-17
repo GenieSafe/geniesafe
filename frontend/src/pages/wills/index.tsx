@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 
 import { Plus } from 'lucide-react'
@@ -9,9 +9,9 @@ import { Button } from '../../components/ui/button'
 
 import { will } from '../../../types/interfaces'
 
-export const getServerSideProps = (async (context) => {
+export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
-  const supabase = createPagesServerClient(context)
+  const supabase = createPagesServerClient(ctx)
   // Check if we have a session
   const {
     data: { session },
@@ -25,20 +25,22 @@ export const getServerSideProps = (async (context) => {
       },
     }
 
-  const res = await fetch(
-    `http://localhost:3000/api/will?ownerUserId=${session.user.id}`
-  )
-  
-  const wills = await res.json()
-  return { props: { wills } }
-  
-}) satisfies GetServerSideProps<{
-  wills: will[]
-}>
+  // Run queries with RLS on the server
+  const { data, error } = await supabase.from('wills').select(`
+    id, title, contract_address, deployed_at_block, status,
+    beneficiaries(percentage, profile:user_id(first_name, last_name, wallet_address)),
+    validators(has_validated, profile:user_id(first_name, last_name, wallet_address))
+  `)
 
-export default function Wills({
-  wills,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  return {
+    props: {
+      initialSession: session,
+      data: data ?? error,
+    },
+  }
+}
+
+export default function Wills({ data }: { data: any }) {
   return (
     <>
       <div className="container flex items-center justify-between pb-8">
@@ -53,8 +55,8 @@ export default function Wills({
         </Button>
       </div>
       <div className="container flex flex-col space-y-4">
-        {wills.length ? (
-          wills.map((will: will) => <WillCard key={will.id} will={will} />)
+        {data.length ? (
+          data.map((will: will) => <WillCard key={will.id} will={will} />)
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>
         )}
