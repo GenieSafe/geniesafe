@@ -1,41 +1,50 @@
-export interface user {
+export interface profile {
   id: string
   email: string
-  walletAddress: string
-  firstName: string
-  lastName: string
+  wallet_address: string
+  first_name: string
+  last_name: string
+  ic_number?: string
 }
 
 export interface will {
-  id?: string
-  ownerUserId: string
+  id: string
+  user_id: string
   title: string
-  deployedAtBlock: string
-  isActive: boolean
-  isValidated: boolean
+  contract_address?: string
+  deployed_at_block?: string  
+  status?: null | "INACTIVE" | "ACTIVE" | "VALIDATED" | "EXECUTED"
   beneficiaries: beneficiary[]
   validators: validator[]
 }
+export interface wallet_recovery_config {
+  id: string
+  user_id: string
+  private_key: string
+  status?: null | "INACTIVE" | "ACTIVE" | "VALIDATED" | "EXECUTED"
+  verifiers: verifier[]
+}
 
 export interface beneficiary {
-  beneficiaryUserId: string
+  id: string
+  user_id: string
+  will_id: string
   percentage: number
-  user?: user
+  profile: profile
 }
 export interface validator {
-  validatorUserId: string
-  isValidated: boolean
-  user?: user
+  id: string
+  user_id: string
+  will_id: string
+  has_validated: boolean
+  profile: profile
 }
 
 export interface verifier {
-  verifierUserId: string
-  user?: user
+  id: string
+  user_id: string
+  config_id: string
+  has_verified: boolean
+  profile: profile
 }
 
-export interface config {
-  id?: string
-  ownerUserId: string
-  privateKey: string
-  verifiers: verifier[]
-}
