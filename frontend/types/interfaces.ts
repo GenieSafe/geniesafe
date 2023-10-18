@@ -26,18 +26,18 @@ export interface wallet_recovery_config {
 }
 
 export interface beneficiary {
-  id: string
-  user_id: string
-  will_id: string
+  id?: string
+  user_id?: string
+  will_id?: string
   percentage: number
-  profile: profile
+  profile?: profile
 }
 export interface validator {
-  id: string
-  user_id: string
-  will_id: string
+  id?: string
+  user_id?: string
+  will_id?: string
   has_validated: boolean
-  profile: profile
+  profile?: profile
 }
 
 export interface verifier {
