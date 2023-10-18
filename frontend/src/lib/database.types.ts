@@ -242,7 +242,15 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_will: {
+        Args: {
+          in_will_id: string
+          in_title: string
+          in_beneficiaries: unknown[]
+          in_validators: unknown[]
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       config_status: "INACTIVE" | "ACTIVE" | "VERIFIED" | "EXECUTED"
