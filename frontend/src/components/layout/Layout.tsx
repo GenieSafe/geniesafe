@@ -1,4 +1,4 @@
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+// import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Link from 'next/link'
 import React from 'react'
 // import { LocalFaucetButton } from '../LocalFaucetButton'
@@ -37,7 +37,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
           <Head customMeta={customMeta} />
           <header>
             <div className="container grid items-center justify-between grid-cols-3 py-4">
-              <div className="flex items-center justify-start">
+              {/* <div className="flex items-center justify-start">
                 <ConnectButton.Custom>
                   {({
                     account,
@@ -132,7 +132,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
                     )
                   }}
                 </ConnectButton.Custom>
-              </div>
+              </div> */}
               <div className="flex items-center justify-center">
                 <Link className={buttonVariants({ variant: 'link' })} href="/">
                   Dashboard
