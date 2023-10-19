@@ -1,20 +1,28 @@
+import { ChangeEvent, useState } from 'react'
+import { useRouter } from 'next/router'
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
+
 import { Progress } from '../../components/ui/progress'
 import { Input } from '../../components/ui/input'
 import { Button } from '../../components/ui/button'
 import { Label } from '../../components/ui/label'
-import { ChangeEvent, useState } from 'react'
 import { Card, CardContent } from '../../components/ui/card'
+
 import { Trash2 } from 'lucide-react'
-import router from 'next/router'
-import { config, verifier } from '../../../types/interfaces'
+
+import { Database, Tables } from '../../lib/database.types'
 
 const Assign = () => {
-  const [verifiersArr, setVerifiersArr] = useState<verifier[]>([])
-  const [verifiersNameArr, setVerifiersNameArr] = useState<string[]>([])
+  const supabase = useSupabaseClient<Database>()
+  const user = useUser()
+  const router = useRouter()
+
+  const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>(
+    []
+  )
   const [verifierInputVal, setVerifierInputVal] = useState('')
   const [pkInputVal, setPkInputVal] = useState('')
 
-  const [submitButtonDisabled, setSubmitButtonDisabled] = useState(true)
   const handleVerifierInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVerifierInputVal(e.target.value)
   }
@@ -24,45 +32,43 @@ const Assign = () => {
   }
 
   const handleAddVerifier = async () => {
-    if (verifierInputVal.trim() !== '') {
-      try {
-        const response = await fetch(
-          'http://localhost:3000/api/user?walletAddress=' + verifierInputVal,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
+    if (verifierInputVal.trim() === '') {
+      alert('Please fill in the field')
+    } else if (verifiersArr.length >= 3) {
+      alert('You can only have up to 3 verifiers')
+    } else if (
+      verifiersArr.some(
+        (verifier) =>
+          (verifier.metadata as Record<string, any>).wallet_address ===
+          verifierInputVal
+      )
+    ) {
+      alert('Verifier with the same wallet address already exists')
+    } else {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('wallet_address', verifierInputVal)
 
-        if (response.ok) {
-          const data = await response.json()
-          const newObj: verifier = {
-            verifierUserId: data.id,
-          }
-          setVerifiersArr([...verifiersArr, newObj])
-          setVerifiersNameArr([
-            ...verifiersNameArr,
-            data.firstName + ' ' + data.lastName,
-          ])
-
-          if (verifiersArr.length >= 2) {
-            setVerifierInputVal('')
-            setSubmitButtonDisabled(false)
-          } else {
-            setVerifierInputVal('')
-          }
-        } else {
-          // API call failed
-          // Handle the error
-          console.log('user fetch fail')
+      if (!error && data) {
+        const newVerifier: any = {
+          user_id: data[0].id,
+          metadata: data[0],
         }
-      } catch (error) {
-        // Handle any network or other errors
+
+        setVerifiersArr([...verifiersArr, newVerifier])
+
+        if (verifiersArr.length >= 2) {
+          setVerifierInputVal('')
+        }
+      } else {
+        // API call failed
+        // Handle the error
         console.log(error)
       }
     }
+
+    setVerifierInputVal('')
   }
 
   const handleDeleteVerifier = (
@@ -71,48 +77,31 @@ const Assign = () => {
   ) => {
     e.preventDefault()
     const upVerifiersArr = [...verifiersArr]
-    const upVerifiersNameArr = [...verifiersNameArr]
     upVerifiersArr.splice(index, 1)
-    upVerifiersNameArr.splice(index, 1)
     setVerifiersArr(upVerifiersArr)
-    setVerifiersNameArr(upVerifiersNameArr)
-    if (verifiersArr.length <= 3) {
-      setSubmitButtonDisabled(true)
-    }
   }
 
-  const calculateProgress = () => {
-    return Math.floor((verifiersArr.length / 3) * 100)
-  }
+  const onSubmit = async () => {
+    const { data: config_data, error: config_error } = await supabase
+      .from('wallet_recovery_config')
+      .insert({ private_key: pkInputVal as string, user_id: user?.id as string })
+      .select()
 
-  const handleSubmit = async () => {
-    const config: config = {
-      ownerUserId: '91944f58-def7-4ceb-bdab-7eb9e736176a',
-      privateKey: pkInputVal,
-      verifiers: verifiersArr,
-    }
-
-    try {
-      const response = await fetch('http://localhost:3000/api/entrust', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(config),
+    if (!config_error) {
+      verifiersArr.forEach(async (verifier) => {
+        verifier.config_id = config_data[0].id as string
       })
 
-      if (response.ok) {
-        // API call was successful
-        // Do something with the response
+      const { data: ver_data, error: ver_error } = await supabase
+        .from('verifiers')
+        .insert(verifiersArr)
+        .select()
+
+      if (!ver_error) {
         router.push('/safeguard')
       } else {
-        // API call failed
-        // Handle the error
-        console.log('fail')
+        console.log(ver_error)
       }
-    } catch (error) {
-      // Handle any network or other errors
-      console.log(error)
     }
   }
 
@@ -139,7 +128,7 @@ const Assign = () => {
             />
           </div>
           <div className="grid gap-1.5">
-            <Progress value={calculateProgress()} />
+            <Progress value={Math.floor((verifiersArr.length / 3) * 100)} />
             <Label className="justify-self-end">
               {verifiersArr.length}/3 Verifiers
             </Label>
@@ -164,12 +153,14 @@ const Assign = () => {
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            {verifiersNameArr.map((value, index) => (
+          {verifiersArr.map((verifier, index) => (
               <Card className="dark" key={index}>
                 <CardContent className="pt-6">
                   <div className="flex flex-row items-center justify-between">
-                    {/* <p>{value.walletAddress}</p> */}
-                    <p>{value}</p>
+                    <p>
+                      {(verifier.metadata as Record<string, any>).first_name}{' '}
+                      {(verifier.metadata as Record<string, any>).last_name}
+                    </p>
                     <Button
                       size={'sm'}
                       variant={'destructive'}
@@ -185,8 +176,8 @@ const Assign = () => {
           <div className="flex justify-end">
             <Button
               type="submit"
-              disabled={submitButtonDisabled}
-              onClick={handleSubmit}
+              onClick={onSubmit}
+              disabled={verifiersArr.length === 3}
             >
               Confirm verifiers
             </Button>
