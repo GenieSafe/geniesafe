@@ -1,4 +1,6 @@
-import { CheckCircle2, Edit, Edit2 } from 'lucide-react'
+import Link from 'next/link'
+
+import { CheckCircle2, XCircle } from 'lucide-react'
 
 import {
   Card,
@@ -8,93 +10,102 @@ import {
   CardHeader,
   CardTitle,
 } from '../components/ui/card'
-import { Badge } from './ui/badge'
-import Link from 'next/link'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip'
-import { Separator } from './ui/separator'
+import { Badge } from './ui/badge'
 
-type CardProps = React.ComponentProps<typeof Card>
+import { Tables } from '../lib/database.types'
 
-export function WillCard({ className, will }: CardProps) {
+export function WillCard({ will }: { will: any }) {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Link href={`wills/edit/${will.id}`}>
-            <Card className="dark">
+            <Card className="">
               <CardHeader className="grid grid-cols-2">
                 <div className="space-y-2">
                   <CardTitle className="text-2xl">{will.title}</CardTitle>
                   <CardDescription className="text-foreground">
                     Will contract deployed to
-                    {will.deployedAtBlock !== null ? (
+                    {will.deployed_at_block !== null ? (
                       <span className="font-semibold">
                         {' '}
-                        {will.deployedAtBlock}
+                        {will.deployed_at_block}
                       </span>
                     ) : (
-                      <span className="font-semibold"> N/A</span>
+                      <span className="font-semibold">&nbsp;N/A</span>
                     )}
                   </CardDescription>
                 </div>
                 <div className="flex items-start justify-end">
-                  {will.isValidated ? (
-                    <Badge variant={'success'}>Active</Badge>
-                  ) : (
-                    <Badge className="" variant={'destructive'}>
-                      Unactive
-                    </Badge>
-                  )}
+                  <Badge
+                    variant={
+                      will.status === 'ACTIVE'
+                        ? 'success'
+                        : will.status === 'INACTIVE'
+                        ? 'destructive'
+                        : 'default'
+                    }
+                  >
+                    {will.status}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="grid gap-6">
                 <div className="grid gap-4">
                   <p className="font-bold">Beneficiaries</p>
                   <div className="flex gap-4 overflow-x-auto">
-                    {will.Beneficiaries ? (
-                      will.Beneficiaries.map((beneficiary) => (
-                        <Card key={beneficiary.id}>
-                          <CardContent className="pt-6">
-                            <div className="flex flex-row gap-8">
-                              <div className="flex flex-col">
-                                {/* TODO: Refactor style into a CSS class */}
-                                <p
-                                  className="text-lg font-semibold"
-                                  style={{
-                                    maxWidth: '6rem',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  {`${beneficiary.User.firstName} ${beneficiary.User.lastName}`}
-                                </p>
-                                <p
-                                  style={{
-                                    maxWidth: '6rem',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  {beneficiary.User.walletAddress}
-                                </p>
-                                <p>{beneficiary.relation}</p>
+                    {will.beneficiaries ? (
+                      will.beneficiaries.map(
+                        (beneficiary: Tables<'beneficiaries'>, index: number) => (
+                          <Card key={index}>
+                            <CardContent className="pt-6">
+                              <div className="flex flex-row gap-8">
+                                <div className="flex flex-col w-24">
+                                  <p className="text-lg font-semibold truncate">
+                                    {
+                                      (
+                                        beneficiary.metadata as Record<
+                                          string,
+                                          any
+                                        >
+                                      ).first_name
+                                    }{' '}
+                                    {
+                                      (
+                                        beneficiary.metadata as Record<
+                                          string,
+                                          any
+                                        >
+                                      ).last_name
+                                    }
+                                  </p>
+                                  <p className="truncate">
+                                    {
+                                      (
+                                        beneficiary.metadata as Record<
+                                          string,
+                                          any
+                                        >
+                                      ).wallet_address
+                                    }
+                                  </p>
+                                </div>
+                                <div className="flex flex-col items-center justify-center">
+                                  <p className="text-lg font-bold">
+                                    {beneficiary.percentage}%
+                                  </p>
+                                </div>
                               </div>
-                              <div className="flex flex-col items-center justify-center">
-                                <p className="text-lg font-bold">
-                                  {beneficiary.percentage}%
-                                </p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))
+                            </CardContent>
+                          </Card>
+                        )
+                      )
                     ) : (
                       <p className="">No beneficiaries found.</p>
                     )}
@@ -104,41 +115,34 @@ export function WillCard({ className, will }: CardProps) {
                 <div className="flex flex-col gap-4">
                   <p className="font-bold">Validators</p>
                   <div className="flex gap-4 overflow-x-auto">
-                    {will.Validators ? (
-                      will.Validators.map((validator) => (
-                        <Card key={validator.id}>
+                    {will.validators ? (
+                      will.validators.map((validator: Tables<'validators'>, index: number) => (
+                        <Card key={index}>
                           <CardContent className="pt-6">
-                            <div className="flex flex-row gap-8">
-                              <div className="flex flex-col">
-                                {/* TODO: Refactor style into a CSS class */}
-                                <p
-                                  className="text-lg font-semibold"
-                                  style={{
-                                    maxWidth: '6rem',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  {`${validator.User.firstName} ${validator.User.lastName}`}
+                            <div className="flex flex-row items-center gap-8">
+                              <div className="flex flex-col w-24">
+                                <p className="text-lg font-semibold truncate">
+                                  {
+                                    (validator.metadata as Record<string, any>)
+                                      .first_name
+                                  }{' '}
+                                  {
+                                    (validator.metadata as Record<string, any>)
+                                      .last_name
+                                  }
                                 </p>
-                                <p
-                                  style={{
-                                    maxWidth: '6rem',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  {validator.User.walletAddress}
+                                <p className="truncate">
+                                  {
+                                    (validator.metadata as Record<string, any>)
+                                      .wallet_address
+                                  }
                                 </p>
-                                <p>{validator.relation}</p>
                               </div>
 
-                              {validator.isValidated ? (
+                              {validator.has_validated ? (
                                 <CheckCircle2 className="text-success"></CheckCircle2>
                               ) : (
-                                <CheckCircle2 className="text-destructive"></CheckCircle2>
+                                <XCircle className="text-destructive"></XCircle>
                               )}
                             </div>
                           </CardContent>

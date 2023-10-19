@@ -1,28 +1,56 @@
-import { Button } from '../../components/ui/button'
 import Link from 'next/link'
+import {
+  GetServerSidePropsContext,
+} from 'next'
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
+
 import { Edit3 } from 'lucide-react'
+
+import { Button } from '../../components/ui/button'
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
 } from '../../components/ui/card'
-import { currentUserId } from '../../lib/global'
+import { Tables } from '../../lib/database.types'
 
-//TODO: replace with current session userId
-export async function getStaticProps() {
-  const res = await fetch(
-    `http://localhost:3000/api/entrust?ownerId=${currentUserId}`
-  )
-  var data = await res.json()
-  return { props: { data } }
+
+export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
+  // Create authenticated Supabase Client
+  const supabase = createPagesServerClient(ctx)
+  // Check if we have a session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session)
+    return {
+      redirect: {
+        destination: '/auth/login',
+        permanent: false,
+      },
+    }
+
+  // Run queries with RLS on the server
+  const { data, error } = await supabase.from('wallet_recovery_config').select(`
+    id, status,
+    verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
+  `)
+
+  return {
+    props: {
+      initialSession: session,
+      data: data ?? error,
+    },
+  }
 }
 
-const Safeguard = ({ data }: any) => {
+const Safeguard = ({ data }: { data: any }) => {
   return (
     <>
       <div className="container flex flex-col gap-8 pb-8">
-        {data.data.length > 0 ? (
+        {data.length > 0 ? (
           <>
             <div className="container pb-8">
               <div className="flex flex-col gap-4 mb-4">
@@ -31,35 +59,32 @@ const Safeguard = ({ data }: any) => {
                 </h1>
                 <p className="mb-4 leading-7">
                   Lost access to your wallet? Notify your Verifiers to verify
-                  your identity and we’ll send you your private key.
+                  your identity and we'll send you your private key.
                 </p>
               </div>
               <div className="grid gap-8">
-                <Card className="dark">
-                  <CardHeader>
-                    <CardTitle className="flex justify-between text-2xl">
-                      Verifiers
-                      <Button size={'sm'} asChild>
-                        <Link href={`/safeguard/edit/${data.data[0].ownerId}`}>
-                          {/* <Link
-                          href={{
-                            pathname: '/safeguard/edit/[id]',
-                            query: data.data[0].ownerId, // the data
-                          }}
-                        > */}
-                          <Edit3 className="w-4 h-4" />
-                        </Link>
-                      </Button>
-                    </CardTitle>
+                <Card className="bg-primary">
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-2xl text-primary-foreground">Verifiers</CardTitle>
+                    <Button size={'icon'} variant={"secondary"} asChild>
+                      <Link href={`/safeguard/edit/${data.id}`}>
+                        <Edit3 className="w-4 h-4" />
+                      </Link>
+                    </Button>
                   </CardHeader>
                   <CardContent className="flex gap-4">
-                    {data.data[0].Verifiers.map((verifier: any, index) => (
-                      <Card key={index} className="bg-primary">
+                    {data[0].verifiers.map((verifier: Tables<'verifiers'>, index: number) => (
+                      <Card key={index} className="">
                         <CardContent className="grid pt-6">
-                          <p className="text-secondary">
-                            {verifier.User.firstName +
-                              ' ' +
-                              verifier.User.lastName}
+                          <p className="">
+                          {
+                            (verifier.metadata as Record<string, any>)
+                              .first_name
+                          }{' '}
+                          {
+                            (verifier.metadata as Record<string, any>)
+                              .last_name
+                          }
                           </p>
                         </CardContent>
                       </Card>

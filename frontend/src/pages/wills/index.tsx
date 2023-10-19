@@ -1,42 +1,45 @@
-import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { GetServerSidePropsContext } from 'next'
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 
 import { Plus } from 'lucide-react'
 
 import { WillCard } from '../../components/WillCard'
 import { Button } from '../../components/ui/button'
-import Link from 'next/link'
-import { useSession } from '@supabase/auth-helpers-react'
-import { supabase } from '../../utils/supabase'
+import { Tables } from '../../lib/database.types'
 
-import { currentUserId } from '../../lib/global'
+export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
+  // Create authenticated Supabase Client
+  const supabase = createPagesServerClient(ctx)
+  // Check if we have a session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-export async function getStaticProps() {
-  //TODO: replace with current session userId. How to retrieve?
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    // const currentUserId = user?.id
-
-    const res = await fetch(
-      `http://localhost:3000/api/will?ownerUserId=${currentUserId}`
-    )
-    const data = await res.json()
-    return { props: { data } }
-  } catch (err) {
-    console.error('Failed to fetch data:', err)
+  if (!session)
     return {
-      props: {
-        data: null,
+      redirect: {
+        destination: '/auth/login',
+        permanent: false,
       },
     }
+
+  // Run queries with RLS on the server
+  const { data, error } = await supabase.from('wills').select(`
+    id, title, contract_address, deployed_at_block, status,
+    beneficiaries(percentage, metadata:user_id(first_name, last_name, wallet_address)),
+    validators(has_validated, metadata:user_id(first_name, last_name, wallet_address))
+  `)
+
+  return {
+    props: {
+      initialSession: session,
+      data: data ?? error,
+    },
   }
 }
 
-const Wills = ({ data }) => {
-  const session = useSession()
-
+export default function Wills({ data }: { data: any }) {
   return (
     <>
       <div className="container flex items-center justify-between pb-8">
@@ -51,8 +54,8 @@ const Wills = ({ data }) => {
         </Button>
       </div>
       <div className="container flex flex-col space-y-4">
-        {data.data.Wills.length ? (
-          data.data.Wills.map((will) => <WillCard key={will.id} will={will} />)
+        {data.length ? (
+          data.map((will: Tables<'wills'>) => <WillCard key={will.id} will={will} />)
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>
         )}
@@ -60,5 +63,3 @@ const Wills = ({ data }) => {
     </>
   )
 }
-
-export default Wills

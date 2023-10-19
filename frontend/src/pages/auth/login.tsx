@@ -6,11 +6,11 @@ import { useEffect, useState } from 'react'
 const LoginPage = () => {
   const supabaseClient = useSupabaseClient()
   const user = useUser()
-  const [data, setData] = useState()
+  const [data, setData] = useState<any>(null)
 
   useEffect(() => {
     async function loadData() {
-      const { data } = await supabaseClient.from('test').select('*')
+      const { data } = await supabaseClient.from('profiles').select('*')
       setData(data)
     }
     // Only run query once user is logged in.
