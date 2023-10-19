@@ -251,6 +251,14 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
+      update_config: {
+        Args: {
+          in_config_id: string
+          in_private_key: string
+          in_verifiers: unknown[]
+        }
+        Returns: undefined
+      }
       update_will: {
         Args: {
           in_will_id: string
