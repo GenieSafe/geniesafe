@@ -1,7 +1,12 @@
 'use client'
 
-import { ChangeEvent, useState, useEffect } from 'react'
+import { ChangeEvent, useState } from 'react'
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { useRouter } from 'next/router'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+
 import {
   Form,
   FormControl,
@@ -10,34 +15,32 @@ import {
   FormLabel,
   FormMessage,
 } from '../../components/ui/form'
-import { Label } from '@radix-ui/react-label'
-import { Trash2 } from 'lucide-react'
+import { Label } from '../../components/ui/label'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent } from '../../components/ui/card'
 import { Input } from '../../components/ui/input'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { beneficiary, validator } from '../../../types/interfaces'
-import { useAccount } from 'wagmi'
-import { currentUserId } from '../../lib/global'
+
+import { Trash2 } from 'lucide-react'
+
+import { Database, Tables } from '../../lib/database.types'
 
 const formSchema = z.object({
-  title: z.string({ required_error: 'will title is required' }).min(5).max(30),
+  title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
 })
 
-// @ts-ignore
 export default function CreateWill() {
+  const supabase = useSupabaseClient<Database>()
+  const user = useUser()
+  const router = useRouter()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues: {
+      title: '',
+    },
   })
 
-  const router = useRouter()
-
-  const [beneficiariesArr, setBeneficiariesArr] = useState<beneficiary[]>([])
-  const [beneficiariesCardArr, setBeneficiariesCardArr] = useState<
-    tempBeneficiary[]
+  const [beneficiariesArr, setBeneficiariesArr] = useState<
+    Tables<'beneficiaries'>[]
   >([])
   const [beneficiaryInputVal, setBeneficiaryInputVal] = useState('')
   const [percentageInputVal, setPercentageInputVal] = useState('')
@@ -48,14 +51,9 @@ export default function CreateWill() {
   ) => {
     setBeneficiaryInputVal(e.target.value)
   }
+
   const handlePercentFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPercentageInputVal(e.target.value)
-  }
-
-  interface tempBeneficiary {
-    beneficiaryName: string
-    percentage: number
-    walletAddress: string
   }
 
   const handleAddBeneficiary = async (
@@ -63,44 +61,37 @@ export default function CreateWill() {
   ) => {
     e.preventDefault()
 
-    if (beneficiaryInputVal !== '' && parseInt(percentageInputVal) !== 0) {
-      if (totalPercentage + parseInt(percentageInputVal) <= 100) {
-        try {
-          const response = await fetch(
-            'http://localhost:3000/api/user?walletAddress=' +
-              beneficiaryInputVal,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            }
-          )
+    if (beneficiaryInputVal === '' || parseInt(percentageInputVal) === 0) {
+      alert('Please fill in the fields')
+    } else if (totalPercentage + parseInt(percentageInputVal) > 100) {
+      alert('Total percentage cannot exceed 100%')
+    } else if (
+      beneficiariesArr.some(
+        (beneficiary) =>
+          (beneficiary.metadata as Record<string, any>).wallet_address ===
+          beneficiaryInputVal
+      )
+    ) {
+      alert('Beneficiary with the same wallet address already exists')
+    } else {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('wallet_address', beneficiaryInputVal)
 
-          if (response.ok) {
-            const data = await response.json()
-            const newObj: beneficiary = {
-              beneficiaryUserId: data.id,
-              percentage: parseInt(percentageInputVal),
-            }
-
-            const tempBeneficiary: tempBeneficiary = {
-              beneficiaryName: data.firstName + ' ' + data.lastName,
-              percentage: parseInt(percentageInputVal),
-              walletAddress: data.walletAddress,
-            }
-
-            setBeneficiariesArr([...beneficiariesArr, newObj])
-            setTotalPercentage(totalPercentage + parseInt(percentageInputVal))
-            setBeneficiariesCardArr([...beneficiariesCardArr, tempBeneficiary])
-          } else {
-            console.log('user fetch fail')
-          }
-        } catch (error) {
-          console.log(error)
+      if (!error && data) {
+        const newBeneficiary: any = {
+          user_id: data[0].id,
+          percentage: parseInt(percentageInputVal),
+          metadata: data[0],
         }
+
+        setBeneficiariesArr([...beneficiariesArr, newBeneficiary])
+        setTotalPercentage(totalPercentage + parseInt(percentageInputVal))
       } else {
-        alert('Total percentage cannot exceed 100%')
+        // API call failed
+        // Handle the error
+        console.log(error)
       }
     }
 
@@ -115,16 +106,12 @@ export default function CreateWill() {
   ) => {
     e.preventDefault()
     const newArr = [...beneficiariesArr]
-    const newCardArr = [...beneficiariesCardArr]
     setTotalPercentage(totalPercentage - newArr[index].percentage)
     newArr.splice(index, 1)
-    newCardArr.splice(index, 1)
     setBeneficiariesArr(newArr)
-    setBeneficiariesCardArr(newCardArr)
   }
 
-  const [validatorsArr, setValidatorsArr] = useState<validator[]>([])
-  const [validatorsNameArr, setValidatorsNameArr] = useState<string[]>([])
+  const [validatorsArr, setValidatorsArr] = useState<Tables<'validators'>[]>([])
   const [validatorInputVal, setValidatorInputVal] = useState('')
 
   const handleValidatorInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -133,42 +120,38 @@ export default function CreateWill() {
 
   const handleAddValidator = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-    if (validatorInputVal.trim() !== '') {
-      try {
-        const response = await fetch(
-          'http://localhost:3000/api/user?walletAddress=' + validatorInputVal,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
+    if (validatorInputVal.trim() === '') {
+      alert('Please fill in the field')
+    } else if (validatorsArr.length >= 3) {
+      alert('You can only have up to 3 validators')
+    } else if (
+      validatorsArr.some(
+        (validator) =>
+          (validator.metadata as Record<string, any>).wallet_address ===
+          validatorInputVal
+      )
+    ) {
+      alert('Validator with the same wallet address already exists')
+    } else {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('wallet_address', validatorInputVal)
 
-        if (response.ok) {
-          const data = await response.json()
-          const newObj: validator = {
-            validatorUserId: data.id,
-            isValidated: false,
-          }
-          setValidatorsArr([...validatorsArr, newObj])
-          setValidatorsNameArr([
-            ...validatorsNameArr,
-            data.firstName + ' ' + data.lastName,
-          ])
-
-          if (validatorsNameArr.length >= 2) {
-            setValidatorInputVal('')
-          } else {
-            setValidatorInputVal('')
-          }
-        } else {
-          // API call failed
-          // Handle the error
-          console.log('user fetch fail')
+      if (!error && data) {
+        const newValidator: any = {
+          user_id: data[0].id,
+          metadata: data[0],
         }
-      } catch (error) {
-        // Handle any network or other errors
+
+        setValidatorsArr([...validatorsArr, newValidator])
+
+        if (validatorsArr.length >= 2) {
+          setValidatorInputVal('')
+        }
+      } else {
+        // API call failed
+        // Handle the error
         console.log(error)
       }
     }
@@ -179,41 +162,39 @@ export default function CreateWill() {
     index: number
   ) => {
     e.preventDefault()
-    const upValidatorsArr = [...validatorsArr]
-    const upValidatorsNameArr = [...validatorsNameArr]
-    upValidatorsArr.splice(index, 1)
-    upValidatorsNameArr.splice(index, 1)
-    setValidatorsArr(upValidatorsArr)
-    setValidatorsNameArr(upValidatorsNameArr)
+    const newArr = [...validatorsArr]
+    newArr.splice(index, 1)
+    setValidatorsArr(newArr)
   }
 
-  // 2. Define a submit handler.
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const will = {
-      ownerUserId: currentUserId,
-      title: values.title,
-      beneficiaries: beneficiariesArr,
-      validators: validatorsArr,
-      isActive: false,
-      isValidated: false,
-    }
+    const { data: wills_data, error: wills_error } = await supabase
+      .from('wills')
+      .insert({ title: values.title as string, user_id: user?.id as string })
+      .select()
 
-    try {
-      const res = await fetch('http://localhost:3000/api/will', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(will),
+    if (!wills_error) {
+      beneficiariesArr.forEach(async (beneficiary) => {
+        beneficiary.will_id = wills_data[0].id as string
       })
-      if (res.ok) {
-        // API call was successful
-        // Do something with the response
+      validatorsArr.forEach(async (validator) => {
+        validator.will_id = wills_data[0].id as string
+      })
+
+      const { data: ben_data, error: ben_error } = await supabase
+        .from('beneficiaries')
+        .insert(beneficiariesArr)
+        .select()
+      const { data: val_data, error: val_error } = await supabase
+        .from('validators')
+        .insert(validatorsArr)
+        .select()
+
+      if (!ben_error && !val_error) {
         router.push('/wills')
+      } else {
+        console.log(ben_error, val_error)
       }
-    } catch (err) {
-      console.log(err)
     }
   }
 
@@ -221,7 +202,7 @@ export default function CreateWill() {
     <>
       <div className="container flex items-center justify-between pb-8">
         <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
-          Create will
+          Create Will
         </h1>
       </div>
       <div className="container grid gap-4">
@@ -232,9 +213,9 @@ export default function CreateWill() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>will Title</FormLabel>
+                  <FormLabel>Will Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="My First will" {...field} />
+                    <Input placeholder="My First Will" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -246,13 +227,14 @@ export default function CreateWill() {
               </h2>
               <div className="grid items-end grid-cols-11 gap-4">
                 <div className="grid w-full items-center gap-1.5 col-span-5">
-                  <Label htmlFor="email">beneficiary's Wallet Address</Label>
+                  <Label htmlFor="email">Beneficiary's Wallet Address</Label>
                   <Input
                     type="text"
                     name="field1"
                     placeholder="0x12345..."
                     value={beneficiaryInputVal}
                     onChange={handleBeneficiaryInputValChange}
+                    disabled={totalPercentage === 100}
                   />
                 </div>
                 <div className="grid w-full items-center gap-1.5 col-span-5">
@@ -263,20 +245,36 @@ export default function CreateWill() {
                     placeholder="100"
                     value={percentageInputVal}
                     onChange={handlePercentFieldChange}
+                    disabled={totalPercentage === 100}
                   />
                 </div>
-                <Button onClick={handleAddBeneficiary}>Add</Button>
+                <Button
+                  onClick={handleAddBeneficiary}
+                  disabled={totalPercentage === 100}
+                >
+                  Add
+                </Button>
               </div>
               <div className="grid gap-4">
-                {beneficiariesCardArr.map((beneficiary, index) => (
-                  <Card className="dark" key={index}>
+                {beneficiariesArr.map((beneficiary, index) => (
+                  <Card className="dark" key={beneficiary.user_id}>
                     <CardContent className="flex items-center justify-between pt-6">
                       <div className="flex items-center gap-12">
                         <p className="w-40 leading-7 truncate">
-                          {beneficiary.beneficiaryName}
+                          {
+                            (beneficiary.metadata as Record<string, any>)
+                              .first_name
+                          }{' '}
+                          {
+                            (beneficiary.metadata as Record<string, any>)
+                              .last_name
+                          }
                         </p>
                         <p className="w-40 leading-7 truncate">
-                          {beneficiary.walletAddress}
+                          {
+                            (beneficiary.metadata as Record<string, any>)
+                              .wallet_address
+                          }
                         </p>
                         <p className="leading-7">{beneficiary.percentage}%</p>
                       </div>
@@ -302,28 +300,39 @@ export default function CreateWill() {
               </h2>
               <div className="grid items-end grid-cols-11 gap-4">
                 <div className="grid items-center w-full col-span-10 gap-2">
-                  <Label htmlFor="email">validator's Wallet Address</Label>
+                  <Label htmlFor="email">Validator's Wallet Address</Label>
                   <Input
                     type="text"
                     name="field1"
                     placeholder="0x12345..."
                     value={validatorInputVal}
                     onChange={handleValidatorInputChange}
+                    disabled={validatorsArr.length === 3}
                   />
                 </div>
                 <Button
                   className="grid col-span-1"
                   onClick={handleAddValidator}
+                  disabled={validatorsArr.length === 3}
                 >
                   Add
                 </Button>
               </div>
               <div className="grid gap-4">
-                {validatorsNameArr.map((validator, index) => (
+                {validatorsArr.map((validator, index) => (
                   <Card className="dark" key={index}>
                     <CardContent className="flex items-center justify-between pt-6">
                       <div className="flex items-center gap-12">
-                        <p className="w-40 leading-7 truncate">{validator}</p>
+                        <p className="w-40 leading-7 truncate">
+                          {
+                            (validator.metadata as Record<string, any>)
+                              .first_name
+                          }{' '}
+                          {
+                            (validator.metadata as Record<string, any>)
+                              .last_name
+                          }
+                        </p>
                       </div>
                       <Button
                         size={'sm'}
@@ -338,8 +347,8 @@ export default function CreateWill() {
                 ))}
               </div>
             </div>
-            <div className="flex gap-[1rem] justify-end">
-              <Button size={'lg'} type="submit" onClick={() => onSubmit}>
+            <div className="flex justify-end gap-4">
+              <Button size={'lg'} type="submit">
                 Submit
               </Button>
             </div>
