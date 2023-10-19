@@ -36,7 +36,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   const { data, error } = await supabase.from('wallet_recovery_config').select(`
     id, status,
     verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
-  `)
+  `).eq('user_id', session.user.id)
 
   return {
     props: {

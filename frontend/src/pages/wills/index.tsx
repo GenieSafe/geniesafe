@@ -29,7 +29,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     id, title, contract_address, deployed_at_block, status,
     beneficiaries(percentage, metadata:user_id(first_name, last_name, wallet_address)),
     validators(has_validated, metadata:user_id(first_name, last_name, wallet_address))
-  `)
+  `).eq('user_id', session.user.id)
 
   return {
     props: {
