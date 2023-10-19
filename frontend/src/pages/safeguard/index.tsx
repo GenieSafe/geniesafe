@@ -50,7 +50,7 @@ const Safeguard = ({ data }: { data: any }) => {
   return (
     <>
       <div className="container flex flex-col gap-8 pb-8">
-        {data ? (
+        {data.length > 0 ? (
           <>
             <div className="container pb-8">
               <div className="flex flex-col gap-4 mb-4">
@@ -73,8 +73,8 @@ const Safeguard = ({ data }: { data: any }) => {
                     </Button>
                   </CardHeader>
                   <CardContent className="flex gap-4">
-                    {data[0].verifiers.map((verifier: Tables<'verifiers'>) => (
-                      <Card key={verifier.id} className="">
+                    {data[0].verifiers.map((verifier: Tables<'verifiers'>, index: number) => (
+                      <Card key={index} className="">
                         <CardContent className="grid pt-6">
                           <p className="">
                           {
