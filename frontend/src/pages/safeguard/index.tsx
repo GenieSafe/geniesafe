@@ -13,8 +13,8 @@ import {
   CardTitle,
   CardContent,
 } from '../../components/ui/card'
+import { Tables } from '../../lib/database.types'
 
-import { verifier } from '../../../types/interfaces'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -35,7 +35,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Run queries with RLS on the server
   const { data, error } = await supabase.from('wallet_recovery_config').select(`
     id, status,
-    verifiers(has_verified, verified_at, profile:user_id(first_name, last_name, wallet_address))
+    verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
   `)
 
   return {
@@ -67,25 +67,24 @@ const Safeguard = ({ data }: { data: any }) => {
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-2xl text-primary-foreground">Verifiers</CardTitle>
                     <Button size={'icon'} variant={"secondary"} asChild>
-                      <Link href={`/safeguard/edit/${data.user_id}`}>
-                        {/* <Link
-                          href={{
-                            pathname: '/safeguard/edit/[id]',
-                            query: ownerId, // the data
-                          }}
-                        > */}
+                      <Link href={`/safeguard/edit/${data.id}`}>
                         <Edit3 className="w-4 h-4" />
                       </Link>
                     </Button>
                   </CardHeader>
                   <CardContent className="flex gap-4">
-                    {data[0].verifiers.map((verifier: verifier) => (
+                    {data[0].verifiers.map((verifier: Tables<'verifiers'>) => (
                       <Card key={verifier.id} className="">
                         <CardContent className="grid pt-6">
                           <p className="">
-                            {verifier.profile.first_name +
-                              ' ' +
-                              verifier.profile.last_name}
+                          {
+                            (verifier.metadata as Record<string, any>)
+                              .first_name
+                          }{' '}
+                          {
+                            (verifier.metadata as Record<string, any>)
+                              .last_name
+                          }
                           </p>
                         </CardContent>
                       </Card>
