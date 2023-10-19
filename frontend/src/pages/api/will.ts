@@ -5,7 +5,7 @@ import { NextApiHandler } from 'next'
 import { apiHandler } from '../../utils/api'
 import prisma from '../../utils/prisma'
 import { validateRequest } from '../../utils/yup'
-import { Beneficiary, Validator, Will } from '@prisma/client'
+import { beneficiary, validator, will } from '../../../types/interfaces'
 import { PrismaClientInitializationError } from '@prisma/client/runtime'
 
 /**
@@ -26,16 +26,16 @@ const getWill: NextApiHandler = async (req, res) => {
       const wills = await prisma.user.findUnique({
         where: { id: ownerUserId as string },
         include: {
-          Wills: {
+          wills: {
             include: {
-              Beneficiaries: {
+              beneficiaries: {
                 include: {
-                  User: true,
+                  user: true,
                 },
               },
-              Validators: {
+              validators: {
                 include: {
-                  User: true,
+                  user: true,
                 },
               },
             },
@@ -43,16 +43,11 @@ const getWill: NextApiHandler = async (req, res) => {
         },
       })
 
-      if (!wills)
-        throw new createHttpError.NotFound(
-          `User (ID: ${ownerUserId}) does not exist!`
-        )
-      res.status(200).json({ data: wills })
+      if (!wills) throw new createHttpError.NotFound()
+      res.status(200).json(wills.wills)
     } catch (err) {
       console.log(err)
-      throw new createHttpError.NotFound(
-        `Error retrieving wills with ownerId: ${ownerUserId}!`
-      )
+      throw new createHttpError.NotFound(`${err}!`)
     }
   }
 
@@ -63,28 +58,26 @@ const getWill: NextApiHandler = async (req, res) => {
       const will = await prisma.will.findUnique({
         where: { id: parseInt(willId as string) },
         include: {
-          Beneficiaries: {
+          beneficiaries: {
             include: {
-              User: true,
+              user: true,
             },
           },
-          Validators: {
+          validators: {
             include: {
-              User: true,
+              user: true,
             },
           },
         },
       })
       if (!will)
         throw new createHttpError.NotFound(
-          `Will (ID: ${willId}) does not exist!`
+          `will (ID: ${willId}) does not exist!`
         )
       res.status(200).json({ data: will })
     } catch (err) {
       console.log(err)
-      throw new createHttpError.NotFound(
-        `Error retrieving will with willId: ${willId}!`
-      )
+      throw new createHttpError.InternalServerError(`${err}`)
     }
   }
 }
@@ -93,11 +86,8 @@ const getWill: NextApiHandler = async (req, res) => {
  * Schema for validating the request body when creating a will.
  */
 const willSchema = Yup.object().shape({
-  ownerUserId: Yup.string().required('Owner user ID is required!'),
+  ownerUserId: Yup.string().required('owner user ID is required!'),
   title: Yup.string().required('Title is required!'),
-  walletAddress: Yup.string()
-    .required('Owner wallet address is required!')
-    .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
   beneficiaries: Yup.array().of(
     Yup.object().shape({
       // walletAddress: Yup.string()
@@ -115,7 +105,7 @@ const willSchema = Yup.object().shape({
   validators: Yup.array().of(
     Yup.object().shape({
       // walletAddress: Yup.string()
-      //   .required('Owner wallet address is required!')
+      //   .required('owner wallet address is required!')
       //   .matches(/^(0x)?[0-9a-fA-F]{40}$/i, 'Invalid wallet address format!'),
       validatorUserId: Yup.string().required('Validator user ID is required!'),
     })
@@ -132,15 +122,14 @@ const willSchema = Yup.object().shape({
 const createWill: NextApiHandler = async (req, res) => {
   // @ts-ignore
   const data = validateRequest(req.body, willSchema)
-  const { ownerUserId, title, walletAddress, beneficiaries, validators } =
-    req.body
+  const { ownerUserId, title, beneficiaries, validators } = req.body
 
   try {
     // Create will
     const newWill = await prisma.will.create({
       data: {
         title: title as unknown as string,
-        Owner: {
+        owner: {
           connect: {
             id: ownerUserId as unknown as string,
           },
@@ -150,7 +139,7 @@ const createWill: NextApiHandler = async (req, res) => {
 
     // Create beneficiaries
     const newBeneficiaries = await Promise.all(
-      beneficiaries.map(async (beneficiary: Beneficiary) => {
+      beneficiaries.map(async (beneficiary: beneficiary) => {
         const { beneficiaryUserId, percentage } = beneficiary
 
         // // Retrieve beneficiary user ID by wallet address
@@ -166,12 +155,12 @@ const createWill: NextApiHandler = async (req, res) => {
         const newBeneficiary = await prisma.beneficiary.create({
           data: {
             percentage: beneficiary.percentage,
-            Will: {
+            will: {
               connect: {
                 id: newWill.id,
               },
             },
-            User: {
+            user: {
               connect: {
                 id: beneficiaryUserId as unknown as string,
               },
@@ -184,7 +173,7 @@ const createWill: NextApiHandler = async (req, res) => {
 
     // Create validators
     const newValidators = await Promise.all(
-      validators.map(async (validator: Validator) => {
+      validators.map(async (validator: validator) => {
         const { validatorUserId } = validator
 
         // const validatorUserId = await prisma.user.findUnique({
@@ -198,12 +187,12 @@ const createWill: NextApiHandler = async (req, res) => {
 
         const newValidator = await prisma.validator.create({
           data: {
-            Will: {
+            will: {
               connect: {
                 id: newWill.id,
               },
             },
-            User: {
+            user: {
               connect: {
                 id: validatorUserId as unknown as string,
               },
@@ -217,9 +206,7 @@ const createWill: NextApiHandler = async (req, res) => {
     res.status(200).json({ data: { newWill, newBeneficiaries, newValidators } })
   } catch (err) {
     console.log(err)
-    throw new createHttpError.NotFound(
-      `Error creating will for user with ownerUserId: ${ownerUserId}! Check if user exists.`
-    )
+    throw new createHttpError.InternalServerError(`${err}`)
   }
 }
 
@@ -245,9 +232,7 @@ const deleteWill: NextApiHandler = async (req, res) => {
     })
   } catch (err) {
     console.log(err)
-    throw new createHttpError.NotFound(
-      `Error deleting will with willId: ${willId}! Check if will exists.`
-    )
+    throw new createHttpError.InternalServerError(`${err}`)
   }
 }
 /**
@@ -268,27 +253,27 @@ const updateWill: NextApiHandler = async (req, res) => {
       data: {
         ...req.body,
         updatedAt: new Date(), // Add this line to update the updatedAt field
-        Beneficiaries: {
+        beneficiaries: {
           deleteMany: {},
           createMany: {
-            data: req.body.Beneficiaries.map((beneficiary: Beneficiary) => ({
+            data: req.body.beneficiaries.map((beneficiary: beneficiary) => ({
               beneficiaryUserId: beneficiary.beneficiaryUserId,
               percentage: beneficiary.percentage,
             })),
           },
         },
-        Validators: {
+        validators: {
           deleteMany: {},
           createMany: {
-            data: req.body.Validators.map((validator: Validator) => ({
+            data: req.body.validators.map((validator: validator) => ({
               validatorUserId: validator.validatorUserId,
             })),
           },
         },
       },
       include: {
-        Beneficiaries: true,
-        Validators: true,
+        beneficiaries: true,
+        validators: true,
       },
     })
 
@@ -298,9 +283,7 @@ const updateWill: NextApiHandler = async (req, res) => {
     })
   } catch (err) {
     console.log(err)
-    throw new createHttpError.NotFound(
-      `Error updating will with ID: ${willId}! Check if will exists.`
-    )
+    throw new createHttpError.InternalServerError(`${err}`)
   }
 }
 

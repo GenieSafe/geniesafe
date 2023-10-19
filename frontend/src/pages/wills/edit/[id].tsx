@@ -1,7 +1,14 @@
 'use client'
 
-import { ChangeEvent, useState, useEffect } from 'react'
+import { ChangeEvent, useState } from 'react'
+import { GetServerSidePropsContext } from 'next'
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useRouter } from 'next/router'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+
 import {
   Form,
   FormControl,
@@ -10,33 +17,48 @@ import {
   FormLabel,
   FormMessage,
 } from '../../../components/ui/form'
-import { Label } from '@radix-ui/react-label'
-import { Construction, Trash2 } from 'lucide-react'
+import { Label } from '../../../components/ui/label'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Input } from '../../../components/ui/input'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Beneficiary, Validator, Will } from '../../../../types/interfaces'
-import { useAccount } from 'wagmi'
-import { use } from 'chai'
 
-export async function getServerSideProps(context) {
-  try {
-    const res = await fetch(
-      `http://localhost:3000/api/will?willId=${context.query.id}`
-    )
-    const data = await res.json()
+import { Trash2 } from 'lucide-react'
 
-    return { props: { data } }
-  } catch (err) {
-    console.error('Failed to fetch data:', err)
+import { Database, Tables } from '../../../lib/database.types'
+
+export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
+  // Create authenticated Supabase Client
+  const supabase = createPagesServerClient(ctx)
+  // Check if we have a session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session)
     return {
-      props: {
-        data: context.query.id,
+      redirect: {
+        destination: '/auth/login',
+        permanent: false,
       },
     }
+
+  // Run queries with RLS on the server
+  const { data, error } = await supabase
+    .from('wills')
+    .select(
+      `
+    id, title, contract_address, deployed_at_block, status,
+    beneficiaries(user_id, percentage, metadata:user_id(first_name, last_name, wallet_address)),
+    validators(user_id, has_validated, metadata:user_id(first_name, last_name, wallet_address))
+  `
+    )
+    .eq('id', ctx.query.id)
+
+  return {
+    props: {
+      initialSession: session,
+      will: data ?? error,
+    },
   }
 }
 
@@ -44,37 +66,36 @@ const formSchema = z.object({
   title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
 })
 
-export default function EditWill({ data }) {
+export default function EditWill({ will }: { will: any }) {
+  const supabase = useSupabaseClient<Database>()
+  const router = useRouter()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: data.data.title,
+      title: will[0].title,
     },
   })
 
-  const router = useRouter()
-
-  const [beneficiariesArr, setBeneficiariesArr] = useState<Beneficiary[]>([])
-  const [beneficiariesCardArr, setBeneficiariesCardArr] = useState<
-    tempBeneficiary[]
-  >([])
+  const [beneficiariesArr, setBeneficiariesArr] = useState<
+    Tables<'beneficiaries'>[]
+  >(will[0].beneficiaries)
   const [beneficiaryInputVal, setBeneficiaryInputVal] = useState('')
   const [percentageInputVal, setPercentageInputVal] = useState('')
-  const [totalPercentage, setTotalPercentage] = useState(0)
+  const [totalPercentage, setTotalPercentage] = useState(
+    will[0].beneficiaries.reduce(
+      (acc: number, curr: Tables<'beneficiaries'>) => acc + (curr.percentage ?? 0),
+      0
+    )
+  )
 
   const handleBeneficiaryInputValChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setBeneficiaryInputVal(e.target.value)
   }
+
   const handlePercentFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPercentageInputVal(e.target.value)
-  }
-
-  interface tempBeneficiary {
-    beneficiaryName: string
-    percentage: number
-    walletAddress: string
   }
 
   const handleAddBeneficiary = async (
@@ -82,44 +103,37 @@ export default function EditWill({ data }) {
   ) => {
     e.preventDefault()
 
-    if (beneficiaryInputVal !== '' && parseInt(percentageInputVal) !== 0) {
-      if (totalPercentage + parseInt(percentageInputVal) <= 100) {
-        try {
-          const response = await fetch(
-            'http://localhost:3000/api/user?walletAddress=' +
-              beneficiaryInputVal,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            }
-          )
+    if (beneficiaryInputVal === '' || parseInt(percentageInputVal) === 0) {
+      alert('Please fill in the fields')
+    } else if (totalPercentage + parseInt(percentageInputVal) > 100) {
+      alert('Total percentage cannot exceed 100%')
+    } else if (
+      beneficiariesArr.some(
+        (beneficiary) =>
+          (beneficiary.metadata as Record<string, any>).wallet_address ===
+          beneficiaryInputVal
+      )
+    ) {
+      alert('Beneficiary with the same wallet address already exists')
+    } else {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('wallet_address', beneficiaryInputVal)
 
-          if (response.ok) {
-            const data = await response.json()
-            const newObj: Beneficiary = {
-              beneficiaryUserId: data.data.id,
-              percentage: parseInt(percentageInputVal),
-            }
-
-            const tempBeneficiary: tempBeneficiary = {
-              beneficiaryName: data.data.firstName + ' ' + data.data.lastName,
-              percentage: parseInt(percentageInputVal),
-              walletAddress: data.data.walletAddress,
-            }
-
-            setBeneficiariesArr([...beneficiariesArr, newObj])
-            setTotalPercentage(totalPercentage + parseInt(percentageInputVal))
-            setBeneficiariesCardArr([...beneficiariesCardArr, tempBeneficiary])
-          } else {
-            console.log('user fetch fail')
-          }
-        } catch (error) {
-          console.log(error)
+      if (!error && data) {
+        const newBeneficiary: any = {
+          user_id: data[0].id,
+          percentage: parseInt(percentageInputVal),
+          metadata: data[0],
         }
+
+        setBeneficiariesArr([...beneficiariesArr, newBeneficiary])
+        setTotalPercentage(totalPercentage + parseInt(percentageInputVal))
       } else {
-        alert('Total percentage cannot exceed 100%')
+        // API call failed
+        // Handle the error
+        console.log(error)
       }
     }
 
@@ -134,16 +148,14 @@ export default function EditWill({ data }) {
   ) => {
     e.preventDefault()
     const newArr = [...beneficiariesArr]
-    const newCardArr = [...beneficiariesCardArr]
     setTotalPercentage(totalPercentage - newArr[index].percentage)
     newArr.splice(index, 1)
-    newCardArr.splice(index, 1)
     setBeneficiariesArr(newArr)
-    setBeneficiariesCardArr(newCardArr)
   }
 
-  const [validatorsArr, setValidatorsArr] = useState<Validator[]>([])
-  const [validatorsNameArr, setValidatorsNameArr] = useState<string[]>([])
+  const [validatorsArr, setValidatorsArr] = useState<Tables<'validators'>[]>(
+    will[0].validators
+  )
   const [validatorInputVal, setValidatorInputVal] = useState('')
 
   const handleValidatorInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -152,44 +164,43 @@ export default function EditWill({ data }) {
 
   const handleAddValidator = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-    if (validatorInputVal.trim() !== '') {
-      try {
-        const response = await fetch(
-          'http://localhost:3000/api/user?walletAddress=' + validatorInputVal,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
+    if (validatorInputVal.trim() === '') {
+      alert('Please fill in the field')
+    } else if (validatorsArr.length >= 3) {
+      alert('You can only have up to 3 validators')
+    } else if (
+      validatorsArr.some(
+        (validator) =>
+          (validator.metadata as Record<string, any>).wallet_address ===
+          validatorInputVal
+      )
+    ) {
+      alert('Validator with the same wallet address already exists')
+    } else {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('wallet_address', validatorInputVal)
 
-        if (response.ok) {
-          const data = await response.json()
-          const newObj: Validator = {
-            validatorUserId: data.data.id,
-          }
-          setValidatorsArr([...validatorsArr, newObj])
-          setValidatorsNameArr([
-            ...validatorsNameArr,
-            data.data.firstName + ' ' + data.data.lastName,
-          ])
-
-          if (validatorsNameArr.length >= 2) {
-            setValidatorInputVal('')
-          } else {
-            setValidatorInputVal('')
-          }
-        } else {
-          // API call failed
-          // Handle the error
-          console.log('user fetch fail')
+      if (!error && data) {
+        const newValidator: any = {
+          user_id: data[0].id,
+          metadata: data[0],
         }
-      } catch (error) {
-        // Handle any network or other errors
+
+        setValidatorsArr([...validatorsArr, newValidator])
+
+        if (validatorsArr.length >= 2) {
+          setValidatorInputVal('')
+        }
+      } else {
+        // API call failed
+        // Handle the error
         console.log(error)
       }
     }
+
+    setValidatorInputVal('')
   }
 
   const handleDeleteValidator = (
@@ -197,104 +208,34 @@ export default function EditWill({ data }) {
     index: number
   ) => {
     e.preventDefault()
-    const upValidatorsArr = [...validatorsArr]
-    const upValidatorsNameArr = [...validatorsNameArr]
-    upValidatorsArr.splice(index, 1)
-    upValidatorsNameArr.splice(index, 1)
-    setValidatorsArr(upValidatorsArr)
-    setValidatorsNameArr(upValidatorsNameArr)
+    const newArr = [...validatorsArr]
+    newArr.splice(index, 1)
+    setValidatorsArr(newArr)
   }
 
-  const updateWill = async (will: Will, willId: number) => {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/api/will?willId=${willId}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(will),
-        }
-      )
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    let { data, error } = await supabase.rpc('update_will', {
+      in_beneficiaries: beneficiariesArr,
+      in_title: values.title,
+      in_validators: validatorsArr,
+      in_will_id: will[0].id,
+    })
 
-      if (response.ok) {
-        console.log('will updated')
-        router.push('/wills')
-      } else {
-        console.log('will update failed')
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const will = {
-      title: values.title,
-      Beneficiaries: beneficiariesArr,
-      Validators: validatorsArr,
-    }
-    console.log(will)
-    updateWill(will, data.data.id)
-  }
-
-  const deleteWill = async (willId: number) => {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/api/will?willId=${willId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-
-      if (response.ok) {
-        console.log('will deleted')
-        router.push('/wills')
-      } else {
-        console.log('will delete failed')
-      }
-    } catch (error) {
+    if (!error) {
+      router.push('/wills')
+    } else {
       console.log(error)
     }
   }
 
   const onDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    const deletedWill = await deleteWill(data.data.id)
+    const { error } = await supabase.from('wills').delete().eq('id', will[0].id)
+
+    if (!error) {
+      router.push('/wills')
+    }
   }
-
-  useEffect(() => {
-    data.data.Beneficiaries.map((beneficiary) => {
-      setBeneficiariesArr((prevBeneficiariesArr) => [
-        ...prevBeneficiariesArr,
-        beneficiary,
-      ])
-
-      const beneficiaryCardObj: tempBeneficiary = {
-        beneficiaryName:
-          beneficiary.User.firstName + ' ' + beneficiary.User.lastName,
-        percentage: beneficiary.percentage,
-        walletAddress: beneficiary.User.walletAddress,
-      }
-
-      setBeneficiariesCardArr((prevBeneficiariesCardArr) => [
-        ...prevBeneficiariesCardArr,
-        beneficiaryCardObj,
-      ])
-    })
-
-    data.data.Validators.map((validator) => {
-      setValidatorsNameArr((prevValidatorsNameArr) => [
-        ...prevValidatorsNameArr,
-        validator.User.firstName + ' ' + validator.User.lastName,
-      ])
-    })
-    setValidatorsArr(data.data.Validators)
-  }, [])
-
+  
   return (
     <>
       <div className="container flex items-center justify-between pb-8">
@@ -305,19 +246,6 @@ export default function EditWill({ data }) {
       <div className="container grid gap-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* <FormField
-            control={form.control}
-            name="willTitle"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Will Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="My First Will" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
             <FormField
               control={form.control}
               name="title"
@@ -344,6 +272,7 @@ export default function EditWill({ data }) {
                     placeholder="0x12345..."
                     value={beneficiaryInputVal}
                     onChange={handleBeneficiaryInputValChange}
+                    disabled={totalPercentage === 100}
                   />
                 </div>
                 <div className="grid w-full items-center gap-1.5 col-span-5">
@@ -354,38 +283,31 @@ export default function EditWill({ data }) {
                     placeholder="100"
                     value={percentageInputVal}
                     onChange={handlePercentFieldChange}
+                    disabled={totalPercentage === 100}
                   />
                 </div>
-                <Button onClick={handleAddBeneficiary}>Add</Button>
+                <Button onClick={handleAddBeneficiary} disabled={totalPercentage === 100}>Add</Button>
               </div>
               <div className="grid gap-4">
-                {beneficiariesCardArr.map((beneficiary, index) => (
-                  <Card className="dark" key={index}>
+                {beneficiariesArr.map((beneficiary, index) => (
+                  <Card className="dark" key={beneficiary.user_id}>
                     <CardContent className="flex items-center justify-between pt-6">
                       <div className="flex items-center gap-12">
-                        {/* TODO: Refactor style into a CSS class */}
-                        <p
-                          className="leading-7 "
-                          style={{
-                            minWidth: '10rem',
-                            maxWidth: '10rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {beneficiary.beneficiaryName}
+                        <p className="w-40 leading-7 truncate">
+                          {
+                            (beneficiary.metadata as Record<string, any>)
+                              .first_name
+                          }{' '}
+                          {
+                            (beneficiary.metadata as Record<string, any>)
+                              .last_name
+                          }
                         </p>
-                        <p
-                          className="leading-7 "
-                          style={{
-                            maxWidth: '10rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {beneficiary.walletAddress}
+                        <p className="w-40 leading-7 truncate">
+                          {
+                            (beneficiary.metadata as Record<string, any>)
+                              .wallet_address
+                          }
                         </p>
                         <p className="leading-7">{beneficiary.percentage}%</p>
                       </div>
@@ -418,32 +340,31 @@ export default function EditWill({ data }) {
                     placeholder="0x12345..."
                     value={validatorInputVal}
                     onChange={handleValidatorInputChange}
+                    disabled={validatorsArr.length === 3}
                   />
                 </div>
                 <Button
                   className="grid col-span-1"
                   onClick={handleAddValidator}
+                  disabled={validatorsArr.length === 3}
                 >
                   Add
                 </Button>
               </div>
               <div className="grid gap-4">
-                {validatorsNameArr.map((validator, index) => (
+                {validatorsArr.map((validator, index) => (
                   <Card className="dark" key={index}>
                     <CardContent className="flex items-center justify-between pt-6">
                       <div className="flex items-center gap-12">
-                        {/* TODO: Refactor style into a CSS class */}
-                        <p
-                          className="leading-7 "
-                          style={{
-                            minWidth: '10rem',
-                            maxWidth: '10rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {validator}
+                        <p className="w-40 leading-7 truncate">
+                          {
+                            (validator.metadata as Record<string, any>)
+                              .first_name
+                          }{' '}
+                          {
+                            (validator.metadata as Record<string, any>)
+                              .last_name
+                          }
                         </p>
                       </div>
                       <Button
@@ -468,7 +389,6 @@ export default function EditWill({ data }) {
               >
                 Delete
               </Button>
-              {/* <Button size={'lg'} type="submit" onClick={onSubmit}> */}
               <Button size={'lg'} type="submit">
                 Submit
               </Button>

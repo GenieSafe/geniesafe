@@ -1,15 +1,18 @@
-import { NextApiHandler } from 'next'
-import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
+import { NextApiHandler } from 'next';
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs';
+import { Database } from '../../../lib/database.types';
 
-const handler: NextApiHandler = async (req, res) => {
-  const { code } = req.query
+const callback: NextApiHandler = async (req, res) => {
+	// Create authenticated Supabase Client
+	const supabase = createPagesServerClient<Database>({ req, res });
 
-  if (code) {
-    const supabase = createPagesServerClient({ req, res })
-    await supabase.auth.exchangeCodeForSession(String(code))
-  }
+	const code = req.query.code;
 
-  res.redirect('/')
-}
+	if (typeof code === 'string') {
+		await supabase.auth.exchangeCodeForSession(code);
+	}
 
-export default handler
+	res.redirect('/');
+};
+
+export default callback;

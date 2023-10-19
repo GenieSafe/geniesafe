@@ -1,85 +1,59 @@
-import { Config, Verifier } from '../../../../types/interfaces'
+import { useState, ChangeEvent } from 'react'
+import { GetServerSidePropsContext } from 'next'
+import { useRouter } from 'next/router'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
+
 import { Label } from '../../../components/ui/label'
 import { Progress } from '../../../components/ui/progress'
-import { Trash2 } from 'lucide-react'
-import { useState, ChangeEvent, useEffect } from 'react'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Input } from '../../../components/ui/input'
-import router from 'next/router'
 
-// export async function getStaticPaths() {
-//   return {
-//     paths: [
-//       // String variant:
-//       '/safeguard/edit/91944f58-def7-4ceb-bdab-7eb9e736176a',
-//       // Object variant:
-//       { params: { id: '91944f58-def7-4ceb-bdab-7eb9e736176a' } },
-//     ],
-//     fallback: true,
-//   }
-// }
+import { Trash2 } from 'lucide-react'
 
-// export async function getStaticProps({params}) {
-//   try {
-//     // Fetch data from an API or any other data source
-//     const response = await fetch(`https://api/entrust?ownerId=${params.id}`)
-//     const data = await response.json()
+import { Database, Tables } from '../../../lib/database.types'
 
-//     return {
-//       props: {
-//         data,
-//       },
-//     }
+export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
+  // Create authenticated Supabase Client
+  const supabase = createPagesServerClient(ctx)
+  // Check if we have a session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-//   } catch (error) {
-//     console.error('Failed to fetch data:', error)
-//     return {
-//       props: {
-//         data: null,
-//       },
-//     }
-//   }
-// }
-
-export async function getServerSideProps(context) {
-  try {
-    const res = await fetch(
-      `http://localhost:3000/api/entrust?ownerId=${context.query.id}`
-    )
-    const data = await res.json()
-
-    return { props: { data } }
-  } catch (err) {
-    console.error('Failed to fetch data:', err)
+  if (!session)
     return {
-      props: {
-        data: context.query.id,
+      redirect: {
+        destination: '/auth/login',
+        permanent: false,
       },
     }
+
+  // Run queries with RLS on the server
+  const { data, error } = await supabase.from('wallet_recovery_config').select(`
+    id, private_key, status,
+    verifiers(user_id, has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
+  `)
+
+  return {
+    props: {
+      initialSession: session,
+      config: data ?? error,
+    },
   }
 }
 
-export default function EditConfig({ data }) {
+export default function EditConfig({ config }: { config: any }) {
+  const supabase = useSupabaseClient<Database>()
+  const router = useRouter()
 
-  const [verifiersArr, setVerifiersArr] = useState<Verifier[]>([])
-  const [verifiersNameArr, setVerifiersNameArr] = useState<string[]>([])
+  const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>(
+    config[0].verifiers
+  )
   const [verifierInputVal, setVerifierInputVal] = useState('')
-  const [pkInputVal, setPkInputVal] = useState('')
+  const [pkInputVal, setPkInputVal] = useState(config[0].private_key)
 
-  useEffect(() => {
-    data.data[0].Verifiers.map((verifier) => {
-      setVerifiersNameArr((prevVerifiersNameArr) => [
-        ...prevVerifiersNameArr,
-        verifier.User.firstName + ' ' + verifier.User.lastName,
-      ]);
-    });
-
-    setVerifiersArr(data.data[0].Verifiers)
-    setPkInputVal(data.data[0].privateKey)
-  }, [])
-
-  const [submitButtonDisabled, setSubmitButtonDisabled] = useState(true)
   const handleVerifierInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVerifierInputVal(e.target.value)
   }
@@ -89,45 +63,43 @@ export default function EditConfig({ data }) {
   }
 
   const handleAddVerifier = async () => {
-    if (verifierInputVal.trim() !== '') {
-      try {
-        const response = await fetch(
-          'http://localhost:3000/api/user?walletAddress=' + verifierInputVal,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
+    if (verifierInputVal.trim() === '') {
+      alert('Please fill in the field')
+    } else if (verifiersArr.length >= 3) {
+      alert('You can only have up to 3 verifiers')
+    } else if (
+      verifiersArr.some(
+        (verifier) =>
+          (verifier.metadata as Record<string, any>).wallet_address ===
+          verifierInputVal
+      )
+    ) {
+      alert('Verifier with the same wallet address already exists')
+    } else {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('wallet_address', verifierInputVal)
 
-        if (response.ok) {
-          const data = await response.json()
-          const newObj: Verifier = {
-            verifierUserId: data.data.id,
-          }
-          setVerifiersArr([...verifiersArr, newObj])
-          setVerifiersNameArr([
-            ...verifiersNameArr,
-            data.data.firstName + ' ' + data.data.lastName,
-          ])
-
-          if (verifiersArr.length >= 2) {
-            setVerifierInputVal('')
-            setSubmitButtonDisabled(false)
-          } else {
-            setVerifierInputVal('')
-          }
-        } else {
-          // API call failed
-          // Handle the error
-          console.log('user fetch fail')
+      if (!error && data) {
+        const newVerifier: any = {
+          user_id: data[0].id,
+          metadata: data[0],
         }
-      } catch (error) {
-        // Handle any network or other errors
+
+        setVerifiersArr([...verifiersArr, newVerifier])
+
+        if (verifiersArr.length >= 2) {
+          setVerifierInputVal('')
+        }
+      } else {
+        // API call failed
+        // Handle the error
         console.log(error)
       }
     }
+
+    setVerifierInputVal('')
   }
 
   const handleDeleteVerifier = (
@@ -136,86 +108,32 @@ export default function EditConfig({ data }) {
   ) => {
     e.preventDefault()
     const upVerifiersArr = [...verifiersArr]
-    const upVerifiersNameArr = [...verifiersNameArr]
     upVerifiersArr.splice(index, 1)
-    upVerifiersNameArr.splice(index, 1)
     setVerifiersArr(upVerifiersArr)
-    setVerifiersNameArr(upVerifiersNameArr)
-    if (verifiersArr.length <= 3) {
-      setSubmitButtonDisabled(true)
-    }
   }
 
-  const calculateProgress = () => {
-    return Math.floor((verifiersArr.length / 3) * 100)
-  }
+  const onSubmit = async () => {
+    let { data, error } = await supabase.rpc('update_config', {
+      in_verifiers: verifiersArr,
+      in_private_key: pkInputVal,
+      in_config_id: config[0].id,
+    })
 
-  const handleSubmit = async () => {
-    const verifierUserIds = verifiersArr.map(({ verifierUserId }) => ({ verifierUserId }));
-
-    const config: Config = {
-      ownerId: '91944f58-def7-4ceb-bdab-7eb9e736176a',
-      privateKey: pkInputVal,
-      verifiers: verifierUserIds,
-    }
-    
-    try {
-      const response = await fetch(
-        `http://localhost:3000//api/entrust?walletRecoveryConfigId=${data.data[0].id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(config),
-        }
-      )
-
-      if (response.ok) {
-        // API call was successful
-        // Do something with the response
-        router.push('/safeguard')
-      } else {
-        // API call failed
-        // Handle the error
-        console.log('fail')
-      }
-    } catch (error) {
-      // Handle any network or other errors
+    if (!error) {
+      router.push('/safeguard')
+    } else {
       console.log(error)
     }
   }
 
-  function handleDelete(e: React.MouseEvent<HTMLButtonElement>) {
-    e.preventDefault()
-    const deletedConfig = deleteConfig(data.data[0].ownerId)
-  }
+  async function handleDelete(e: React.MouseEvent<HTMLButtonElement>) {
+    const { error } = await supabase
+      .from('wallet_recovery_config')
+      .delete()
+      .eq('id', config[0].id)
 
-  const deleteConfig = async (ownerUserId: string) => {
-    try {
-      const response = await fetch(
-        'http://localhost:3000/api/entrust?ownerUserId=' +
-          ownerUserId,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-
-      if (response.ok) {
-        // API call was successful
-        // Do something with the response
-        router.push('/safeguard')
-      } else {
-        // API call failed
-        // Handle the error
-        console.log('fail')
-      }
-    } catch (error) {
-      // Handle any network or other errors
-      console.log(error)
+    if (!error) {
+      router.push('/safeguard')
     }
   }
 
@@ -244,7 +162,7 @@ export default function EditConfig({ data }) {
             />
           </div>
           <div className="grid gap-1.5">
-            <Progress value={calculateProgress()} />
+            <Progress value={Math.floor((verifiersArr.length / 3) * 100)} />
             <Label className="justify-self-end">
               {verifiersArr.length}/3 Verifiers
             </Label>
@@ -269,12 +187,14 @@ export default function EditConfig({ data }) {
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            {verifiersNameArr.map((value, index) => (
+            {verifiersArr.map((verifier, index) => (
               <Card className="dark" key={index}>
                 <CardContent className="pt-6">
                   <div className="flex flex-row items-center justify-between">
-                    {/* <p>{value.walletAddress}</p> */}
-                    <p>{value}</p>
+                    <p>
+                      {(verifier.metadata as Record<string, any>).first_name}{' '}
+                      {(verifier.metadata as Record<string, any>).last_name}
+                    </p>
                     <Button
                       size={'sm'}
                       variant={'destructive'}
@@ -297,8 +217,8 @@ export default function EditConfig({ data }) {
             </Button>
             <Button
               type="submit"
-              disabled={submitButtonDisabled}
-              onClick={handleSubmit}
+              onClick={onSubmit}
+              disabled={verifiersArr.length === 3}
             >
               Confirm verifiers
             </Button>

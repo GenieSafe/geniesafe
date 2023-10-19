@@ -5,7 +5,7 @@ import { NextApiHandler } from 'next'
 import { apiHandler } from '../../utils/api'
 import prisma from '../../utils/prisma'
 import { validateRequest } from '../../utils/yup'
-import { Beneficiary, Validator, Will } from '@prisma/client'
+import { beneficiary, validator, will } from '../../../types/interfaces'
 
 /**
  * Handler for retrieving a will.
@@ -22,19 +22,17 @@ const getUserByWalletAddress: NextApiHandler = async (req, res) => {
     try {
       const user = await prisma.user.findUnique({
         where: {
-          walletAddress: walletAddress.toString(),
+          walletAddress: walletAddress as string,
         },
       })
       if (!user)
         throw new createHttpError.NotFound(
           `User with wallet address ${walletAddress}) does not exist!`
         )
-      res.status(200).json({ data: user })
+      res.status(200).json(user)
     } catch (err) {
       console.log(err)
-      throw new createHttpError.NotFound(
-        `Error retrieving user with wallet address ${walletAddress}!`
-      )
+      throw new createHttpError.InternalServerError(`${err}`)
     }
   }
 }

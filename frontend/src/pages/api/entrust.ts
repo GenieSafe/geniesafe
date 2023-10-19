@@ -15,24 +15,24 @@ const getConfig: NextApiHandler = async (req, res) => {
 
   if (ownerId) {
     try {
-      const config = await prisma.walletRecoveryConfig.findMany({
+      const config = await prisma.wallet_recovery_config.findMany({
         where: {
-          ownerId: ownerId as string,
+          ownerUserId: ownerId as string,
         },
         select: {
           id: true,
-          ownerId: true,
+          ownerUserId: true,
           privateKey: true,
           createdAt: true,
           updatedAt: true,
           isActive: true,
           isVerified: true,
-          Verifiers: {
+          verifiers: {
             select: {
               verifierUserId: true,
               isVerified: true,
               verifiedAt: true,
-              User: {
+              user: {
                 select: {
                   firstName: true,
                   lastName: true,
@@ -44,17 +44,15 @@ const getConfig: NextApiHandler = async (req, res) => {
       })
       if (!config)
         throw new createHttpError.NotFound(
-          `User (ID: ${ownerId}) does not exist!`
+          `user (ID: ${ownerId}) does not exist!`
         )
-      res.status(200).json({ data: config })
+      res.status(200).json(config)
     } catch (err) {
       console.log(err)
-      throw new createHttpError.NotFound(
-        `Error retrieving config with userId: ${ownerId}!`
-      )
+      throw new createHttpError.InternalServerError(`${err}`)
     }
   } else {
-    throw new createHttpError.NotFound(`No ownerId provided!`)
+    throw new createHttpError.BadRequest(`No ownerId provided!`)
   }
 }
 
@@ -75,7 +73,7 @@ const createConfig: NextApiHandler = async (req, res) => {
   let newVerifiers = []
 
   try {
-    const newConfig = await prisma.walletRecoveryConfig.create({
+    const newConfig = await prisma.wallet_recovery_config.create({
       data: {
         ...rest,
       },
@@ -87,12 +85,12 @@ const createConfig: NextApiHandler = async (req, res) => {
 
         return prisma.verifier.create({
           data: {
-            User: {
+            user: {
               connect: {
                 id: verifierUserId,
               },
             },
-            WalletRecoveryConfig: {
+            wallet_recovery_config: {
               connect: {
                 id: newConfig.id,
               },
@@ -107,9 +105,7 @@ const createConfig: NextApiHandler = async (req, res) => {
     })
   } catch (err) {
     console.log(err)
-    throw new createHttpError.NotFound(
-      `Error creating config with ownerId: ${req.body.ownerId}!`
-    )
+    throw new createHttpError.InternalServerError(`${err}`)
   }
 }
 
@@ -121,24 +117,19 @@ const deleteConfig: NextApiHandler = async (req, res) => {
       throw new createHttpError.BadRequest(`ownerUserId is required`)
     }
 
-    // If ownerUserId is an array, you can choose how to handle it. This example takes the first element.
-    const ownerId = Array.isArray(ownerUserId) ? ownerUserId[0] : ownerUserId
-
-    const deletedConfig = await prisma.walletRecoveryConfig.delete({
+    const deletedConfig = await prisma.wallet_recovery_config.delete({
       where: {
-        ownerId: ownerId,
+        ownerUserId: ownerUserId as string,
       },
     })
 
     res.status(200).json({
-      message: `Successfully deleted config with ID: ${ownerId}`,
+      message: `Successfully deleted config with ID: ${ownerUserId}`,
       data: deletedConfig,
     })
   } catch (err) {
     console.log(err)
-    throw new createHttpError.NotFound(
-      `Error deleting config with ID: ${ownerUserId}! Check if config exists.`
-    )
+    throw new createHttpError.InternalServerError(`${err}`)
   }
 }
 
@@ -147,13 +138,13 @@ const updateConfig: NextApiHandler = async (req, res) => {
   const { verifiers, ...rest } = req.body
 
   try {
-    const updatedConfig = await prisma.walletRecoveryConfig.update({
+    const updatedConfig = await prisma.wallet_recovery_config.update({
       where: {
         id: parseInt(walletRecoveryConfigId as string),
       },
       data: {
         ...rest,
-        Verifiers: {
+        verifiers: {
           // delete before creating new verifiers
           deleteMany: {},
           createMany: {
@@ -168,16 +159,14 @@ const updateConfig: NextApiHandler = async (req, res) => {
     })
   } catch (err) {
     console.log(err)
-    throw new createHttpError.NotFound(
-      `Error updating config with ID: ${walletRecoveryConfigId}! Check if config exists.`
-    )
+    throw new createHttpError.InternalServerError(`${err}`)
   }
 }
 
 const activateConfig: NextApiHandler = async (req, res) => {
   const { walletRecoveryConfigId } = req.query
   try {
-    const updatedConfig = await prisma.walletRecoveryConfig.update({
+    const updatedConfig = await prisma.wallet_recovery_config.update({
       where: {
         id: parseInt(walletRecoveryConfigId as string),
       },
@@ -191,9 +180,7 @@ const activateConfig: NextApiHandler = async (req, res) => {
     })
   } catch (err) {
     console.log(err)
-    throw new createHttpError.NotFound(
-      `Error activating config with ID: ${walletRecoveryConfigId}! Check if config exists.`
-    )
+    throw new createHttpError.InternalServerError(`${err}`)
   }
 }
 
