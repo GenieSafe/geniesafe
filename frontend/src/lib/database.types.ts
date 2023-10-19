@@ -13,6 +13,7 @@ export interface Database {
         Row: {
           assigned_at: string
           id: string
+          metadata: Json | null
           percentage: number
           user_id: string | null
           will_id: string
@@ -20,6 +21,7 @@ export interface Database {
         Insert: {
           assigned_at?: string
           id?: string
+          metadata?: Json | null
           percentage: number
           user_id?: string | null
           will_id: string
@@ -27,6 +29,7 @@ export interface Database {
         Update: {
           assigned_at?: string
           id?: string
+          metadata?: Json | null
           percentage?: number
           user_id?: string | null
           will_id?: string
@@ -88,6 +91,7 @@ export interface Database {
           assigned_at: string
           has_validated: boolean
           id: string
+          metadata: Json | null
           user_id: string
           will_id: string
         }
@@ -95,6 +99,7 @@ export interface Database {
           assigned_at?: string
           has_validated?: boolean
           id?: string
+          metadata?: Json | null
           user_id: string
           will_id: string
         }
@@ -102,6 +107,7 @@ export interface Database {
           assigned_at?: string
           has_validated?: boolean
           id?: string
+          metadata?: Json | null
           user_id?: string
           will_id?: string
         }
@@ -126,6 +132,7 @@ export interface Database {
           config_id: string
           has_verified: boolean
           id: string
+          metadata: Json | null
           user_id: string
           verified_at: string | null
         }
@@ -134,6 +141,7 @@ export interface Database {
           config_id: string
           has_verified?: boolean
           id?: string
+          metadata?: Json | null
           user_id: string
           verified_at?: string | null
         }
@@ -142,6 +150,7 @@ export interface Database {
           config_id?: string
           has_verified?: boolean
           id?: string
+          metadata?: Json | null
           user_id?: string
           verified_at?: string | null
         }
@@ -261,3 +270,7 @@ export interface Database {
     }
   }
 }
+
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
+export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T]
+// etc.
