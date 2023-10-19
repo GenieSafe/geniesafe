@@ -18,9 +18,9 @@ import {
 } from './ui/tooltip'
 import { Badge } from './ui/badge'
 
-import { will } from '../../types/interfaces'
+import { Tables } from '../lib/database.types'
 
-export function WillCard({ will }: { will: will }) {
+export function WillCard({ will }: { will: any }) {
   return (
     <TooltipProvider>
       <Tooltip>
@@ -61,27 +61,51 @@ export function WillCard({ will }: { will: will }) {
                   <p className="font-bold">Beneficiaries</p>
                   <div className="flex gap-4 overflow-x-auto">
                     {will.beneficiaries ? (
-                      will.beneficiaries.map((beneficiary) => (
-                        <Card key={beneficiary.id}>
-                          <CardContent className="pt-6">
-                            <div className="flex flex-row gap-8">
-                              <div className="flex flex-col w-24">
-                                <p className="text-lg font-semibold truncate">
-                                  {`${beneficiary.profile.first_name} ${beneficiary.profile.last_name}`}
-                                </p>
-                                <p className="truncate">
-                                  {beneficiary.profile.wallet_address}
-                                </p>
+                      will.beneficiaries.map(
+                        (beneficiary: Tables<'beneficiaries'>, index: number) => (
+                          <Card key={index}>
+                            <CardContent className="pt-6">
+                              <div className="flex flex-row gap-8">
+                                <div className="flex flex-col w-24">
+                                  <p className="text-lg font-semibold truncate">
+                                    {
+                                      (
+                                        beneficiary.metadata as Record<
+                                          string,
+                                          any
+                                        >
+                                      ).first_name
+                                    }{' '}
+                                    {
+                                      (
+                                        beneficiary.metadata as Record<
+                                          string,
+                                          any
+                                        >
+                                      ).last_name
+                                    }
+                                  </p>
+                                  <p className="truncate">
+                                    {
+                                      (
+                                        beneficiary.metadata as Record<
+                                          string,
+                                          any
+                                        >
+                                      ).wallet_address
+                                    }
+                                  </p>
+                                </div>
+                                <div className="flex flex-col items-center justify-center">
+                                  <p className="text-lg font-bold">
+                                    {beneficiary.percentage}%
+                                  </p>
+                                </div>
                               </div>
-                              <div className="flex flex-col items-center justify-center">
-                                <p className="text-lg font-bold">
-                                  {beneficiary.percentage}%
-                                </p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))
+                            </CardContent>
+                          </Card>
+                        )
+                      )
                     ) : (
                       <p className="">No beneficiaries found.</p>
                     )}
@@ -92,16 +116,26 @@ export function WillCard({ will }: { will: will }) {
                   <p className="font-bold">Validators</p>
                   <div className="flex gap-4 overflow-x-auto">
                     {will.validators ? (
-                      will.validators.map((validator) => (
-                        <Card key={validator.id}>
+                      will.validators.map((validator: Tables<'validators'>, index: number) => (
+                        <Card key={index}>
                           <CardContent className="pt-6">
                             <div className="flex flex-row items-center gap-8">
                               <div className="flex flex-col w-24">
                                 <p className="text-lg font-semibold truncate">
-                                  {`${validator.profile.first_name} ${validator.profile.last_name}`}
+                                  {
+                                    (validator.metadata as Record<string, any>)
+                                      .first_name
+                                  }{' '}
+                                  {
+                                    (validator.metadata as Record<string, any>)
+                                      .last_name
+                                  }
                                 </p>
                                 <p className="truncate">
-                                  {validator.profile.wallet_address}
+                                  {
+                                    (validator.metadata as Record<string, any>)
+                                      .wallet_address
+                                  }
                                 </p>
                               </div>
 

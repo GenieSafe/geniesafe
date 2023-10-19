@@ -28,8 +28,8 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Run queries with RLS on the server
   const { data, error } = await supabase.from('wills').select(`
     id, title, contract_address, deployed_at_block, status,
-    beneficiaries(percentage, profile:user_id(first_name, last_name, wallet_address)),
-    validators(has_validated, profile:user_id(first_name, last_name, wallet_address))
+    beneficiaries(percentage, metadata:user_id(first_name, last_name, wallet_address)),
+    validators(has_validated, metadata:user_id(first_name, last_name, wallet_address))
   `)
 
   return {
