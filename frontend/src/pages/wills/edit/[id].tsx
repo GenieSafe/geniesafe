@@ -22,10 +22,9 @@ import { Button } from '../../../components/ui/button'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Input } from '../../../components/ui/input'
 
-import { beneficiary, validator, will } from '../../../../types/interfaces'
 import { Trash2 } from 'lucide-react'
 
-import { Database } from '../../../lib/database.types'
+import { Database, Tables } from '../../../lib/database.types'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -49,8 +48,8 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .select(
       `
     id, title, contract_address, deployed_at_block, status,
-    beneficiaries(user_id, percentage, profile:user_id(first_name, last_name, wallet_address)),
-    validators(user_id, has_validated, profile:user_id(first_name, last_name, wallet_address))
+    beneficiaries(user_id, percentage, metadata:user_id(first_name, last_name, wallet_address)),
+    validators(user_id, has_validated, metadata:user_id(first_name, last_name, wallet_address))
   `
     )
     .eq('id', ctx.query.id)
@@ -67,7 +66,7 @@ const formSchema = z.object({
   title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
 })
 
-export default function EditWill({ will }: { will: will[] }) {
+export default function EditWill({ will }: { will: any }) {
   const supabase = useSupabaseClient<Database>()
   const router = useRouter()
   const form = useForm<z.infer<typeof formSchema>>({
@@ -77,14 +76,14 @@ export default function EditWill({ will }: { will: will[] }) {
     },
   })
 
-  const [beneficiariesArr, setBeneficiariesArr] = useState<beneficiary[]>(
-    will[0].beneficiaries
-  )
+  const [beneficiariesArr, setBeneficiariesArr] = useState<
+    Tables<'beneficiaries'>[]
+  >(will[0].beneficiaries)
   const [beneficiaryInputVal, setBeneficiaryInputVal] = useState('')
   const [percentageInputVal, setPercentageInputVal] = useState('')
   const [totalPercentage, setTotalPercentage] = useState(
     will[0].beneficiaries.reduce(
-      (acc: number, curr: beneficiary) => acc + (curr.percentage ?? 0),
+      (acc: number, curr: Tables<'beneficiaries'>) => acc + (curr.percentage ?? 0),
       0
     )
   )
@@ -104,40 +103,38 @@ export default function EditWill({ will }: { will: will[] }) {
   ) => {
     e.preventDefault()
 
-    if (beneficiaryInputVal !== '' && parseInt(percentageInputVal) !== 0) {
-      if (totalPercentage + parseInt(percentageInputVal) <= 100) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('wallet_address', beneficiaryInputVal)
-
-          if (!error && data) {
-            const newBeneficiary: beneficiary = {
-              user_id: data[0].id,
-              percentage: parseInt(percentageInputVal),
-              profile: {
-                id: data[0].id,
-                first_name: data[0].first_name,
-                last_name: data[0].last_name,
-                wallet_address: data[0].wallet_address,
-                email: data[0].email,
-              },
-            }
-
-            setBeneficiariesArr([...beneficiariesArr, newBeneficiary])
-            setTotalPercentage(totalPercentage + parseInt(percentageInputVal))
-          } else {
-            console.log(error)
-          }
-        } catch (error) {
-          console.log(error)
-        }
-      } else {
-        alert('Total percentage cannot exceed 100%')
-      }
-    } else {
+    if (beneficiaryInputVal === '' || parseInt(percentageInputVal) === 0) {
       alert('Please fill in the fields')
+    } else if (totalPercentage + parseInt(percentageInputVal) > 100) {
+      alert('Total percentage cannot exceed 100%')
+    } else if (
+      beneficiariesArr.some(
+        (beneficiary) =>
+          (beneficiary.metadata as Record<string, any>).wallet_address ===
+          beneficiaryInputVal
+      )
+    ) {
+      alert('Beneficiary with the same wallet address already exists')
+    } else {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('wallet_address', beneficiaryInputVal)
+
+      if (!error && data) {
+        const newBeneficiary: any = {
+          user_id: data[0].id,
+          percentage: parseInt(percentageInputVal),
+          metadata: data[0],
+        }
+
+        setBeneficiariesArr([...beneficiariesArr, newBeneficiary])
+        setTotalPercentage(totalPercentage + parseInt(percentageInputVal))
+      } else {
+        // API call failed
+        // Handle the error
+        console.log(error)
+      }
     }
 
     // Clear the input fields
@@ -156,7 +153,7 @@ export default function EditWill({ will }: { will: will[] }) {
     setBeneficiariesArr(newArr)
   }
 
-  const [validatorsArr, setValidatorsArr] = useState<validator[]>(
+  const [validatorsArr, setValidatorsArr] = useState<Tables<'validators'>[]>(
     will[0].validators
   )
   const [validatorInputVal, setValidatorInputVal] = useState('')
@@ -167,49 +164,43 @@ export default function EditWill({ will }: { will: will[] }) {
 
   const handleAddValidator = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-    if (validatorInputVal.trim() !== '') {
-      if (validatorsArr.length < 3) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('wallet_address', validatorInputVal)
+    if (validatorInputVal.trim() === '') {
+      alert('Please fill in the field')
+    } else if (validatorsArr.length >= 3) {
+      alert('You can only have up to 3 validators')
+    } else if (
+      validatorsArr.some(
+        (validator) =>
+          (validator.metadata as Record<string, any>).wallet_address ===
+          validatorInputVal
+      )
+    ) {
+      alert('Validator with the same wallet address already exists')
+    } else {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('wallet_address', validatorInputVal)
 
-          if (!error && data) {
-            const newValidator: validator = {
-              user_id: data[0].id,
-              has_validated: false,
-              profile: {
-                id: data[0].id,
-                first_name: data[0].first_name,
-                last_name: data[0].last_name,
-                wallet_address: data[0].wallet_address,
-                email: data[0].email,
-              },
-            }
+      if (!error && data) {
+        const newValidator: any = {
+          user_id: data[0].id,
+          metadata: data[0],
+        }
 
-            setValidatorsArr([...validatorsArr, newValidator])
+        setValidatorsArr([...validatorsArr, newValidator])
 
-            if (validatorsArr.length >= 2) {
-              setValidatorInputVal('')
-            } else {
-              setValidatorInputVal('')
-            }
-          } else {
-            // API call failed
-            // Handle the error
-            console.log('user fetch fail')
-          }
-        } catch (error) {
-          // Handle any network or other errors
-          console.log(error)
+        if (validatorsArr.length >= 2) {
+          setValidatorInputVal('')
         }
       } else {
-        alert('You can only have up to 3 validators')
+        // API call failed
+        // Handle the error
+        console.log(error)
       }
-    } else {
-      alert('Please fill in the field')
     }
+
+    setValidatorInputVal('')
   }
 
   const handleDeleteValidator = (
@@ -230,24 +221,21 @@ export default function EditWill({ will }: { will: will[] }) {
       in_will_id: will[0].id,
     })
 
-    if(!error) {
+    if (!error) {
       router.push('/wills')
-    }else {
+    } else {
       console.log(error)
     }
   }
 
   const onDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    const { error } = await supabase
-      .from('wills')
-      .delete()
-      .eq('id', will[0].id)
+    const { error } = await supabase.from('wills').delete().eq('id', will[0].id)
 
-      if(!error) {
-        router.push('/wills')
-      }
+    if (!error) {
+      router.push('/wills')
+    }
   }
-
+  
   return (
     <>
       <div className="container flex items-center justify-between pb-8">
@@ -284,6 +272,7 @@ export default function EditWill({ will }: { will: will[] }) {
                     placeholder="0x12345..."
                     value={beneficiaryInputVal}
                     onChange={handleBeneficiaryInputValChange}
+                    disabled={totalPercentage === 100}
                   />
                 </div>
                 <div className="grid w-full items-center gap-1.5 col-span-5">
@@ -294,9 +283,10 @@ export default function EditWill({ will }: { will: will[] }) {
                     placeholder="100"
                     value={percentageInputVal}
                     onChange={handlePercentFieldChange}
+                    disabled={totalPercentage === 100}
                   />
                 </div>
-                <Button onClick={handleAddBeneficiary}>Add</Button>
+                <Button onClick={handleAddBeneficiary} disabled={totalPercentage === 100}>Add</Button>
               </div>
               <div className="grid gap-4">
                 {beneficiariesArr.map((beneficiary, index) => (
@@ -304,11 +294,20 @@ export default function EditWill({ will }: { will: will[] }) {
                     <CardContent className="flex items-center justify-between pt-6">
                       <div className="flex items-center gap-12">
                         <p className="w-40 leading-7 truncate">
-                          {beneficiary.profile?.first_name}{' '}
-                          {beneficiary.profile?.last_name}
+                          {
+                            (beneficiary.metadata as Record<string, any>)
+                              .first_name
+                          }{' '}
+                          {
+                            (beneficiary.metadata as Record<string, any>)
+                              .last_name
+                          }
                         </p>
                         <p className="w-40 leading-7 truncate">
-                          {beneficiary.profile?.wallet_address}
+                          {
+                            (beneficiary.metadata as Record<string, any>)
+                              .wallet_address
+                          }
                         </p>
                         <p className="leading-7">{beneficiary.percentage}%</p>
                       </div>
@@ -341,11 +340,13 @@ export default function EditWill({ will }: { will: will[] }) {
                     placeholder="0x12345..."
                     value={validatorInputVal}
                     onChange={handleValidatorInputChange}
+                    disabled={validatorsArr.length === 3}
                   />
                 </div>
                 <Button
                   className="grid col-span-1"
                   onClick={handleAddValidator}
+                  disabled={validatorsArr.length === 3}
                 >
                   Add
                 </Button>
@@ -356,8 +357,14 @@ export default function EditWill({ will }: { will: will[] }) {
                     <CardContent className="flex items-center justify-between pt-6">
                       <div className="flex items-center gap-12">
                         <p className="w-40 leading-7 truncate">
-                          {validator.profile?.first_name}{' '}
-                          {validator.profile?.last_name}
+                          {
+                            (validator.metadata as Record<string, any>)
+                              .first_name
+                          }{' '}
+                          {
+                            (validator.metadata as Record<string, any>)
+                              .last_name
+                          }
                         </p>
                       </div>
                       <Button
