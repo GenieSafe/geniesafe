@@ -1,7 +1,5 @@
 import Link from 'next/link'
-import {
-  GetServerSidePropsContext,
-} from 'next'
+import { GetServerSidePropsContext } from 'next'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 
 import { Edit3 } from 'lucide-react'
@@ -14,7 +12,6 @@ import {
   CardContent,
 } from '../../components/ui/card'
 import { Tables } from '../../lib/database.types'
-
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -33,10 +30,15 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Run queries with RLS on the server
-  const { data, error } = await supabase.from('wallet_recovery_config').select(`
+  const { data, error } = await supabase
+    .from('wallet_recovery_config')
+    .select(
+      `
     id, status,
     verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
-  `).eq('user_id', session.user.id)
+  `
+    )
+    .eq('user_id', session.user.id)
 
   return {
     props: {
@@ -46,7 +48,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   }
 }
 
-const Safeguard = ({ data }: { data: any }) => {
+export default function Config({ data }: { data: any }) {
   return (
     <>
       <div className="container flex flex-col gap-8 pb-8">
@@ -65,30 +67,34 @@ const Safeguard = ({ data }: { data: any }) => {
               <div className="grid gap-8">
                 <Card className="bg-primary">
                   <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-2xl text-primary-foreground">Verifiers</CardTitle>
-                    <Button size={'icon'} variant={"secondary"} asChild>
+                    <CardTitle className="text-2xl text-primary-foreground">
+                      Verifiers
+                    </CardTitle>
+                    <Button size={'icon'} variant={'secondary'} asChild>
                       <Link href={`/safeguard/edit/${data.id}`}>
                         <Edit3 className="w-4 h-4" />
                       </Link>
                     </Button>
                   </CardHeader>
                   <CardContent className="flex gap-4">
-                    {data[0].verifiers.map((verifier: Tables<'verifiers'>, index: number) => (
-                      <Card key={index} className="">
-                        <CardContent className="grid pt-6">
-                          <p className="">
-                          {
-                            (verifier.metadata as Record<string, any>)
-                              .first_name
-                          }{' '}
-                          {
-                            (verifier.metadata as Record<string, any>)
-                              .last_name
-                          }
-                          </p>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {data[0].verifiers.map(
+                      (verifier: Tables<'verifiers'>, index: number) => (
+                        <Card key={index} className="">
+                          <CardContent className="grid pt-6">
+                            <p className="">
+                              {
+                                (verifier.metadata as Record<string, any>)
+                                  .first_name
+                              }{' '}
+                              {
+                                (verifier.metadata as Record<string, any>)
+                                  .last_name
+                              }
+                            </p>
+                          </CardContent>
+                        </Card>
+                      )
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -115,5 +121,3 @@ const Safeguard = ({ data }: { data: any }) => {
     </>
   )
 }
-
-export default Safeguard

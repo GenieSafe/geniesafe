@@ -12,14 +12,12 @@ import { Trash2 } from 'lucide-react'
 
 import { Database, Tables } from '../../lib/database.types'
 
-const Assign = () => {
+export default function AssignConfig() {
   const supabase = useSupabaseClient<Database>()
   const user = useUser()
   const router = useRouter()
 
-  const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>(
-    []
-  )
+  const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>([])
   const [verifierInputVal, setVerifierInputVal] = useState('')
   const [pkInputVal, setPkInputVal] = useState('')
 
@@ -84,7 +82,10 @@ const Assign = () => {
   const onSubmit = async () => {
     const { data: config_data, error: config_error } = await supabase
       .from('wallet_recovery_config')
-      .insert({ private_key: pkInputVal as string, user_id: user?.id as string })
+      .insert({
+        private_key: pkInputVal as string,
+        user_id: user?.id as string,
+      })
       .select()
 
     if (!config_error) {
@@ -153,7 +154,7 @@ const Assign = () => {
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
-          {verifiersArr.map((verifier, index) => (
+            {verifiersArr.map((verifier, index) => (
               <Card className="dark" key={index}>
                 <CardContent className="pt-6">
                   <div className="flex flex-row items-center justify-between">
@@ -187,5 +188,3 @@ const Assign = () => {
     </>
   )
 }
-
-export default Assign
