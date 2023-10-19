@@ -9,6 +9,7 @@ import { ThemeSupa } from '@supabase/auth-ui-shared'
 
 import { Button, buttonVariants } from '../ui/button'
 import { LogOut } from 'lucide-react'
+import { useRouter } from 'next/router'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -18,13 +19,14 @@ interface LayoutProps {
 export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
   const session = useSession()
   const supabase = useSupabaseClient()
+  const router = useRouter()
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut()
     if (error) {
       console.error('Error signing out:', error.message)
     } else {
-      // Redirect or perform additional actions after signout
+      router.push('/auth/login')
     }
   }
 
