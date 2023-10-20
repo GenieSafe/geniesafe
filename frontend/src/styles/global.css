@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 0%;
     --foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
@@ -30,7 +30,7 @@
 
     --success: 142 71% 45%;
     --success-foreground: 210 40% 98%;
-    
+
     --destructive: 0 100% 50%;
     --destructive-foreground: 210 40% 98%;
 
@@ -38,43 +38,21 @@
 
     --radius: 0.5rem;
 
+    --bg-image: url('https://images.unsplash.com/photo-1538370965046-79c0d6907d47?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1169&q=80');
+
     font-family: 'Satoshi', sans-serif;
   }
 
-  .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
-
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
-
-    --popover: 224 71% 4%;
-    --popover-foreground: 215 20.2% 65.1%;
-
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
-
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 1.2%;
-
-    --secondary: 222.2 47.4% 11.2%;
-    --secondary-foreground: 210 40% 98%;
-
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
-
-    --success: 142 71% 45%;
-    --success-foreground: 210 40% 98%;
-    
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-
-    --ring: 216 34% 17%;
-
-    --radius: 0.5rem;
+  body {
+    background-color: rgb(0, 0, 0);
+    background-image: radial-gradient(
+        at 100% 100%,
+        rgb(0, 0, 0) 0,
+        transparent 100%
+      ),
+      radial-gradient(at 31% 2%, rgb(0, 0, 0) 0, transparent 76%),
+      radial-gradient(at 37% 91%, rgb(124, 58, 237) 0, transparent 84%),
+      radial-gradient(at 74% 31%, rgb(91, 33, 182) 0, transparent 92%);
   }
 }
 
@@ -84,6 +62,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 }
