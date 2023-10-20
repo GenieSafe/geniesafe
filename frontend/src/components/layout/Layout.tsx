@@ -1,11 +1,9 @@
-import Link from 'next/link'
 import React from 'react'
 import { Head, MetaProps } from './Head'
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
+import { useSession } from '@supabase/auth-helpers-react'
 
-import { Button, buttonVariants } from '../ui/button'
-import { LogOut } from 'lucide-react'
 import LoginPage from '../../pages/auth/login'
+import Navbar from './Navbar'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -14,15 +12,6 @@ interface LayoutProps {
 
 export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
   const session = useSession()
-  const supabase = useSupabaseClient()
-
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut()
-
-    if (error) {
-      console.error('Error signing out:', error.message)
-    }
-  }
 
   return (
     <>
@@ -37,34 +26,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
         <>
           <Head customMeta={customMeta} />
           <header>
-            <div className="container grid items-center justify-between grid-cols-3 py-4">
-              <div className="flex items-center justify-center">
-                <Link className={buttonVariants({ variant: 'link' })} href="/">
-                  Dashboard
-                </Link>
-                <Link
-                  className={buttonVariants({ variant: 'link' })}
-                  href="/wills"
-                >
-                  Will
-                </Link>
-                <Link
-                  className={buttonVariants({ variant: 'link' })}
-                  href="/safeguard"
-                >
-                  Safeguard
-                </Link>
-              </div>
-              <div className="flex items-center justify-end space-x-2">
-                <small className="text-sm font-medium leading-none">
-                  Hi, {session.user.email}!
-                </small>
-                <Button variant={'link'} onClick={handleSignOut}>
-                  Logout
-                  <LogOut className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </div>
+            <Navbar />
           </header>
           <main>
             <div className="container mx-auto my-12">{children}</div>
