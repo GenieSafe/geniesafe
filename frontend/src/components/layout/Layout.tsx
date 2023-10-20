@@ -1,11 +1,7 @@
-// import { ConnectButton } from '@rainbow-me/rainbowkit'
 import Link from 'next/link'
 import React from 'react'
-// import { LocalFaucetButton } from '../LocalFaucetButton'
 import { Head, MetaProps } from './Head'
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
-import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from '@supabase/auth-ui-shared'
 
 import { Button, buttonVariants } from '../ui/button'
 import { LogOut } from 'lucide-react'
@@ -34,7 +30,6 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
   return (
     <>
       {!session ? (
-        // <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />
         <>
           <div className="flex items-center justify-center h-screen">
             <LoginPage />
@@ -45,102 +40,6 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
           <Head customMeta={customMeta} />
           <header>
             <div className="container grid items-center justify-between grid-cols-3 py-4">
-              {/* <div className="flex items-center justify-start">
-                <ConnectButton.Custom>
-                  {({
-                    account,
-                    chain,
-                    openAccountModal,
-                    openChainModal,
-                    openConnectModal,
-                    authenticationStatus,
-                    mounted,
-                  }) => {
-                    // Note: If your app doesn't use authentication, you
-                    // can remove all 'authenticationStatus' checks
-                    const ready = mounted && authenticationStatus !== 'loading'
-                    const connected =
-                      ready &&
-                      account &&
-                      chain &&
-                      (!authenticationStatus ||
-                        authenticationStatus === 'authenticated')
-
-                    return (
-                      <div
-                        {...(!ready && {
-                          'aria-hidden': true,
-                          style: {
-                            opacity: 0,
-                            pointerEvents: 'none',
-                            userSelect: 'none',
-                          },
-                        })}
-                      >
-                        {(() => {
-                          if (!connected) {
-                            return (
-                              <Button onClick={openConnectModal} type="button">
-                                Connect Wallet
-                              </Button>
-                            )
-                          }
-
-                          if (chain.unsupported) {
-                            return (
-                              <Button onClick={openChainModal} type="button">
-                                Wrong network
-                              </Button>
-                            )
-                          }
-
-                          return (
-                            <div style={{ display: 'flex', gap: 12 }}>
-                              <Button
-                                onClick={openChainModal}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                }}
-                                type="button"
-                              >
-                                {chain.hasIcon && (
-                                  <div
-                                    style={{
-                                      background: chain.iconBackground,
-                                      width: 12,
-                                      height: 12,
-                                      borderRadius: 999,
-                                      overflow: 'hidden',
-                                      marginRight: 4,
-                                    }}
-                                  >
-                                    {chain.iconUrl && (
-                                      <img
-                                        alt={chain.name ?? 'Chain icon'}
-                                        src={chain.iconUrl}
-                                        style={{ width: 12, height: 12 }}
-                                      />
-                                    )}
-                                  </div>
-                                )}
-                                {chain.name}
-                              </Button>
-
-                              <Button onClick={openAccountModal} type="button">
-                                {account.displayName}
-                                {account.displayBalance
-                                  ? ` (${account.displayBalance})`
-                                  : ''}
-                              </Button>
-                            </div>
-                          )
-                        })()}
-                      </div>
-                    )
-                  }}
-                </ConnectButton.Custom>
-              </div> */}
               <div className="flex items-center justify-center">
                 <Link className={buttonVariants({ variant: 'link' })} href="/">
                   Dashboard
@@ -151,12 +50,6 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
                 >
                   Will
                 </Link>
-                {/* <Link className={buttonVariants({ variant: 'link' })} href="">
-                  Asset
-                </Link>
-                <Link className={buttonVariants({ variant: 'link' })} href="">
-                  Inheritance
-                </Link> */}
                 <Link
                   className={buttonVariants({ variant: 'link' })}
                   href="/safeguard"
