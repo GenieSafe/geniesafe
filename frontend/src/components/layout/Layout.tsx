@@ -5,7 +5,6 @@ import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 
 import { Button, buttonVariants } from '../ui/button'
 import { LogOut } from 'lucide-react'
-import { useRouter } from 'next/router'
 import LoginPage from '../../pages/auth/login'
 
 interface LayoutProps {
@@ -29,6 +28,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
     <>
       {!session ? (
         <>
+          <Head customMeta={customMeta} />
           <div className="flex items-center justify-center h-screen">
             <LoginPage />
           </div>
