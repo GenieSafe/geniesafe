@@ -50,6 +50,7 @@
       radial-gradient(at 31% 2%, rgb(0, 0, 0) 0, transparent 76%),
       radial-gradient(at 37% 91%, rgb(124, 58, 237) 0, transparent 84%),
       radial-gradient(at 74% 31%, rgb(91, 33, 182) 0, transparent 92%);
+      min-height: 100vh;
   }
 
   .glass {
