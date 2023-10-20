@@ -63,7 +63,7 @@ export function WillCard({ will }: { will: any }) {
                     {will.beneficiaries ? (
                       will.beneficiaries.map(
                         (beneficiary: Tables<'beneficiaries'>, index: number) => (
-                          <Card key={index}>
+                          <Card key={index} className='shadow-none'>
                             <CardContent className="pt-6">
                               <div className="flex flex-row gap-8">
                                 <div className="flex flex-col w-24">
@@ -117,7 +117,7 @@ export function WillCard({ will }: { will: any }) {
                   <div className="flex gap-4 overflow-x-auto">
                     {will.validators ? (
                       will.validators.map((validator: Tables<'validators'>, index: number) => (
-                        <Card key={index}>
+                        <Card key={index} className='shadow-none'>
                           <CardContent className="pt-6">
                             <div className="flex flex-row items-center gap-8">
                               <div className="flex flex-col w-24">
