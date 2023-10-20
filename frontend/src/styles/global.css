@@ -32,6 +32,9 @@
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
+    
+    --success: 160.1 84.1% 39.4%;
+    --success-foreground: 0 0% 100%;
 
     --radius: 0.5rem;
 
