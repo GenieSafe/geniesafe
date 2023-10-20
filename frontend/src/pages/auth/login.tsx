@@ -1,7 +1,5 @@
-import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { useUser, useSupabaseClient } from '@supabase/auth-helpers-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -12,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from '../../components/ui/card'
-import { Label } from '../../components/ui/label'
 import { Eye, EyeOff, Github } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
@@ -51,16 +48,6 @@ export default function Login() {
       password: '',
     },
   })
-  // const [data, setData] = useState<any>(null)
-
-  // useEffect(() => {
-  //   async function loadData() {
-  //     const { data } = await supabaseClient.from('profiles').select('*')
-  //     setData(data)
-  //   }
-  //   // Only run query once user is logged in.
-  //   if (user) loadData()
-  // }, [user])
 
   async function signInWithEmail(values: z.infer<typeof signInSchema>) {
     const { data, error } = await supabase.auth.signInWithPassword({
