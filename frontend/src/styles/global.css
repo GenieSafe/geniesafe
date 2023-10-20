@@ -4,37 +4,34 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 222.2 47.4% 11.2%;
+    --border: 250.5 95.2% 91.8%;
+    --input: 250.5 95.2% 91.8%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --ring: 255.1 91.7% 76.3%;
+
+    --background: 0 0% 0%;
+    --foreground: 261.2 72.6% 22.9%;
+
+    --muted: 251.4 91.3% 95.5%;
+    --muted-foreground: 258.3 89.5% 66.3%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 261.2 72.6% 22.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
+    --card-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 0 0% 100%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 262.1 83.3% 57.8%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --accent: 251.4 91.3% 95.5%;
+    --accent-foreground: 263.5 67.4% 34.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --success: 142 71% 45%;
-    --success-foreground: 210 40% 98%;
-
-    --destructive: 0 100% 50%;
-    --destructive-foreground: 210 40% 98%;
-
-    --ring: 215 20.2% 65.1%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
 
     --radius: 0.5rem;
 
@@ -53,6 +50,19 @@
       radial-gradient(at 31% 2%, rgb(0, 0, 0) 0, transparent 76%),
       radial-gradient(at 37% 91%, rgb(124, 58, 237) 0, transparent 84%),
       radial-gradient(at 74% 31%, rgb(91, 33, 182) 0, transparent 92%);
+  }
+
+  .glass {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.05)
+    );
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    border-radius: 20px;
+    /* border: 1px solid rgba(255, 255, 255, 0.18); */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
   }
 }
 
