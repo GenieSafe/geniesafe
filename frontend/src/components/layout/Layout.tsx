@@ -16,14 +16,12 @@ interface LayoutProps {
 export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
   const session = useSession()
   const supabase = useSupabaseClient()
-  const router = useRouter()
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut()
+
     if (error) {
       console.error('Error signing out:', error.message)
-    } else {
-      router.push('/auth/login')
     }
   }
 
