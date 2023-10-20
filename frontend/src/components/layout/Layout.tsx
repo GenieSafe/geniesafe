@@ -10,6 +10,7 @@ import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { Button, buttonVariants } from '../ui/button'
 import { LogOut } from 'lucide-react'
 import { useRouter } from 'next/router'
+import LoginPage from '../../pages/auth/login'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -33,7 +34,12 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
   return (
     <>
       {!session ? (
-        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />
+        // <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />
+        <>
+          <div className="flex items-center justify-center h-screen">
+            <LoginPage />
+          </div>
+        </>
       ) : (
         <>
           <Head customMeta={customMeta} />
