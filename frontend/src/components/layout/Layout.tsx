@@ -2,7 +2,6 @@ import React from 'react'
 import { Head, MetaProps } from './Head'
 import { useSession } from '@supabase/auth-helpers-react'
 
-import LoginPage from '../../pages/auth/login'
 import Navbar from './Navbar'
 
 interface LayoutProps {
@@ -19,7 +18,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
         <>
           <Head customMeta={customMeta} />
           <div className="flex items-center justify-center h-screen">
-            <LoginPage />
+            {children}
           </div>
         </>
       ) : (
