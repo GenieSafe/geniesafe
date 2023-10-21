@@ -63,9 +63,8 @@ export default function Navbar() {
           <span className="text-sm">
             Hi, {user?.email}!
           </span>
-          <Button variant={'link'} onClick={handleSignOut}>
+          <Button variant={'link'} className='font-bold' onClick={handleSignOut}>
             Logout
-            <LogOut className="w-4 h-4 ml-2" />
           </Button>
         </div>
       </div>
