@@ -11,10 +11,10 @@ import {
   NavigationMenuViewport,
   navigationMenuTriggerStyle,
 } from '../ui/navigation-menu'
-import React, { useEffect, useState } from 'react'
-import { useSession, useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
+import React from 'react'
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { LogOut } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/router'
 
 export default function Navbar() {
   const router = useRouter()
@@ -27,8 +27,8 @@ export default function Navbar() {
     if (error) {
       console.error('Error signing out:', error.message)
     }
-
-    router.push('/')
+    
+    router.reload()
   }
 
   return (
