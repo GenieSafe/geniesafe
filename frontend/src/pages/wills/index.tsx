@@ -42,18 +42,18 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 export default function Wills({ data }: { data: any }) {
   return (
     <>
-      <div className="container flex items-center justify-between pb-8">
-        <h1 className="text-4xl font-bold tracking-tight scroll-m-20 lg:text-5xl">
+      <div className="flex items-center justify-between pb-12">
+        <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
           Your Wills
         </h1>
-        <Button variant={'outline'} className="dark" asChild>
+        <Button asChild>
           <Link href="/wills/create">
             <Plus className="w-4 h-4 mr-2" />
             Create new will
           </Link>
         </Button>
       </div>
-      <div className="container flex flex-col space-y-4">
+      <div className="flex flex-col gap-16">
         {data.length ? (
           data.map((will: Tables<'wills'>) => <WillCard key={will.id} will={will} />)
         ) : (

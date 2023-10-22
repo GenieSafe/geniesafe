@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { GetServerSidePropsContext } from 'next'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 
-import { Edit3 } from 'lucide-react'
+import { CheckCircle2, Edit3, XCircle } from 'lucide-react'
 
 import { Button } from '../../components/ui/button'
 import {
@@ -51,61 +51,70 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 export default function Config({ data }: { data: any }) {
   return (
     <>
-      <div className="container flex flex-col gap-8 pb-8">
+      <div className="flex flex-col gap-8">
         {data.length > 0 ? (
           <>
-            <div className="container pb-8">
-              <div className="flex flex-col gap-4 mb-4">
-                <h1 className="text-4xl font-bold tracking-tight scroll-m-20 lg:text-5xl">
-                  Recover your wallet
-                </h1>
-                <p className="mb-4 leading-7">
-                  Lost access to your wallet? Notify your Verifiers to verify
-                  your identity and we'll send you your private key.
-                </p>
-              </div>
-              <div className="grid gap-8">
-                <Card className="bg-primary">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-2xl text-primary-foreground">
-                      Verifiers
-                    </CardTitle>
-                    <Button size={'icon'} variant={'secondary'} asChild>
-                      <Link href={`/safeguard/edit/${data.id}`}>
-                        <Edit3 className="w-4 h-4" />
-                      </Link>
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="flex gap-4">
-                    {data[0].verifiers.map(
-                      (verifier: Tables<'verifiers'>, index: number) => (
-                        <Card key={index} className="">
-                          <CardContent className="grid pt-6">
-                            <p className="">
-                              {
-                                (verifier.metadata as Record<string, any>)
-                                  .first_name
-                              }{' '}
-                              {
-                                (verifier.metadata as Record<string, any>)
-                                  .last_name
-                              }
-                            </p>
-                          </CardContent>
-                        </Card>
-                      )
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="grid justify-end py-8">
-                <Button size={'lg'}>Notify Verifiers</Button>
-              </div>
+            <div className="flex flex-col gap-4 pb-4">
+              <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
+                Recover your wallet
+              </h1>
+              <p className="leading-7">
+                Lost access to your wallet? Notify your Verifiers to verify your
+                identity and we'll send you your private key.
+              </p>
+            </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-2xl text-primary-foreground">
+                  Verifiers
+                </CardTitle>
+                <Button size={'icon'} variant={'secondary'} asChild>
+                  <Link href={`/safeguard/edit/${data.id}`}>
+                    <Edit3 className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </CardHeader>
+              <CardContent className="flex gap-4">
+                {data[0].verifiers.map(
+                  (verifier: Tables<'verifiers'>, index: number) => (
+                    <Card key={index} className="">
+                      <CardContent className="flex items-center gap-6 pt-6">
+                        <div className="flex flex-col w-24">
+                          <p className="text-lg font-semibold truncate">
+                            {
+                              (verifier.metadata as Record<string, any>)
+                                .first_name
+                            }{' '}
+                            {
+                              (verifier.metadata as Record<string, any>)
+                                .last_name
+                            }
+                          </p>
+                          <p className="truncate">
+                            {
+                              (verifier.metadata as Record<string, any>)
+                                .wallet_address
+                            }
+                          </p>
+                        </div>
+                        {verifier.has_verified ? (
+                          <CheckCircle2 className="text-success"></CheckCircle2>
+                        ) : (
+                          <XCircle className="text-destructive"></XCircle>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )
+                )}
+              </CardContent>
+            </Card>
+            <div className="flex justify-end">
+              <Button>Notify Verifiers</Button>
             </div>
           </>
         ) : (
           <>
-            <h1 className="text-4xl font-bold tracking-tight scroll-m-20">
+            <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
               It seems like you don't have any wallet recovery method for now.
             </h1>
             <p className="leading-7">

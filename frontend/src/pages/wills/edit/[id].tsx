@@ -19,10 +19,17 @@ import {
 } from '../../../components/ui/form'
 import { Label } from '../../../components/ui/label'
 import { Button } from '../../../components/ui/button'
-import { Card, CardContent } from '../../../components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '../../../components/ui/card'
 import { Input } from '../../../components/ui/input'
 
-import { Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 
 import { Database, Tables } from '../../../lib/database.types'
 
@@ -83,7 +90,8 @@ export default function EditWill({ will }: { will: any }) {
   const [percentageInputVal, setPercentageInputVal] = useState('')
   const [totalPercentage, setTotalPercentage] = useState(
     will[0].beneficiaries.reduce(
-      (acc: number, curr: Tables<'beneficiaries'>) => acc + (curr.percentage ?? 0),
+      (acc: number, curr: Tables<'beneficiaries'>) =>
+        acc + (curr.percentage ?? 0),
       0
     )
   )
@@ -235,167 +243,179 @@ export default function EditWill({ will }: { will: any }) {
       router.push('/wills')
     }
   }
-  
+
   return (
     <>
-      <div className="container flex items-center justify-between pb-8">
+      <div className="flex items-center justify-between pb-12">
         <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
           Edit Will
         </h1>
       </div>
-      <div className="container grid gap-4">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Will Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="My First Will" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid gap-4">
-              <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
-                Beneficiaries
-              </h2>
-              <div className="grid items-end grid-cols-11 gap-4">
-                <div className="grid w-full items-center gap-1.5 col-span-5">
-                  <Label htmlFor="email">Beneficiary's Wallet Address</Label>
-                  <Input
-                    type="text"
-                    name="field1"
-                    placeholder="0x12345..."
-                    value={beneficiaryInputVal}
-                    onChange={handleBeneficiaryInputValChange}
-                    disabled={totalPercentage === 100}
-                  />
+      <Card>
+        <CardContent className="p-12">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Will Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="My First Will" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-12">
+                <div className="flex flex-col gap-6">
+                  <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
+                    Beneficiaries
+                  </h2>
+                  <div className="grid items-end grid-cols-11 gap-4">
+                    <div className="grid items-center w-full col-span-5 gap-2">
+                      <Label htmlFor="email">
+                        Beneficiary's Wallet Address
+                      </Label>
+                      <Input
+                        type="text"
+                        name="field1"
+                        placeholder="0x12345..."
+                        value={beneficiaryInputVal}
+                        onChange={handleBeneficiaryInputValChange}
+                        disabled={totalPercentage === 100}
+                      />
+                    </div>
+                    <div className="grid items-center w-full col-span-5 gap-2">
+                      <Label htmlFor="email">Division Percentage</Label>
+                      <Input
+                        type="number"
+                        name="field2"
+                        placeholder="100"
+                        value={percentageInputVal}
+                        onChange={handlePercentFieldChange}
+                        disabled={totalPercentage === 100}
+                      />
+                    </div>
+                    <Button
+                      className="col-span-1"
+                      size={'icon'}
+                      onClick={handleAddBeneficiary}
+                      disabled={totalPercentage === 100}
+                    >
+                      <Plus className='w-4 h-4'/>
+                    </Button>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    {beneficiariesArr.map((beneficiary, index) => (
+                      <Card key={beneficiary.user_id}>
+                        <CardContent className="flex items-center justify-between pt-6">
+                          <p className="leading-7 truncate max-w-[10rem]">
+                            {
+                              (beneficiary.metadata as Record<string, any>)
+                                .first_name
+                            }{' '}
+                            {
+                              (beneficiary.metadata as Record<string, any>)
+                                .last_name
+                            }
+                          </p>
+                          <p className="w-40 leading-7 truncate">
+                            {
+                              (beneficiary.metadata as Record<string, any>)
+                                .wallet_address
+                            }
+                          </p>
+                          <p className="leading-7">{beneficiary.percentage}%</p>
+                          <Button
+                            size={'sm'}
+                            variant={'destructive'}
+                            className="col-span-1"
+                            onClick={(event) =>
+                              handleDeleteBeneficiary(event, index)
+                            }
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid w-full items-center gap-1.5 col-span-5">
-                  <Label htmlFor="email">Division Percentage</Label>
-                  <Input
-                    type="number"
-                    name="field2"
-                    placeholder="100"
-                    value={percentageInputVal}
-                    onChange={handlePercentFieldChange}
-                    disabled={totalPercentage === 100}
-                  />
-                </div>
-                <Button onClick={handleAddBeneficiary} disabled={totalPercentage === 100}>Add</Button>
-              </div>
-              <div className="grid gap-4">
-                {beneficiariesArr.map((beneficiary, index) => (
-                  <Card className="dark" key={beneficiary.user_id}>
-                    <CardContent className="flex items-center justify-between pt-6">
-                      <div className="flex items-center gap-12">
-                        <p className="w-40 leading-7 truncate">
-                          {
-                            (beneficiary.metadata as Record<string, any>)
-                              .first_name
-                          }{' '}
-                          {
-                            (beneficiary.metadata as Record<string, any>)
-                              .last_name
-                          }
-                        </p>
-                        <p className="w-40 leading-7 truncate">
-                          {
-                            (beneficiary.metadata as Record<string, any>)
-                              .wallet_address
-                          }
-                        </p>
-                        <p className="leading-7">{beneficiary.percentage}%</p>
-                      </div>
-                      <Button
-                        size={'sm'}
-                        variant={'destructive'}
-                        className="col-span-1"
-                        onClick={(event) =>
-                          handleDeleteBeneficiary(event, index)
-                        }
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
 
-            <div className="grid gap-4">
-              <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
-                Validators
-              </h2>
-              <div className="grid items-end grid-cols-11 gap-4">
-                <div className="grid items-center w-full col-span-10 gap-2">
-                  <Label htmlFor="email">Validator's Wallet Address</Label>
-                  <Input
-                    type="text"
-                    name="field1"
-                    placeholder="0x12345..."
-                    value={validatorInputVal}
-                    onChange={handleValidatorInputChange}
-                    disabled={validatorsArr.length === 3}
-                  />
+                <div className="flex flex-col gap-6">
+                  <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
+                    Validators
+                  </h2>
+                  <div className="grid items-end grid-cols-11 gap-4">
+                    <div className="grid items-center w-full col-span-10 gap-2">
+                      <Label htmlFor="email">Validator's Wallet Address</Label>
+                      <Input
+                        type="text"
+                        name="field1"
+                        placeholder="0x12345..."
+                        value={validatorInputVal}
+                        onChange={handleValidatorInputChange}
+                        disabled={validatorsArr.length === 3}
+                      />
+                    </div>
+                    <Button
+                      className="col-span-1"
+                      size={'icon'}
+                      onClick={handleAddValidator}
+                      disabled={validatorsArr.length === 3}
+                    >
+                      <Plus className='w-4 h-4' />
+                    </Button>
+                  </div>
+                  <div className="grid gap-4">
+                    {validatorsArr.map((validator, index) => (
+                      <Card key={index}>
+                        <CardContent className="flex items-center justify-between pt-6">
+                          <p className="w-40 leading-7 truncate">
+                            {
+                              (validator.metadata as Record<string, any>)
+                                .first_name
+                            }{' '}
+                            {
+                              (validator.metadata as Record<string, any>)
+                                .last_name
+                            }
+                          </p>
+                          <Button
+                            size={'sm'}
+                            variant={'destructive'}
+                            className="col-span-1"
+                            onClick={(event) =>
+                              handleDeleteValidator(event, index)
+                            }
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
+              </div>
+              <div className="flex justify-end gap-4">
                 <Button
-                  className="grid col-span-1"
-                  onClick={handleAddValidator}
-                  disabled={validatorsArr.length === 3}
+                  size={'lg'}
+                  variant="destructive"
+                  type="submit"
+                  onClick={onDelete}
                 >
-                  Add
+                  Delete
+                </Button>
+                <Button size={'lg'} type="submit">
+                  Save
                 </Button>
               </div>
-              <div className="grid gap-4">
-                {validatorsArr.map((validator, index) => (
-                  <Card className="dark" key={index}>
-                    <CardContent className="flex items-center justify-between pt-6">
-                      <div className="flex items-center gap-12">
-                        <p className="w-40 leading-7 truncate">
-                          {
-                            (validator.metadata as Record<string, any>)
-                              .first_name
-                          }{' '}
-                          {
-                            (validator.metadata as Record<string, any>)
-                              .last_name
-                          }
-                        </p>
-                      </div>
-                      <Button
-                        size={'sm'}
-                        variant={'destructive'}
-                        className="col-span-1"
-                        onClick={(event) => handleDeleteValidator(event, index)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-[1rem] justify-end">
-              <Button
-                size={'lg'}
-                variant="destructive"
-                type="submit"
-                onClick={onDelete}
-              >
-                Delete
-              </Button>
-              <Button size={'lg'} type="submit">
-                Submit
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </>
   )
 }
