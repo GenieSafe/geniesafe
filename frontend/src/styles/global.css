@@ -4,77 +4,88 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 47.4% 11.2%;
+    --border: 250.5 95.2% 91.8%;
+    --input: 250.5 95.2% 91.8%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --ring: 255.1 91.7% 76.3%;
+
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+
+    --muted: 251.4 91.3% 95.5%;
+    --muted-foreground: 258.3 89.5% 66.3%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 261.2 72.6% 22.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
+    --card-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 0 0% 100%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 262.1 83.3% 57.8%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --accent: 251.4 91.3% 95.5%;
+    --accent-foreground: 263.5 67.4% 34.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --success: 142 71% 45%;
-    --success-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
     
-    --destructive: 0 100% 50%;
-    --destructive-foreground: 210 40% 98%;
-
-    --ring: 215 20.2% 65.1%;
+    --success: 160.1 84.1% 39.4%;
+    --success-foreground: 0 0% 100%;
 
     --radius: 0.5rem;
+
+    --bg-image: url('https://images.unsplash.com/photo-1538370965046-79c0d6907d47?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1169&q=80');
 
     font-family: 'Satoshi', sans-serif;
   }
 
-  .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+  body {
+    background-color: rgb(0, 0, 0);
+    background-image: radial-gradient(
+        at 100% 100%,
+        rgb(0, 0, 0) 0,
+        transparent 100%
+      ),
+      radial-gradient(at 31% 2%, rgb(0, 0, 0) 0, transparent 76%),
+      radial-gradient(at 37% 91%, rgb(124, 58, 237) 0, transparent 84%),
+      radial-gradient(at 74% 31%, rgb(91, 33, 182) 0, transparent 92%);
+      min-height: 100vh;
+  }
 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
+  .glass {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0)
+    );
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
 
-    --popover: 224 71% 4%;
-    --popover-foreground: 215 20.2% 65.1%;
+   /* Firefox */
+   * {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
 
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
+  /* Chrome, Edge, and Safari */
+  *::-webkit-scrollbar {
+    width: 10px;
+  }
 
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 1.2%;
-
-    --secondary: 222.2 47.4% 11.2%;
-    --secondary-foreground: 210 40% 98%;
-
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
-
-    --success: 142 71% 45%;
-    --success-foreground: 210 40% 98%;
-    
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-
-    --ring: 216 34% 17%;
-
-    --radius: 0.5rem;
+  *::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border: none; /* Remove the border */
   }
 }
 
@@ -84,6 +95,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 }

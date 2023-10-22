@@ -18,25 +18,43 @@ import {
   FormMessage,
 } from '../../components/ui/form'
 import { Input } from '../../components/ui/input'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
+import { Database } from '../../lib/database.types'
+import { useRouter } from 'next/router'
 
 const formSchema = z.object({
-  deceased: z.string().regex(/^(\d{6}-\d{2}-\d{4})$/),
+  deceased_ic_number: z.string().regex(/^(\d{6}-\d{2}-\d{4})$/),
 })
 
-const ActivateWill: NextPage = () => {
-  // 1. Define your form.
+export default function ActivateWill() {
+  const supabase = useSupabaseClient<Database>()
+  const router = useRouter()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      deceased: '',
+      deceased_ic_number: '',
     },
   })
 
-  // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values)
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values.deceased_ic_number)
+    const { data: fetch_data, error: fetch_error } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('ic_number', values.deceased_ic_number)
+
+    if (!fetch_error && fetch_data) {
+      const { data, error } = await supabase
+        .from('wills')
+        .update({ status: 'ACTIVE' })
+        .eq('user_id', fetch_data[0].id)
+        .select()
+
+      if (!error && data) {
+        router.push('/wills')
+      }
+    }
   }
 
   return (
@@ -56,7 +74,7 @@ const ActivateWill: NextPage = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="deceased"
+              name="deceased_ic_number"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Deceased Identity Number</FormLabel>
@@ -76,5 +94,3 @@ const ActivateWill: NextPage = () => {
     </>
   )
 }
-
-export default ActivateWill
