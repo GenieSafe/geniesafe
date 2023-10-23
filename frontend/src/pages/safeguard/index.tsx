@@ -38,7 +38,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
   `
     )
-    .eq('user_id', session.user.id)
+    .eq('user_id', session.user.id).single()
 
   return {
     props: {
@@ -52,7 +52,7 @@ export default function Config({ data }: { data: any }) {
   return (
     <>
       <div className="flex flex-col gap-8">
-        {data.length > 0 ? (
+        {data ? (
           <>
             <div className="flex flex-col gap-4 pb-4">
               <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
@@ -75,7 +75,7 @@ export default function Config({ data }: { data: any }) {
                 </Button>
               </CardHeader>
               <CardContent className="flex gap-4">
-                {data[0].verifiers.map(
+                {data.verifiers.map(
                   (verifier: Tables<'verifiers'>, index: number) => (
                     <Card key={index} className="">
                       <CardContent className="flex items-center gap-6 pt-6">

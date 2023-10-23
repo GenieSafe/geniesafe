@@ -34,7 +34,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   const { data, error } = await supabase.from('wallet_recovery_config').select(`
     id, private_key, status,
     verifiers(user_id, has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
-  `)
+  `).eq('user_id', session.user.id).single()
 
   return {
     props: {
@@ -49,10 +49,10 @@ export default function EditConfig({ config }: { config: any }) {
   const router = useRouter()
 
   const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>(
-    config[0].verifiers
+    config.verifiers
   )
   const [verifierInputVal, setVerifierInputVal] = useState('')
-  const [pkInputVal, setPkInputVal] = useState(config[0].private_key)
+  const [pkInputVal, setPkInputVal] = useState(config.private_key)
 
   const handleVerifierInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVerifierInputVal(e.target.value)
@@ -79,12 +79,12 @@ export default function EditConfig({ config }: { config: any }) {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('wallet_address', verifierInputVal)
+        .eq('wallet_address', verifierInputVal).single()
 
       if (!error && data) {
         const newVerifier: any = {
-          user_id: data[0].id,
-          metadata: data[0],
+          user_id: data.id,
+          metadata: data,
         }
 
         setVerifiersArr([...verifiersArr, newVerifier])
@@ -116,7 +116,7 @@ export default function EditConfig({ config }: { config: any }) {
     let { data, error } = await supabase.rpc('update_config', {
       in_verifiers: verifiersArr,
       in_private_key: pkInputVal,
-      in_config_id: config[0].id,
+      in_config_id: config.id,
     })
 
     if (!error) {
@@ -130,7 +130,7 @@ export default function EditConfig({ config }: { config: any }) {
     const { error } = await supabase
       .from('wallet_recovery_config')
       .delete()
-      .eq('id', config[0].id)
+      .eq('id', config.id)
 
     if (!error) {
       router.push('/safeguard')

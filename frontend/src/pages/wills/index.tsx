@@ -34,6 +34,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   `
     )
     .eq('user_id', session.user.id)
+    .single()
 
   return {
     props: {
@@ -50,7 +51,7 @@ export default function Wills({ data }: { data: any }) {
         <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
           Your Wills
         </h1>
-        {!data.length && (
+        {!data && (
           <Button asChild>
             <Link href="/wills/create">
               <Plus className="w-4 h-4 mr-2" />
@@ -60,8 +61,8 @@ export default function Wills({ data }: { data: any }) {
         )}
       </div>
       <div className="flex flex-col gap-16">
-        {data.length ? (
-          <WillCard will={data[0]} />
+        {data ? (
+          <WillCard will={data} />
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>
         )}
