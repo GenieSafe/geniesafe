@@ -6,7 +6,6 @@ import { Plus } from 'lucide-react'
 
 import { WillCard } from '../../components/WillCard'
 import { Button } from '../../components/ui/button'
-import { Tables } from '../../lib/database.types'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -25,11 +24,16 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Run queries with RLS on the server
-  const { data, error } = await supabase.from('wills').select(`
+  const { data, error } = await supabase
+    .from('wills')
+    .select(
+      `
     id, title, contract_address, deployed_at_block, status,
     beneficiaries(percentage, metadata:user_id(first_name, last_name, wallet_address)),
     validators(has_validated, metadata:user_id(first_name, last_name, wallet_address))
-  `).eq('user_id', session.user.id)
+  `
+    )
+    .eq('user_id', session.user.id)
 
   return {
     props: {
@@ -46,16 +50,18 @@ export default function Wills({ data }: { data: any }) {
         <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
           Your Wills
         </h1>
-        <Button asChild>
-          <Link href="/wills/create">
-            <Plus className="w-4 h-4 mr-2" />
-            Create new will
-          </Link>
-        </Button>
+        {!data.length && (
+          <Button asChild>
+            <Link href="/wills/create">
+              <Plus className="w-4 h-4 mr-2" />
+              Create new will
+            </Link>
+          </Button>
+        )}
       </div>
       <div className="flex flex-col gap-16">
         {data.length ? (
-          data.map((will: Tables<'wills'>) => <WillCard key={will.id} will={will} />)
+          <WillCard will={data[0]} />
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>
         )}
