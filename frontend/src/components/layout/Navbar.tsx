@@ -2,19 +2,16 @@ import Link from 'next/link'
 import { Button } from '../ui/button'
 import {
   NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
   navigationMenuTriggerStyle,
 } from '../ui/navigation-menu'
 import React from 'react'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { LogOut } from 'lucide-react'
 import { useRouter } from 'next/router'
+import { ConnectWallet } from '@thirdweb-dev/react'
 
 export default function Navbar() {
   const router = useRouter()
@@ -27,13 +24,19 @@ export default function Navbar() {
     if (error) {
       console.error('Error signing out:', error.message)
     }
-    
+
     router.reload()
   }
 
   return (
     <>
       <div className="flex items-center justify-between px-[5.5rem] py-4 rounded-none glass">
+        <ConnectWallet
+          dropdownPosition={{
+            side: 'bottom',
+            align: 'center',
+          }}
+        />
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
@@ -60,10 +63,12 @@ export default function Navbar() {
           </NavigationMenuList>
         </NavigationMenu>
         <div className="flex items-center justify-end space-x-2">
-          <span className="text-sm">
-            Hi, {user?.email}!
-          </span>
-          <Button variant={'link'} className='font-bold' onClick={handleSignOut}>
+          <span className="text-sm">Hi, {user?.email}!</span>
+          <Button
+            variant={'link'}
+            className="font-bold"
+            onClick={handleSignOut}
+          >
             Logout
           </Button>
         </div>
