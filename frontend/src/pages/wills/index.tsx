@@ -50,7 +50,7 @@ export default function Wills({ data }: { data: any }) {
     <>
       <div className="flex items-center justify-between pb-12">
         <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
-          Your Wills
+          Your Will
         </h1>
         {!data && (
           <Button asChild>
@@ -65,7 +65,7 @@ export default function Wills({ data }: { data: any }) {
         {data ? (
           <WillCard will={data} />
         ) : (
-          <p className="text-2xl font-bold">No wills found.</p>
+          <p className="text-2xl font-bold text-center">No will found</p>
         )}
       </div>
     </>
