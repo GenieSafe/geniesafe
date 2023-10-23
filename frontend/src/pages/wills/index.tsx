@@ -39,12 +39,13 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   return {
     props: {
       initialSession: session,
-      data: data ?? error,
+      data: data,
     },
   }
 }
 
 export default function Wills({ data }: { data: any }) {
+  console.log(data)
   return (
     <>
       <div className="flex items-center justify-between pb-12">
