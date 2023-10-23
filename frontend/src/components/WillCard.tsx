@@ -32,23 +32,21 @@ export function WillCard({ will }: { will: any }) {
             <CardTitle className="text-3xl font-semibold tracking-tight scroll-m-20">
               {will.title}
             </CardTitle>
-            <CardDescription>
-              {will.deployed_at_block !== null ? (
-                <Button variant={'link'} asChild>
-                  <Link
-                    href={`https://sepolia.etherscan.io/address/${will.deployed_at_block}`}
-                  >
-                    <CardDescription className="text-sm font-semibold text-primary-foreground/50">
-                      {will.deployed_at_block}
-                    </CardDescription>
-                  </Link>
-                </Button>
-              ) : (
-                <CardDescription className="text-sm font-semibold text-primary-foreground/50">
-                  N/A
-                </CardDescription>
-              )}
-            </CardDescription>
+            {will.deployed_at_block !== null ? (
+              <Button variant={'link'} asChild>
+                <Link
+                  href={`https://sepolia.etherscan.io/address/${will.deployed_at_block}`}
+                >
+                  <CardDescription className="text-sm font-semibold text-primary-foreground/50">
+                    {will.deployed_at_block}
+                  </CardDescription>
+                </Link>
+              </Button>
+            ) : (
+              <CardDescription className="text-sm font-semibold text-primary-foreground/50">
+                N/A
+              </CardDescription>
+            )}
           </div>
           <div className="flex items-start justify-end">
             <Badge
