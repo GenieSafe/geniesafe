@@ -24,7 +24,7 @@ export default function WillStatus({ will }: { will: any }) {
             </Link>
           )}
         </CardHeader>
-        <CardContent className="flex flex-col items-center space-y-3">
+        <CardContent className="flex flex-col items-center justify-center h-full space-y-1">
           {will != null ? (
             <>
               <Badge

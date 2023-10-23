@@ -18,7 +18,7 @@ export default function WalletBalance() {
           <CardTitle className="font-medium">Your Balance</CardTitle>
           <Wallet className='w-6 h-6 text-primary'/>
         </CardHeader>
-        <CardContent className='space-y-1'>
+        <CardContent className='flex flex-col justify-center h-full space-y-1'>
           <div className="text-2xl font-bold">100 ETH</div>
           <p className="text-primary-foreground/50">
             ~ $170,000

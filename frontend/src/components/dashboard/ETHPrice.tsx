@@ -12,7 +12,7 @@ export default function ETHPrice() {
           <CardTitle className="font-medium">Ethereum Price</CardTitle>
           <ETH className="w-7 h-7 text-primary" />
         </CardHeader>
-        <CardContent className="space-y-1">
+        <CardContent className="flex flex-col justify-center h-full space-y-1">
           <div className="text-2xl font-bold">$1,679.44</div>
           <p className="text-success">+0.90%</p>
         </CardContent>

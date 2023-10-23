@@ -27,7 +27,7 @@ export default function SafeguardStatus({ config }: { config: any }) {
             </Link>
           )}
         </CardHeader>
-        <CardContent className="flex flex-col space-y-1">
+        <CardContent className="flex flex-col h-full space-y-1 items=center justify-center">
           {config != null ? (
             <>
               {config.verifiers.map(
