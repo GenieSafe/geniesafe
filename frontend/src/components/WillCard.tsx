@@ -151,7 +151,7 @@ export function WillCard({ will, balance }: { will: any; balance: number }) {
               {balance} ETH
             </p>
             <CardDescription className="text-sm text-primary-foreground/50">
-              ~$167,400
+              ~${(balance * ethUsd).toFixed(2)} (1 ETH = ${ethUsd})
             </CardDescription>
           </div>
           <div className="p-4">

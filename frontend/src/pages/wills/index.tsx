@@ -45,13 +45,18 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     ).then((res) => res.json())
   }
 
+  const ethUsd = await fetch(
+    'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd'
+  )
+    .then((res) => res.json())
+    .then((res) => res.ethereum.usd)
+
   return {
     props: {
       initialSession: session,
       data: data ?? error,
-      balance:
-        parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4) ??
-        error,
+      balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
+      ethUsd: ethUsd,
     },
   }
 }
@@ -59,9 +64,11 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 export default function Wills({
   data,
   balance,
+  ethUsd,
 }: {
   data: any
   balance: number
+  ethUsd: number
 }) {
   return (
     <>
@@ -80,7 +87,7 @@ export default function Wills({
       </div>
       <div className="flex flex-col gap-16">
         {data.length ? (
-          <WillCard will={data[0]} balance={balance} />
+          <WillCard will={data[0]} balance={balance} ethUsd={ethUsd}/>
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>
         )}
