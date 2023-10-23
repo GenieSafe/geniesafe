@@ -58,7 +58,7 @@ export function WillCard({ will }: { will: any }) {
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-12">
           <div className="flex flex-col gap-4 overflow-clip">
-            <p className="font-bold">Beneficiaries</p>
+            <p className="font-bold text-lg">Beneficiaries</p>
             <div className="flex gap-4 overflow-x-auto">
               {will.beneficiaries ? (
                 will.beneficiaries.map(
@@ -101,7 +101,7 @@ export function WillCard({ will }: { will: any }) {
           </div>
 
           <div className="flex flex-col gap-4">
-            <p className="font-bold">Validators</p>
+            <p className="font-bold text-lg">Validators</p>
             <div className="flex gap-4 overflow-x-auto">
               {will.validators ? (
                 will.validators.map(
