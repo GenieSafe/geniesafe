@@ -141,7 +141,7 @@ export default function EditConfig({ config }: { config: any }) {
     <>
       <div className="flex items-center justify-between pb-12">
         <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
-          Edit Configuration
+          Edit Safeguard Configuration
         </h1>
       </div>
       <Card>

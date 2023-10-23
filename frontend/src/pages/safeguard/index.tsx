@@ -59,7 +59,7 @@ export default function Config({ data }: { data: any }) {
                 Recover your wallet
               </h1>
               <p className="leading-7">
-                Lost access to your wallet? Notify your Verifiers to verify your
+                Lost access to your wallet? Notify your verifiers to verify your
                 identity and we'll send you your private key.
               </p>
             </div>
@@ -115,11 +115,11 @@ export default function Config({ data }: { data: any }) {
         ) : (
           <>
             <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
-              It seems like you don't have any wallet recovery method for now.
+              It seems like you don't have safeguard set up for now.
             </h1>
             <p className="leading-7">
               Worry you might lose access to your private key? Assign trusted
-              Verifiers to help safeguard your private key.
+              verifiers to help safeguard your private key.
             </p>
             <Button asChild className="self-start" size={'lg'}>
               <Link href="/safeguard/assign">Assign Verifiers</Link>
