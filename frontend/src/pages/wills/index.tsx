@@ -6,10 +6,12 @@ import { Plus } from 'lucide-react'
 
 import { WillCard } from '../../components/WillCard'
 import { Button } from '../../components/ui/button'
+import { ethers } from 'ethers'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
   const supabase = createPagesServerClient(ctx)
+  let balance = null
   // Check if we have a session
   const {
     data: { session },
@@ -35,15 +37,32 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     )
     .eq('user_id', session.user.id)
 
+  if (data !== null) {
+    const etherscanApiKey = '2Y2V7T5HCBPXU6MUME8HHQJSBK84ISZT23'
+    const address = '0x19882AfC7913B21E2E414F8219eA3bdF3202aB99'
+    balance = await fetch(
+      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${etherscanApiKey}`
+    ).then((res) => res.json())
+  }
+
   return {
     props: {
       initialSession: session,
       data: data ?? error,
+      balance:
+        parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4) ??
+        error,
     },
   }
 }
 
-export default function Wills({ data }: { data: any }) {
+export default function Wills({
+  data,
+  balance,
+}: {
+  data: any
+  balance: number
+}) {
   return (
     <>
       <div className="flex items-center justify-between pb-12">
@@ -61,7 +80,7 @@ export default function Wills({ data }: { data: any }) {
       </div>
       <div className="flex flex-col gap-16">
         {data.length ? (
-          <WillCard will={data[0]} />
+          <WillCard will={data[0]} balance={balance} />
         ) : (
           <p className="text-2xl font-bold">No wills found.</p>
         )}

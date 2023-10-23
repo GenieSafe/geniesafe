@@ -17,7 +17,7 @@ import { Tables } from '../lib/database.types'
 import Image from 'next/image'
 import { Button } from './ui/button'
 
-export function WillCard({ will }: { will: any }) {
+export function WillCard({ will, balance }: { will: any; balance: number }) {
   return (
     <Link href={`wills/edit/${will.id}`}>
       <Card className="hover:shadow-[0px_0px_20px_0px_hsl(var(--primary))] transition-shadow duration-500 p-4">
@@ -148,7 +148,7 @@ export function WillCard({ will }: { will: any }) {
           <div className="space-y-1">
             <CardDescription>Your balance:</CardDescription>
             <p className="text-5xl font-semibold tracking-tight scroll-m-20">
-              100 ETH
+              {balance} ETH
             </p>
             <CardDescription className="text-sm text-primary-foreground/50">
               ~$167,400
