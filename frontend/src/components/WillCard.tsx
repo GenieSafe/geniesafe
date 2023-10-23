@@ -10,12 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from '../components/ui/card'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from './ui/tooltip'
 import { Badge } from './ui/badge'
 
 import { Tables } from '../lib/database.types'
