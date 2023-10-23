@@ -17,7 +17,16 @@ import { Tables } from '../lib/database.types'
 import Image from 'next/image'
 import { Button } from './ui/button'
 
-export function WillCard({ will, balance }: { will: any; balance: number }) {
+export function WillCard({
+  will,
+  balance,
+  ethUsd,
+}: {
+  will: any
+  balance: number
+  ethUsd: number
+}) {
+  const willContractAddress = '0x95fe4dd93d2bA758b71223DC988F0199b56d53eC'
   return (
     <Link href={`wills/edit/${will.id}`}>
       <Card className="hover:shadow-[0px_0px_20px_0px_hsl(var(--primary))] transition-shadow duration-500 p-4">
@@ -26,19 +35,19 @@ export function WillCard({ will, balance }: { will: any; balance: number }) {
             <CardTitle className="text-3xl font-semibold tracking-tight scroll-m-20">
               {will.title}
             </CardTitle>
-            {will.deployed_at_block !== null ? (
+            {willContractAddress !== null ? (
               <Button variant={'link'} asChild>
                 <Link
-                  href={`https://sepolia.etherscan.io/address/${will.deployed_at_block}`}
+                  href={`https://sepolia.etherscan.io/address/${willContractAddress}`}
                 >
                   <CardDescription className="text-sm font-semibold text-primary-foreground/50">
-                    {will.deployed_at_block}
+                    WillContract: {willContractAddress}
                   </CardDescription>
                 </Link>
               </Button>
             ) : (
               <CardDescription className="text-sm font-semibold text-primary-foreground/50">
-                N/A
+                WillContract: N/A
               </CardDescription>
             )}
           </div>
