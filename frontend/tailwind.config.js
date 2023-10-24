@@ -69,14 +69,14 @@ module.exports = {
             emphasis: '#374151', // gray-700
           },
           border: {
-            DEFAULT: '#e5e7eb', // gray-200
+            DEFAULT: '#374151', // gray-200
           },
           ring: {
             DEFAULT: '#e5e7eb', // gray-200
           },
           content: {
             subtle: '#9ca3af', // gray-400
-            DEFAULT: '#6b7280', // gray-500
+            DEFAULT: '#ffffff ', // gray-500
             emphasis: '#374151', // gray-700
             strong: '#111827', // gray-900
             inverted: '#ffffff', // white
