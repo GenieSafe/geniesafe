@@ -125,7 +125,7 @@ export default function Login() {
               <CardFooter className="flex flex-col items-center">
                 <Button className="w-full">Sign in</Button>
                 <Button variant={'link'} size={'sm'} asChild>
-                  <Link href="#">Register for an account</Link>
+                  <Link href="/auth/register">Register for an account</Link>
                 </Button>
               </CardFooter>
             </Card>
