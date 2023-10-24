@@ -69,7 +69,7 @@ module.exports = {
             emphasis: '#374151', // gray-700
           },
           border: {
-            DEFAULT: '#374151', // gray-200
+            DEFAULT: '#FFFFFF33', // gray-200
           },
           ring: {
             DEFAULT: '#e5e7eb', // gray-200
