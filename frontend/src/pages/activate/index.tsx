@@ -145,7 +145,7 @@ export default function Activate({ data }: { data: any }) {
                   <Input
                     placeholder=""
                     {...field}
-                    onChange={handleICNumberChange}
+                    onChange={handleIcNumberChange}
                     maxLength={12} // Limit the input to 12 characters
                   />
                 </FormControl>
@@ -157,9 +157,32 @@ export default function Activate({ data }: { data: any }) {
             )}
           />
           <div className="flex justify-end">
-            <Button size={'lg'} type="submit">
-              Activate
-            </Button>
+            <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button size={'lg'}>Activate</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Are you sure you want to activate this person's will?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action is irreversible and legally binding. Please
+                    ensure you have the necessary legal authority and documents
+                    before proceeding.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    // type="submit"
+                    onClick={form.handleSubmit(onSubmit)}
+                  >
+                    Continue
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </form>
       </Form>
