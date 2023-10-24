@@ -49,7 +49,7 @@ export default function Navbar() {
             <NavigationMenuItem>
               <Link href="/wills" legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Wills
+                  Will
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
