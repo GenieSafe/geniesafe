@@ -6,6 +6,8 @@ import WillStatus from '../components/dashboard/WillStatus'
 import { GetServerSidePropsContext } from 'next'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
+import ETHPriceChart from '../components/dashboard/ETHPriceChart'
+import Market from '../components/dashboard/Market'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -63,12 +65,20 @@ export default function Home({ will, config }: { will: any; config: any }) {
 
   return (
     <>
-      <div className="grid grid-rows-3">
+      <div className="flex flex-col gap-6">
         <div className="grid grid-cols-4 gap-6">
           <WalletBalance />
           <ETHPrice />
           <WillStatus will={will} />
           <SafeguardStatus config={config} />
+        </div>
+        <div className='grid grid-cols-12 gap-6'>
+          <div className='col-span-8'>
+            <ETHPriceChart />
+          </div>
+          <div className='col-span-4'>
+            <Market />
+          </div>
         </div>
       </div>
     </>
