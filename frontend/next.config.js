@@ -34,4 +34,14 @@ module.exports = {
     fileLoaderRule.exclude = /\.svg$/i
     return config
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'assets.coingecko.com',
+        port: '',
+        pathname: '/coins/images/**',
+      },
+    ],
+  },
 }
