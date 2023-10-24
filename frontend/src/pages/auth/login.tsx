@@ -58,14 +58,6 @@ export default function Login() {
     !error ? router.push('/') : console.log(error)
   }
 
-  async function signInWithGithub() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-    })
-
-    !error ? router.push('/') : console.log(error)
-  }
-
   if (!user)
     return (
       <>
