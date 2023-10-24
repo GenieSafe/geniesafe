@@ -80,21 +80,6 @@ export default function Login() {
                 <CardDescription>Enter your email and password</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4">
-                <div className="grid grid-cols-1">
-                  <Button
-                    variant="outline"
-                    type="button"
-                    onClick={signInWithGithub}
-                  >
-                    <Github className="w-4 h-4 mr-2" />
-                    Github
-                  </Button>
-                </div>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                </div>
                 <FormField
                   control={form.control}
                   name="email"
