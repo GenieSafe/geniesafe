@@ -25,7 +25,7 @@ import {
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ConnectWallet, useAddress } from '@thirdweb-dev/react'
+import { ConnectWallet, useAddress, useWallet } from '@thirdweb-dev/react'
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -45,6 +45,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const handleShowPassword = () => setShowPassword(!showPassword)
   const address = useAddress()
+  const wallet = useWallet()
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -65,8 +66,8 @@ export default function Register() {
         options: {
           data: {
             address: address,
-          }
-        }
+          },
+        },
       })
 
     if (!signup_error && signup_data) {
@@ -87,7 +88,9 @@ export default function Register() {
     if (user) router.push('/')
   }, [user])
 
-  console.log(address)
+  useEffect(() => {
+    wallet?.disconnect()
+  }, [])
 
   return (
     <>
