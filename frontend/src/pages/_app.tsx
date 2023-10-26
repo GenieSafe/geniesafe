@@ -4,10 +4,16 @@ import {
   createPagesBrowserClient,
   Session,
 } from '@supabase/auth-helpers-nextjs'
+import {
+  ThirdwebProvider,
+  localWallet,
+  metamaskWallet,
+} from '@thirdweb-dev/react'
+import { Sepolia } from '@thirdweb-dev/chains'
 import { useState } from 'react'
 import '../styles/global.css'
 import { Layout } from '../components/layout/Layout'
-import { Outfit} from 'next/font/google'
+import { Outfit } from 'next/font/google'
 
 const outfit = Outfit({ subsets: ['latin'] })
 
@@ -31,9 +37,15 @@ export default function App({
         supabaseClient={supabaseClient}
         initialSession={pageProps.initialSession}
       >
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
+        <ThirdwebProvider
+          clientId="2a4f7795555a65af9128f029c3c2b1fc"
+          activeChain={Sepolia}
+          supportedWallets={[metamaskWallet(), localWallet()]}
+        >
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+        </ThirdwebProvider>
       </SessionContextProvider>
     </>
   )

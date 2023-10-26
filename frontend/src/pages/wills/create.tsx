@@ -79,7 +79,7 @@ export default function CreateWill() {
         .select('*')
         .eq('wallet_address', beneficiaryInputVal)
 
-      if (!error && data) {
+      if (!error && data.length > 0) {
         const newBeneficiary: any = {
           user_id: data[0].id,
           percentage: parseInt(percentageInputVal),
