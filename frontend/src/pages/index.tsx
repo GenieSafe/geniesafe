@@ -8,6 +8,7 @@ import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
 import ETHPriceChart from '../components/dashboard/ETHPriceChart'
 import Market from '../components/dashboard/Market'
+import { ethers } from 'ethers'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -49,16 +50,46 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .eq('user_id', session.user.id)
     .single()
 
+  // Get ETH balance
+  const etherscanApiKey = '2Y2V7T5HCBPXU6MUME8HHQJSBK84ISZT23'
+  const address = '0x19882AfC7913B21E2E414F8219eA3bdF3202aB99'
+  const balance = await fetch(
+    `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${etherscanApiKey}`
+  ).then((res) => res.json())
+
+  // Get ETH price
+  const ethPriceData = await fetch(
+    'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_change=true'
+  ).then((res) => res.json())
+
+  const ethUsd = ethPriceData.ethereum.usd
+  const eth24hrChange = ethPriceData.ethereum.usd_24h_change
+
   return {
     props: {
       initialSession: session,
       will: will_data,
       config: config_data,
+      balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
+      ethUsd: ethUsd,
+      eth24hrChange: eth24hrChange,
     },
   }
 }
 
-export default function Home({ will, config }: { will: any; config: any }) {
+export default function Home({
+  will,
+  config,
+  balance,
+  ethUsd,
+  eth24hrChange,
+}: {
+  will: any
+  config: any
+  balance: number
+  ethUsd: number
+  eth24hrChange: number
+}) {
   const user = useUser()
 
   if (!user) return <Login />
@@ -67,16 +98,16 @@ export default function Home({ will, config }: { will: any; config: any }) {
     <>
       <div className="flex flex-col gap-6">
         <div className="grid grid-cols-4 gap-6">
-          <WalletBalance />
-          <ETHPrice />
+          <WalletBalance balance={balance} ethUsd={ethUsd} />
+          <ETHPrice ethUsd={ethUsd} eth24hrChange={-0.123131}/>
           <WillStatus will={will} />
           <SafeguardStatus config={config} />
         </div>
-        <div className='grid grid-cols-12 gap-6'>
-          <div className='col-span-8'>
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-8">
             <ETHPriceChart />
           </div>
-          <div className='col-span-4'>
+          <div className="col-span-4">
             <Market />
           </div>
         </div>
