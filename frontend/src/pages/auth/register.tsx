@@ -25,6 +25,7 @@ import {
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ConnectWallet, useAddress } from '@thirdweb-dev/react'
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -34,7 +35,6 @@ const registerSchema = z.object({
     .max(30, { message: 'Password cannot be more than 30 characters' }),
   first_name: z.string(),
   last_name: z.string(),
-  wallet_address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
   ic_number: z.string().regex(/^(\d{6}-\d{2}-\d{4})$/),
 })
 
@@ -44,6 +44,7 @@ export default function Register() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const handleShowPassword = () => setShowPassword(!showPassword)
+  const address = useAddress()
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -52,7 +53,6 @@ export default function Register() {
       password: '',
       first_name: '',
       last_name: '',
-      wallet_address: '',
       ic_number: '',
     },
   })
@@ -62,6 +62,11 @@ export default function Register() {
       await supabase.auth.signUp({
         email: values.email,
         password: values.password,
+        options: {
+          data: {
+            address: address,
+          }
+        }
       })
 
     if (!signup_error && signup_data) {
@@ -70,7 +75,7 @@ export default function Register() {
         email: values.email,
         first_name: values.first_name,
         last_name: values.last_name,
-        wallet_address: values.wallet_address,
+        wallet_address: address,
         ic_number: values.ic_number,
       })
 
@@ -82,6 +87,8 @@ export default function Register() {
     if (user) router.push('/')
   }, [user])
 
+  console.log(address)
+
   return (
     <>
       <Form {...form}>
@@ -90,9 +97,17 @@ export default function Register() {
           className="grid gap-4 lg:gap-6"
         >
           <Card>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl">Register</CardTitle>
-              <CardDescription>Create a geniesafe account</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div className="space-y-1">
+                <CardTitle className="text-2xl">Register</CardTitle>
+                <CardDescription>Create a geniesafe account</CardDescription>
+              </div>
+              <ConnectWallet
+                dropdownPosition={{
+                  side: 'bottom',
+                  align: 'center',
+                }}
+              />
             </CardHeader>
             <CardContent className="grid gap-4">
               <FormField
@@ -180,7 +195,7 @@ export default function Register() {
                   )}
                 />
               </div>
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="wallet_address"
                 render={({ field }) => (
@@ -196,7 +211,7 @@ export default function Register() {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
               <FormField
                 control={form.control}
                 name="ic_number"
