@@ -60,6 +60,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   `
     )
     .eq('id', ctx.query.id)
+    .single()
 
   return {
     props: {
@@ -79,17 +80,17 @@ export default function EditWill({ will }: { will: any }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: will[0].title,
+      title: will.title,
     },
   })
 
   const [beneficiariesArr, setBeneficiariesArr] = useState<
     Tables<'beneficiaries'>[]
-  >(will[0].beneficiaries)
+  >(will.beneficiaries)
   const [beneficiaryInputVal, setBeneficiaryInputVal] = useState('')
   const [percentageInputVal, setPercentageInputVal] = useState('')
   const [totalPercentage, setTotalPercentage] = useState(
-    will[0].beneficiaries.reduce(
+    will.beneficiaries.reduce(
       (acc: number, curr: Tables<'beneficiaries'>) =>
         acc + (curr.percentage ?? 0),
       0
@@ -128,12 +129,13 @@ export default function EditWill({ will }: { will: any }) {
         .from('profiles')
         .select('*')
         .eq('wallet_address', beneficiaryInputVal)
+        .single()
 
       if (!error && data) {
         const newBeneficiary: any = {
-          user_id: data[0].id,
+          user_id: data.id,
           percentage: parseInt(percentageInputVal),
-          metadata: data[0],
+          metadata: data,
         }
 
         setBeneficiariesArr([...beneficiariesArr, newBeneficiary])
@@ -162,7 +164,7 @@ export default function EditWill({ will }: { will: any }) {
   }
 
   const [validatorsArr, setValidatorsArr] = useState<Tables<'validators'>[]>(
-    will[0].validators
+    will.validators
   )
   const [validatorInputVal, setValidatorInputVal] = useState('')
 
@@ -189,11 +191,12 @@ export default function EditWill({ will }: { will: any }) {
         .from('profiles')
         .select('*')
         .eq('wallet_address', validatorInputVal)
+        .single()
 
       if (!error && data) {
         const newValidator: any = {
-          user_id: data[0].id,
-          metadata: data[0],
+          user_id: data.id,
+          metadata: data,
         }
 
         setValidatorsArr([...validatorsArr, newValidator])
@@ -226,7 +229,7 @@ export default function EditWill({ will }: { will: any }) {
       in_beneficiaries: beneficiariesArr,
       in_title: values.title,
       in_validators: validatorsArr,
-      in_will_id: will[0].id,
+      in_will_id: will.id,
     })
 
     if (!error) {
@@ -304,7 +307,7 @@ export default function EditWill({ will }: { will: any }) {
                       onClick={handleAddBeneficiary}
                       disabled={totalPercentage === 100}
                     >
-                      <Plus className='w-4 h-4'/>
+                      <Plus className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="flex flex-col gap-4">
@@ -366,7 +369,7 @@ export default function EditWill({ will }: { will: any }) {
                       onClick={handleAddValidator}
                       disabled={validatorsArr.length === 3}
                     >
-                      <Plus className='w-4 h-4' />
+                      <Plus className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="grid gap-4">

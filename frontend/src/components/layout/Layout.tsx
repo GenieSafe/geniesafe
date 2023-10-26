@@ -27,7 +27,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
           <header>
             <Navbar />
           </header>
-          <main className="container px-40 mx-auto my-16">{children}</main>
+          <main className="container px-40 py-16 mx-auto">{children}</main>
           <footer></footer>
         </>
       )}

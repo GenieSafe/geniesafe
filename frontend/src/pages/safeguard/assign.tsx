@@ -110,7 +110,7 @@ export default function AssignConfig() {
     <>
       <div className="flex items-center justify-between pb-12">
         <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
-          Edit Configuration
+          Create Safeguard Configuration
         </h1>
       </div>
       <Card>
@@ -180,7 +180,7 @@ export default function AssignConfig() {
               onClick={onSubmit}
               disabled={verifiersArr.length < 3}
             >
-              Create configuration
+              Create Safeguard
             </Button>
           </div>
         </CardContent>

@@ -13,6 +13,9 @@ import { Sepolia } from '@thirdweb-dev/chains'
 import { useState } from 'react'
 import '../styles/global.css'
 import { Layout } from '../components/layout/Layout'
+import { Outfit } from 'next/font/google'
+
+const outfit = Outfit({ subsets: ['latin'] })
 
 export default function App({
   Component,
@@ -24,19 +27,26 @@ export default function App({
   const [supabaseClient] = useState(() => createPagesBrowserClient())
 
   return (
-    <SessionContextProvider
-      supabaseClient={supabaseClient}
-      initialSession={pageProps.initialSession}
-    >
-      <ThirdwebProvider
-        clientId="2a4f7795555a65af9128f029c3c2b1fc"
-        activeChain={Sepolia}
-        supportedWallets={[metamaskWallet(), localWallet()]}
+    <>
+      <style jsx global>{`
+        html {
+          font-family: ${outfit.style.fontFamily};
+        }
+      `}</style>
+      <SessionContextProvider
+        supabaseClient={supabaseClient}
+        initialSession={pageProps.initialSession}
       >
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-      </ThirdwebProvider>
-    </SessionContextProvider>
+        <ThirdwebProvider
+          clientId="2a4f7795555a65af9128f029c3c2b1fc"
+          activeChain={Sepolia}
+          supportedWallets={[metamaskWallet(), localWallet()]}
+        >
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+        </ThirdwebProvider>
+      </SessionContextProvider>
+    </>
   )
 }
