@@ -61,9 +61,13 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   const ethPriceData = await fetch(
     'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_change=true'
   ).then((res) => res.json())
-
   const ethUsd = ethPriceData.ethereum.usd
   const eth24hrChange = ethPriceData.ethereum.usd_24h_change
+
+  // Get top 5 coins market data
+  const top5coinsData = await fetch(
+    '	https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=5&page=1&sparkline=false&price_change_percentage=24h%2C%207d&locale=en'
+  ).then((res) => res.json())
 
   return {
     props: {
@@ -73,6 +77,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
       ethUsd: ethUsd,
       eth24hrChange: eth24hrChange,
+      top5coinsData: top5coinsData,
     },
   }
 }
@@ -83,12 +88,14 @@ export default function Home({
   balance,
   ethUsd,
   eth24hrChange,
+  top5coinsData,
 }: {
   will: any
   config: any
   balance: number
   ethUsd: number
   eth24hrChange: number
+  top5coinsData: any
 }) {
   const user = useUser()
 
@@ -99,7 +106,7 @@ export default function Home({
       <div className="flex flex-col gap-6">
         <div className="grid grid-cols-4 gap-6">
           <WalletBalance balance={balance} ethUsd={ethUsd} />
-          <ETHPrice ethUsd={ethUsd} eth24hrChange={-0.123131}/>
+          <ETHPrice ethUsd={ethUsd} eth24hrChange={eth24hrChange} />
           <WillStatus will={will} />
           <SafeguardStatus config={config} />
         </div>
@@ -108,7 +115,7 @@ export default function Home({
             <ETHPriceChart />
           </div>
           <div className="col-span-4">
-            <Market />
+            <Market data={top5coinsData}/>
           </div>
         </div>
       </div>
