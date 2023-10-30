@@ -34,13 +34,6 @@ export default function App({
           font-family: ${outfit.style.fontFamily};
         }
       `}</style>
-      <MetaMaskProvider
-        debug={false}
-        sdkOptions={{
-          checkInstallationImmediately: false,
-          dappMetadata: { name: 'geniesafe', url: 'http://localhost:3000', },
-        }}
-      >
         <SessionContextProvider
           supabaseClient={supabaseClient}
           initialSession={pageProps.initialSession}
@@ -55,7 +48,6 @@ export default function App({
             </Layout>
           </ThirdwebProvider>
         </SessionContextProvider>
-      </MetaMaskProvider>
     </>
   )
 }
