@@ -1,8 +1,4 @@
-import {
-  useSession,
-  useSupabaseClient,
-  useUser,
-} from '@supabase/auth-helpers-react'
+import { useSession } from '@supabase/auth-helpers-react'
 import Login from './auth/login'
 import WalletBalance from '../components/dashboard/WalletBalance'
 import ETHPrice from '../components/dashboard/ETHPrice'
@@ -12,18 +8,8 @@ import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
 import ETHPriceChart from '../components/dashboard/ETHPriceChart'
 import Market from '../components/dashboard/Market'
-import {
-  WalletInstance,
-  metamaskWallet,
-  useAddress,
-  useConnect,
-  useCreateWalletInstance,
-  useSetConnectedWallet,
-  useWallet,
-} from '@thirdweb-dev/react'
+import { metamaskWallet, useAddress, useConnect } from '@thirdweb-dev/react'
 import { useEffect, useState } from 'react'
-import { useSDK } from '@metamask/sdk-react'
-import { use } from 'chai'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -92,43 +78,27 @@ export default function Home({
 }) {
   const session = useSession()
   const connect = useConnect()
-  const walletInstance = useWallet()
-  const setConnectedWallet = useSetConnectedWallet();
-  const createWalletInstance = useCreateWalletInstance();
-
-  const [connectedAddress, setConnectedAddress] = useState('')
+  const address = useAddress()
+  const [currentAddress, setCurrentAddress] = useState('')
 
   // Check if the auto-connected address is the same as the user's wallet address on first render
+  // TODO: Find a way to verify address mismatch when user connects wallet
   useEffect(() => {
     connect(metamaskWallet(), { chainId: 11155111 }).then((wallet) => {
+      if (address) setCurrentAddress(address)
       wallet?.getAddress().then((address) => {
-        setConnectedAddress(address)
         if (address !== user.wallet_address) {
           wallet?.disconnect()
-          setConnectedAddress('')
-          console.log('UE1 address mismatch', address, user.wallet_address)
+          setCurrentAddress('')
+          console.error(
+            'Disconnected wallet due to address mismatch',
+            address,
+            user.wallet_address
+          )
         }
       })
     })
   }, [])
-
-  // FIXME: Temporary placeholder for address mismatch
-  useEffect(() => {
-    if (window.ethereum) {
-      window.ethereum.on('accountsChanged', () => {
-        // window.location.reload()
-        window.ethereum
-          .request({ method: 'eth_accounts' })
-          .then((accounts: any) => {
-            console.log('accountsChanged', accounts)
-            if (accounts.length > 0) {
-              // window.location.reload()
-              console.log('accountsChanged', accounts)
-            }
-          })
-      })
-    }
-  })
 
   if (!session) return <Login />
 
