@@ -16,7 +16,6 @@ import { Input } from '../../components/ui/input'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -35,7 +34,11 @@ const registerSchema = z.object({
     .max(30, { message: 'Password cannot be more than 30 characters' }),
   first_name: z.string(),
   last_name: z.string(),
-  ic_number: z.string().regex(/^(\d{6}-\d{2}-\d{4})$/),
+  // wallet_address: z.string(),
+  ic_number: z.string().refine((ic_number) => /^\d{12}$/.test(ic_number), {
+    message:
+      'Invalid I/C number format. Please enter 12 digits with no dashes or other characters.',
+  }),
 })
 
 export default function Register() {
@@ -59,6 +62,9 @@ export default function Register() {
   })
 
   async function signUpWithEmail(values: z.infer<typeof registerSchema>) {
+    // TODO: Replace with toast if wallet address is undefined
+    if (address === undefined) return alert('Please connect your wallet first')
+
     const { data: signup_data, error: signup_error } =
       await supabase.auth.signUp({
         email: values.email,
@@ -221,6 +227,8 @@ export default function Register() {
                         type="text"
                         placeholder="Enter your I/C number"
                         {...field}
+                        maxLength={12} // Limit the input to 12 characters
+                        pattern="[0-9]*" // Only allows numeric characters
                       />
                     </FormControl>
                     <FormMessage />

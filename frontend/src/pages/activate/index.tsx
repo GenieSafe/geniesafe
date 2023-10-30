@@ -65,11 +65,10 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 }
 
 const activateSchema = z.object({
-  ic_number: z
-    .string()
-    .refine((ic_number) => /^\d{6}-\d{2}-\d{4}$/.test(ic_number), {
-      message: 'Invalid I/C number format',
-    }),
+  ic_number: z.string().refine((ic_number) => /^\d{12}$/.test(ic_number), {
+    message:
+      'Invalid I/C number format. Please enter 12 digits with no dashes or other characters.',
+  }),
 })
 
 export default function Activate({ data }: { data: any }) {
@@ -79,27 +78,10 @@ export default function Activate({ data }: { data: any }) {
     resolver: zodResolver(activateSchema),
   })
 
-  const formatIcNumber = (ic_number: string) => {
-    // Remove dashes and ensure it's a valid I/C number
-    ic_number = ic_number.replace(/-/g, '')
-    if (/^\d{12}$/.test(ic_number)) {
-      // Insert dashes in the correct positions as the user types
-      ic_number = ic_number.replace(/(\d{6})(\d{2})(\d{4})/, '$1-$2-$3')
-    }
-    return ic_number
-  }
-
-  const handleIcNumberChange = (e: { target: { value: string } }) => {
-    // Limit the input field to 12 characters
-    const inputWithoutDashes = e.target.value.replace(/-/g, '').slice(0, 12)
-    const formattedICNumber = formatIcNumber(inputWithoutDashes)
-    form.setValue('ic_number', formattedICNumber)
-  }
-
   const onSubmit = ({ ic_number }: { ic_number: string }) => {
     // Close dialog
     setIsDialogOpen(false)
-    
+
     // Check if data is not null
     if (data === null) return
 
@@ -145,8 +127,8 @@ export default function Activate({ data }: { data: any }) {
                   <Input
                     placeholder=""
                     {...field}
-                    onChange={handleIcNumberChange}
                     maxLength={12} // Limit the input to 12 characters
+                    pattern="[0-9]*" // Only allows numeric characters
                   />
                 </FormControl>
                 <FormDescription>
