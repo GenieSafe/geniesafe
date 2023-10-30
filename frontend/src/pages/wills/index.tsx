@@ -7,11 +7,13 @@ import { Plus } from 'lucide-react'
 import { WillCard } from '../../components/WillCard'
 import { Button } from '../../components/ui/button'
 import { ethers } from 'ethers'
+import { useAddress } from '@thirdweb-dev/react'
+import { useUser } from '@supabase/auth-helpers-react'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
   const supabase = createPagesServerClient(ctx)
-  let balance = null
+  let balance = 0
   // Check if we have a session
   const {
     data: { session },
@@ -26,7 +28,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Run queries with RLS on the server
-  const { data, error } = await supabase
+  const { data: will_data, error: will_error } = await supabase
     .from('wills')
     .select(
       `
@@ -38,12 +40,19 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .eq('user_id', session.user.id)
     .single()
 
-  if (data !== null) {
+  const { data: user_data, error: user_error } = await supabase
+    .from('profiles')
+    .select('wallet_address')
+    .eq('id', session.user.id)
+    .single()
+
+  if (will_data !== null) {
     const etherscanApiKey = '2Y2V7T5HCBPXU6MUME8HHQJSBK84ISZT23'
-    const address = '0x19882AfC7913B21E2E414F8219eA3bdF3202aB99'
     balance = await fetch(
-      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${etherscanApiKey}`
-    ).then((res) => res.json())
+      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${user_data?.wallet_address}&tag=latest&apikey=${etherscanApiKey}`
+    )
+      .then((res) => res.json())
+      .then((data) => data.result)
   }
 
   const ethUsd = await fetch(
@@ -55,8 +64,8 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   return {
     props: {
       initialSession: session,
-      data: data ?? error,
-      balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
+      data: will_data,
+      balance: parseFloat(ethers.utils.formatEther(balance)).toFixed(4),
       ethUsd: ethUsd,
     },
   }
