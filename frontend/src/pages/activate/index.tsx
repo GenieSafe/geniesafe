@@ -64,10 +64,10 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   }
 }
 
-const formSchema = z.object({
-  icNumber: z
+const activateSchema = z.object({
+  ic_number: z
     .string()
-    .refine((icNumber) => /^\d{6}-\d{2}-\d{4}$/.test(icNumber), {
+    .refine((ic_number) => /^\d{6}-\d{2}-\d{4}$/.test(ic_number), {
       message: 'Invalid I/C number format',
     }),
 })
@@ -75,28 +75,28 @@ const formSchema = z.object({
 export default function Activate({ data }: { data: any }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof activateSchema>>({
+    resolver: zodResolver(activateSchema),
   })
 
-  const formatIcNumber = (icNumber: string) => {
+  const formatIcNumber = (ic_number: string) => {
     // Remove dashes and ensure it's a valid I/C number
-    icNumber = icNumber.replace(/-/g, '')
-    if (/^\d{12}$/.test(icNumber)) {
+    ic_number = ic_number.replace(/-/g, '')
+    if (/^\d{12}$/.test(ic_number)) {
       // Insert dashes in the correct positions as the user types
-      icNumber = icNumber.replace(/(\d{6})(\d{2})(\d{4})/, '$1-$2-$3')
+      ic_number = ic_number.replace(/(\d{6})(\d{2})(\d{4})/, '$1-$2-$3')
     }
-    return icNumber
+    return ic_number
   }
 
   const handleIcNumberChange = (e: { target: { value: string } }) => {
     // Limit the input field to 12 characters
     const inputWithoutDashes = e.target.value.replace(/-/g, '').slice(0, 12)
     const formattedICNumber = formatIcNumber(inputWithoutDashes)
-    form.setValue('icNumber', formattedICNumber)
+    form.setValue('ic_number', formattedICNumber)
   }
 
-  const onSubmit = ({ icNumber }: { icNumber: string }) => {
+  const onSubmit = ({ ic_number }: { ic_number: string }) => {
     // Close dialog
     setIsDialogOpen(false)
     
@@ -120,7 +120,7 @@ export default function Activate({ data }: { data: any }) {
     )
 
     // Log data
-    console.log('icNumber', icNumber)
+    console.log('ic_number', ic_number)
     console.log('_id', _id)
     console.log('_beneficiaries', _beneficiaries)
     console.log('_percentages', _percentages)
@@ -137,7 +137,7 @@ export default function Activate({ data }: { data: any }) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
-            name="icNumber"
+            name="ic_number"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Deceased's I/C number</FormLabel>
