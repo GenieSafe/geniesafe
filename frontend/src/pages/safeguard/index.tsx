@@ -30,7 +30,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Run queries with RLS on the server
-  const { data, error } = await supabase
+  const { data: config_data, error: config_error } = await supabase
     .from('wallet_recovery_config')
     .select(
       `
@@ -38,12 +38,13 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
   `
     )
-    .eq('user_id', session.user.id).single()
+    .eq('user_id', session.user.id)
+    .single()
 
   return {
     props: {
       initialSession: session,
-      data: data,
+      data: config_data,
     },
   }
 }
