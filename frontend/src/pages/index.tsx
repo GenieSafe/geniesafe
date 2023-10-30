@@ -1,4 +1,4 @@
-import { useSession, useUser } from '@supabase/auth-helpers-react'
+import { useSession } from '@supabase/auth-helpers-react'
 import Login from './auth/login'
 import WalletBalance from '../components/dashboard/WalletBalance'
 import ETHPrice from '../components/dashboard/ETHPrice'
@@ -8,6 +8,8 @@ import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
 import ETHPriceChart from '../components/dashboard/ETHPriceChart'
 import Market from '../components/dashboard/Market'
+import { metamaskWallet, useAddress, useConnect } from '@thirdweb-dev/react'
+import { useEffect, useState } from 'react'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -49,19 +51,56 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .eq('user_id', session.user.id)
     .single()
 
+  const { data: user_data, error: user_error } = await supabase
+    .from('profiles')
+    .select('wallet_address')
+    .eq('id', session.user.id)
+    .single()
+
   return {
     props: {
       initialSession: session,
+      user: user_data,
       will: will_data,
       config: config_data,
     },
   }
 }
 
-export default function Home({ will, config }: { will: any; config: any }) {
-  const user = useUser()
+export default function Home({
+  user,
+  will,
+  config,
+}: {
+  user: any
+  will: any
+  config: any
+}) {
+  const session = useSession()
+  const connect = useConnect()
+  const address = useAddress()
+  const [currentAddress, setCurrentAddress] = useState('')
 
-  if (!user) return <Login />
+  // Check if the auto-connected address is the same as the user's wallet address on first render
+  // TODO: Find a way to verify address mismatch when user connects wallet
+  useEffect(() => {
+    connect(metamaskWallet(), { chainId: 11155111 }).then((wallet) => {
+      if (address) setCurrentAddress(address)
+      wallet?.getAddress().then((address) => {
+        if (address !== user.wallet_address) {
+          wallet?.disconnect()
+          setCurrentAddress('')
+          console.error(
+            'Disconnected wallet due to address mismatch',
+            address,
+            user.wallet_address
+          )
+        }
+      })
+    })
+  }, [])
+
+  if (!session) return <Login />
 
   return (
     <>
@@ -72,11 +111,11 @@ export default function Home({ will, config }: { will: any; config: any }) {
           <WillStatus will={will} />
           <SafeguardStatus config={config} />
         </div>
-        <div className='grid grid-cols-12 gap-6'>
-          <div className='col-span-8'>
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-8">
             <ETHPriceChart />
           </div>
-          <div className='col-span-4'>
+          <div className="col-span-4">
             <Market />
           </div>
         </div>

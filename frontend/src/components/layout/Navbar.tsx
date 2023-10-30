@@ -11,12 +11,13 @@ import React from 'react'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { LogOut } from 'lucide-react'
 import { useRouter } from 'next/router'
-import { ConnectWallet } from '@thirdweb-dev/react'
+import { ConnectWallet, useWallet } from '@thirdweb-dev/react'
 
 export default function Navbar() {
   const router = useRouter()
   const user = useUser()
   const supabase = useSupabaseClient()
+  const wallet = useWallet()
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut()
@@ -25,6 +26,7 @@ export default function Navbar() {
       console.error('Error signing out:', error.message)
     }
 
+    wallet?.disconnect()
     router.reload()
   }
 
