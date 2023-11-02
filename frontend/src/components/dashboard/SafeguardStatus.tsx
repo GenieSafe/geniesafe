@@ -50,7 +50,7 @@ export default function SafeguardStatus({ config }: { config: any }) {
             <>
               {config.verifiers.map(
                 (verifier: Tables<'verifiers'>, index: number) => (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between" key={index}>
                     <p className="text-sm truncate max-w-[11rem]">
                       {(verifier.metadata as Record<string, any>).first_name}{' '}
                       {(verifier.metadata as Record<string, any>).last_name}
