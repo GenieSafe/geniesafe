@@ -1,5 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 import { AreaChart } from '@tremor/react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { Info } from 'lucide-react';
 
 const chartdata = [
   {
@@ -46,7 +48,7 @@ const customTooltip = ({ payload, active }: { payload: any; active: any }) => {
         </div>
       ))}
     </div>
-  ) 
+  )
 }
 
 export default function ETHPriceChart() {
@@ -54,13 +56,25 @@ export default function ETHPriceChart() {
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
-          <CardTitle className="font-medium">
+          <CardTitle className="flex items-center justify-center font-medium">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-4 h-4 mr-2 text-primary-foreground/50 hover:text-primary" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Area chart depicting the trend of Ethereum price
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             Ethereum Price Over Time (USD)
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col justify-center h-full space-y-1">
           <AreaChart
-            className="mt-4 h-72"
+            className="h-72"
             data={chartdata}
             index="date"
             categories={['Price']}
