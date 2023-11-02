@@ -16,7 +16,6 @@ import { Input } from '../../components/ui/input'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,6 +24,7 @@ import {
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ConnectWallet, useAddress, useWallet } from '@thirdweb-dev/react'
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -34,8 +34,11 @@ const registerSchema = z.object({
     .max(30, { message: 'Password cannot be more than 30 characters' }),
   first_name: z.string(),
   last_name: z.string(),
-  wallet_address: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
-  ic_number: z.string().regex(/^(\d{6}-\d{2}-\d{4})$/),
+  // wallet_address: z.string(),
+  ic_number: z.string().refine((ic_number) => /^\d{12}$/.test(ic_number), {
+    message:
+      'Invalid I/C number format. Please enter 12 digits with no dashes or other characters.',
+  }),
 })
 
 export default function Register() {
@@ -44,6 +47,8 @@ export default function Register() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const handleShowPassword = () => setShowPassword(!showPassword)
+  const address = useAddress()
+  const wallet = useWallet()
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -52,12 +57,14 @@ export default function Register() {
       password: '',
       first_name: '',
       last_name: '',
-      wallet_address: '',
       ic_number: '',
     },
   })
 
   async function signUpWithEmail(values: z.infer<typeof registerSchema>) {
+    // TODO: Replace with toast if wallet address is undefined
+    if (address === undefined) return alert('Please connect your wallet first')
+
     const { data: signup_data, error: signup_error } =
       await supabase.auth.signUp({
         email: values.email,
@@ -70,7 +77,7 @@ export default function Register() {
         email: values.email,
         first_name: values.first_name,
         last_name: values.last_name,
-        wallet_address: values.wallet_address,
+        wallet_address: address,
         ic_number: values.ic_number,
       })
 
@@ -82,6 +89,10 @@ export default function Register() {
     if (user) router.push('/')
   }, [user])
 
+  useEffect(() => {
+    wallet?.disconnect()
+  }, [])
+
   return (
     <>
       <Form {...form}>
@@ -90,9 +101,17 @@ export default function Register() {
           className="grid gap-4 lg:gap-6"
         >
           <Card>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl">Register</CardTitle>
-              <CardDescription>Create a geniesafe account</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div className="space-y-1">
+                <CardTitle className="text-2xl">Register</CardTitle>
+                <CardDescription>Create a geniesafe account</CardDescription>
+              </div>
+              <ConnectWallet
+                dropdownPosition={{
+                  side: 'bottom',
+                  align: 'center',
+                }}
+              />
             </CardHeader>
             <CardContent className="grid gap-4">
               <FormField
@@ -180,7 +199,7 @@ export default function Register() {
                   )}
                 />
               </div>
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="wallet_address"
                 render={({ field }) => (
@@ -196,7 +215,7 @@ export default function Register() {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
               <FormField
                 control={form.control}
                 name="ic_number"
@@ -208,6 +227,8 @@ export default function Register() {
                         type="text"
                         placeholder="Enter your I/C number"
                         {...field}
+                        maxLength={12} // Limit the input to 12 characters
+                        pattern="[0-9]*" // Only allows numeric characters
                       />
                     </FormControl>
                     <FormMessage />

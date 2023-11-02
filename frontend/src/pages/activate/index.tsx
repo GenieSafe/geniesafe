@@ -64,42 +64,24 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   }
 }
 
-const formSchema = z.object({
-  icNumber: z
-    .string()
-    .refine((icNumber) => /^\d{6}-\d{2}-\d{4}$/.test(icNumber), {
-      message: 'Invalid I/C number format',
-    }),
+const activateSchema = z.object({
+  ic_number: z.string().refine((ic_number) => /^\d{12}$/.test(ic_number), {
+    message:
+      'Invalid I/C number format. Please enter 12 digits with no dashes or other characters.',
+  }),
 })
 
 export default function Activate({ data }: { data: any }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof activateSchema>>({
+    resolver: zodResolver(activateSchema),
   })
 
-  const formatIcNumber = (icNumber: string) => {
-    // Remove dashes and ensure it's a valid I/C number
-    icNumber = icNumber.replace(/-/g, '')
-    if (/^\d{12}$/.test(icNumber)) {
-      // Insert dashes in the correct positions as the user types
-      icNumber = icNumber.replace(/(\d{6})(\d{2})(\d{4})/, '$1-$2-$3')
-    }
-    return icNumber
-  }
-
-  const handleIcNumberChange = (e: { target: { value: string } }) => {
-    // Limit the input field to 12 characters
-    const inputWithoutDashes = e.target.value.replace(/-/g, '').slice(0, 12)
-    const formattedICNumber = formatIcNumber(inputWithoutDashes)
-    form.setValue('icNumber', formattedICNumber)
-  }
-
-  const onSubmit = ({ icNumber }: { icNumber: string }) => {
+  const onSubmit = ({ ic_number }: { ic_number: string }) => {
     // Close dialog
     setIsDialogOpen(false)
-    
+
     // Check if data is not null
     if (data === null) return
 
@@ -120,7 +102,7 @@ export default function Activate({ data }: { data: any }) {
     )
 
     // Log data
-    console.log('icNumber', icNumber)
+    console.log('ic_number', ic_number)
     console.log('_id', _id)
     console.log('_beneficiaries', _beneficiaries)
     console.log('_percentages', _percentages)
@@ -137,7 +119,7 @@ export default function Activate({ data }: { data: any }) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
-            name="icNumber"
+            name="ic_number"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Deceased's I/C number</FormLabel>
@@ -145,8 +127,8 @@ export default function Activate({ data }: { data: any }) {
                   <Input
                     placeholder=""
                     {...field}
-                    onChange={handleIcNumberChange}
                     maxLength={12} // Limit the input to 12 characters
+                    pattern="[0-9]*" // Only allows numeric characters
                   />
                 </FormControl>
                 <FormDescription>

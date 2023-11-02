@@ -1,4 +1,5 @@
-import { useUser } from '@supabase/auth-helpers-react'
+
+import { useUser, useSession } from '@supabase/auth-helpers-react'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import { GetServerSidePropsContext } from 'next'
 import { ethers } from 'ethers'
@@ -9,6 +10,8 @@ import WillStatus from '../components/dashboard/WillStatus'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
 import InheritedWills from '../components/dashboard/InheritedWillsTable'
 import TrendOverviewChart from '../components/dashboard/TrendOverviewChart'
+import { metamaskWallet, useAddress, useConnect } from '@thirdweb-dev/react'
+import { useEffect, useState } from 'react'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -26,6 +29,13 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       },
     }
 
+  // Get user wallet address
+  const { data: user_data, error: user_error } = await supabase
+    .from('profiles')
+    .select('wallet_address')
+    .eq('id', session.user.id)
+    .single()
+  
   // Get will data
   const { data: will_data, error: will_error } = await supabase
     .from('wills')
@@ -82,6 +92,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   return {
     props: {
       initialSession: session,
+      user: user_data,
       will: will_data,
       config: config_data,
       balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
@@ -94,6 +105,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 }
 
 export default function Home({
+  user,
   will,
   config,
   balance,
@@ -102,6 +114,7 @@ export default function Home({
   ethPriceTrend,
   inherited_wills,
 }: {
+  user: any
   will: any
   config: any
   balance: number
@@ -111,8 +124,31 @@ export default function Home({
   inherited_wills: any
 }) {
   const user = useUser()
+  const session = useSession()
+  const connect = useConnect()
+  const address = useAddress()
+  const [currentAddress, setCurrentAddress] = useState('')
 
-  if (!user) return <Login />
+  // Check if the auto-connected address is the same as the user's wallet address on first render
+  // TODO: Find a way to verify address mismatch when user connects wallet
+  useEffect(() => {
+    connect(metamaskWallet(), { chainId: 11155111 }).then((wallet) => {
+      if (address) setCurrentAddress(address)
+      wallet?.getAddress().then((address) => {
+        if (address !== user.wallet_address) {
+          wallet?.disconnect()
+          setCurrentAddress('')
+          console.error(
+            'Disconnected wallet due to address mismatch',
+            address,
+            user.wallet_address
+          )
+        }
+      })
+    })
+  }, [])
+
+  if (!session) return <Login />
 
   return (
     <>
