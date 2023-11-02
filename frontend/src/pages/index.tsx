@@ -1,14 +1,14 @@
-import { useSession, useUser } from '@supabase/auth-helpers-react'
+import { useUser } from '@supabase/auth-helpers-react'
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
+import { GetServerSidePropsContext } from 'next'
+import { ethers } from 'ethers'
 import Login from './auth/login'
 import WalletBalance from '../components/dashboard/WalletBalance'
 import ETHPrice from '../components/dashboard/ETHPrice'
 import WillStatus from '../components/dashboard/WillStatus'
-import { GetServerSidePropsContext } from 'next'
-import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
-import ETHPriceChart from '../components/dashboard/ETHPriceChart'
-import { ethers } from 'ethers'
 import InheritedWills from '../components/dashboard/InheritedWillsTable'
+import TrendOverviewChart from '../components/dashboard/TrendOverviewChart'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -26,7 +26,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       },
     }
 
-  // Run queries with RLS on the server
+  // Get will data
   const { data: will_data, error: will_error } = await supabase
     .from('wills')
     .select(
@@ -39,6 +39,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .eq('user_id', session.user.id)
     .single()
 
+  // Get config data
   const { data: config_data, error: config_error } = await supabase
     .from('wallet_recovery_config')
     .select(
@@ -50,12 +51,14 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .eq('user_id', session.user.id)
     .single()
 
+  // Get inherited wills data
   const { data: inherited_data, error: inherited_error } = await supabase
     .from('beneficiaries')
     .select(
       `percentage, wills(status, metadata:user_id(first_name, last_name))`
     )
-    .eq('user_id', session.user.id).limit(4)
+    .eq('user_id', session.user.id)
+    .limit(4)
 
   // Get ETH balance
   const etherscanApiKey = '2Y2V7T5HCBPXU6MUME8HHQJSBK84ISZT23'
@@ -71,6 +74,11 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   const ethUsd = ethPriceData.ethereum.usd
   const eth24hrChange = ethPriceData.ethereum.usd_24h_change
 
+  // Get ETH price trend
+  const ethPriceTrend = await fetch(
+    `https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=30&interval=daily`
+  ).then((res) => res.json())
+
   return {
     props: {
       initialSession: session,
@@ -79,6 +87,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
       ethUsd: ethUsd,
       eth24hrChange: eth24hrChange,
+      ethPriceTrend: ethPriceTrend,
       inherited_wills: inherited_data,
     },
   }
@@ -90,6 +99,7 @@ export default function Home({
   balance,
   ethUsd,
   eth24hrChange,
+  ethPriceTrend,
   inherited_wills,
 }: {
   will: any
@@ -97,6 +107,7 @@ export default function Home({
   balance: number
   ethUsd: number
   eth24hrChange: number
+  ethPriceTrend: any
   inherited_wills: any
 }) {
   const user = useUser()
@@ -124,7 +135,7 @@ export default function Home({
         </div>
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-8">
-            <ETHPriceChart />
+            <TrendOverviewChart ethPriceTrend={ethPriceTrend} balance={balance} />
           </div>
           <div className="col-span-4">
             <InheritedWills data={inherited_wills} />
