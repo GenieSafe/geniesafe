@@ -55,7 +55,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .select(
       `percentage, wills(status, metadata:user_id(first_name, last_name))`
     )
-    .eq('user_id', session.user.id)
+    .eq('user_id', session.user.id).limit(4)
 
   // Get ETH balance
   const etherscanApiKey = '2Y2V7T5HCBPXU6MUME8HHQJSBK84ISZT23'
@@ -105,6 +105,16 @@ export default function Home({
 
   return (
     <>
+      <div className="flex flex-col gap-2 pb-12">
+        <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
+          Dashboard
+        </h1>
+        <p className="leading-7">
+          Your hub for seamless management and control of your digital assets,
+          take charge of your financial legacy and safeguard your loved ones'
+          future with just a few clicks.
+        </p>
+      </div>
       <div className="flex flex-col gap-6">
         <div className="grid grid-cols-4 gap-6">
           <WalletBalance balance={balance} ethUsd={ethUsd} />
