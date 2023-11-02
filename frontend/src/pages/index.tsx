@@ -123,28 +123,28 @@ export default function Home({
   inherited_wills: any
 }) {
   const session = useSession()
-  const connect = useConnect()
-  const address = useAddress()
-  const [currentAddress, setCurrentAddress] = useState('')
+  // const connect = useConnect()
+  // const address = useAddress()
+  // const [currentAddress, setCurrentAddress] = useState('')
 
-  // Check if the auto-connected address is the same as the user's wallet address on first render
-  // TODO: Find a way to verify address mismatch when user connects wallet
-  useEffect(() => {
-    connect(metamaskWallet(), { chainId: 11155111 }).then((wallet) => {
-      if (address) setCurrentAddress(address)
-      wallet?.getAddress().then((address) => {
-        if (address !== user.wallet_address) {
-          wallet?.disconnect()
-          setCurrentAddress('')
-          console.error(
-            'Disconnected wallet due to address mismatch',
-            address,
-            user.wallet_address
-          )
-        }
-      })
-    })
-  }, [])
+  // // Check if the auto-connected address is the same as the user's wallet address on first render
+  // // TODO: Find a way to verify address mismatch when user connects wallet
+  // useEffect(() => {
+  //   connect(metamaskWallet(), { chainId: 11155111 }).then((wallet) => {
+  //     if (address) setCurrentAddress(address)
+  //     wallet?.getAddress().then((address) => {
+  //       if (address !== user.wallet_address) {
+  //         wallet?.disconnect()
+  //         setCurrentAddress('')
+  //         console.error(
+  //           'Disconnected wallet due to address mismatch',
+  //           address,
+  //           user.wallet_address
+  //         )
+  //       }
+  //     })
+  //   })
+  // }, [])
 
   if (!session) return <Login />
 
