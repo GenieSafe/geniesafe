@@ -1,17 +1,11 @@
 import Link from 'next/link'
 import { GetServerSidePropsContext } from 'next'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
-
-import { CheckCircle2, Edit3, XCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
 
 import { Button } from '../../components/ui/button'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '../../components/ui/card'
-import { Tables } from '../../lib/database.types'
+import SafeguardCard from '../../components/SafeguardCard'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -50,6 +44,25 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 }
 
 export default function Config({ data }: { data: any }) {
+  const supabase = useSupabaseClient()
+  const [privateKey, setPrivateKey] = useState<string | null>('' as string)
+
+  async function getPrivateKey(id: string) {
+    const { data, error } = await supabase.rpc('get_private_key', {
+      in_config_id: id,
+    })
+
+    if (!error) {
+      setPrivateKey(data)
+    } else {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    if (data.status == 'VERIFIED') getPrivateKey(data.id)
+  })
+
   return (
     <>
       <div className="flex flex-col gap-8">
@@ -64,54 +77,10 @@ export default function Config({ data }: { data: any }) {
                 identity and we'll send you your private key.
               </p>
             </div>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-2xl text-primary-foreground">
-                  Verifiers
-                </CardTitle>
-                <Button size={'icon'} variant={'secondary'} asChild>
-                  <Link href={`/safeguard/edit/${data.id}`}>
-                    <Edit3 className="w-4 h-4" />
-                  </Link>
-                </Button>
-              </CardHeader>
-              <CardContent className="flex gap-4">
-                {data.verifiers.map(
-                  (verifier: Tables<'verifiers'>, index: number) => (
-                    <Card key={index} className="">
-                      <CardContent className="flex items-center gap-6 pt-6">
-                        <div className="flex flex-col w-24">
-                          <p className="text-lg font-semibold truncate">
-                            {
-                              (verifier.metadata as Record<string, any>)
-                                .first_name
-                            }{' '}
-                            {
-                              (verifier.metadata as Record<string, any>)
-                                .last_name
-                            }
-                          </p>
-                          <p className="truncate">
-                            {
-                              (verifier.metadata as Record<string, any>)
-                                .wallet_address
-                            }
-                          </p>
-                        </div>
-                        {verifier.has_verified ? (
-                          <CheckCircle2 className="text-success"></CheckCircle2>
-                        ) : (
-                          <XCircle className="text-destructive"></XCircle>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )
-                )}
-              </CardContent>
-            </Card>
-            <div className="flex justify-end">
-              <Button>Notify Verifiers</Button>
-            </div>
+            <SafeguardCard
+              config={data}
+              privateKey={privateKey}
+            ></SafeguardCard>
           </>
         ) : (
           <>
@@ -123,7 +92,7 @@ export default function Config({ data }: { data: any }) {
               verifiers to help safeguard your private key.
             </p>
             <Button asChild className="self-start" size={'lg'}>
-              <Link href="/safeguard/assign">Assign Verifiers</Link>
+              <Link href="/safeguard/assign">Assign verifiers</Link>
             </Button>
           </>
         )}
