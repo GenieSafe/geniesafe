@@ -1,4 +1,3 @@
-
 import { useUser, useSession } from '@supabase/auth-helpers-react'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import { GetServerSidePropsContext } from 'next'
@@ -35,7 +34,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .select('wallet_address')
     .eq('id', session.user.id)
     .single()
-  
+
   // Get will data
   const { data: will_data, error: will_error } = await supabase
     .from('wills')
@@ -123,7 +122,6 @@ export default function Home({
   ethPriceTrend: any
   inherited_wills: any
 }) {
-  const user = useUser()
   const session = useSession()
   const connect = useConnect()
   const address = useAddress()
@@ -171,7 +169,10 @@ export default function Home({
         </div>
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-8">
-            <TrendOverviewChart ethPriceTrend={ethPriceTrend} balance={balance} />
+            <TrendOverviewChart
+              ethPriceTrend={ethPriceTrend}
+              balance={balance}
+            />
           </div>
           <div className="col-span-4">
             <InheritedWills data={inherited_wills} />
