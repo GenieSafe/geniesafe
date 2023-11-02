@@ -128,10 +128,10 @@ export default function Home({
       </div>
       <div className="flex flex-col gap-6">
         <div className="grid grid-cols-4 gap-6">
-          <WalletBalance balance={balance} ethUsd={ethUsd} />
-          <ETHPrice ethUsd={ethUsd} eth24hrChange={eth24hrChange} />
           <WillStatus will={will} />
           <SafeguardStatus config={config} />
+          <WalletBalance balance={balance} ethUsd={ethUsd} />
+          <ETHPrice ethUsd={ethUsd} eth24hrChange={eth24hrChange} />
         </div>
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-8">
