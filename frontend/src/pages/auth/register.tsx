@@ -25,6 +25,8 @@ import { useForm } from 'react-hook-form'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ConnectWallet, useAddress, useWallet } from '@thirdweb-dev/react'
+import { createSupabaseServer } from '../../lib/createSupabaseAdmin'
+import { sign } from 'crypto'
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -61,6 +63,16 @@ export default function Register() {
     },
   })
 
+  async function linkWallet(id: string, address: string) {
+    await fetch("/api/link", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({  id: id, address: address }),
+    });
+  }
+  
   async function signUpWithEmail(values: z.infer<typeof registerSchema>) {
     // TODO: Replace with toast if wallet address is undefined
     if (address === undefined) return alert('Please connect your wallet first')
@@ -71,7 +83,7 @@ export default function Register() {
         password: values.password,
       })
 
-    if (!signup_error && signup_data) {
+    if (!signup_error && signup_data.user) {
       const { error } = await supabase.from('profiles').insert({
         id: signup_data.user?.id,
         email: values.email,
@@ -81,7 +93,9 @@ export default function Register() {
         ic_number: values.ic_number,
       })
 
-      !error ? router.push('/') : console.log(error)
+      linkWallet(signup_data.user?.id, address)
+
+      !error  ? router.push('/') : console.log(error)
     }
   }
 
