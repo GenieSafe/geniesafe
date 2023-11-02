@@ -1,19 +1,35 @@
-import {
-  ArrowRight,
-  Plus,
-  UserCheck,
-  Users,
-} from 'lucide-react'
+import { ArrowRight, Info, Plus, UserCheck, Users } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
 import Link from 'next/link'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../ui/tooltip'
 
 export default function WillStatus({ will }: { will: any }) {
   return (
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
-          <CardTitle className="font-medium">Will Status</CardTitle>
+          <CardTitle className="flex items-center justify-center font-medium">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-4 h-4 mr-2 text-primary-foreground/50 hover:text-primary" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Current will status and the number of beneficiaries and
+                    validators
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            Will Status
+          </CardTitle>
           {will != null ? (
             <Link href="/wills">
               <ArrowRight className="w-6 h-6 text-primary hover:text-primary-foreground" />

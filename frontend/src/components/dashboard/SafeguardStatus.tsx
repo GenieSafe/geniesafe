@@ -1,22 +1,40 @@
 import {
   ArrowRight,
   CheckCircle2,
+  Info,
   Plus,
-  UserCheck,
-  Users,
   XCircle,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
-import { Badge } from '../ui/badge'
 import Link from 'next/link'
 import { Tables } from '../../lib/database.types'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../ui/tooltip'
 
 export default function SafeguardStatus({ config }: { config: any }) {
   return (
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
-          <CardTitle className="font-medium">Safeguard Status</CardTitle>
+          <CardTitle className="flex items-center justify-center font-medium">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-4 h-4 mr-2 text-primary-foreground/50 hover:text-primary" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Current safeguard's verifiers and their verification status
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            Safeguard Status
+          </CardTitle>
           {config != null ? (
             <Link href="/safeguard">
               <ArrowRight className="w-6 h-6 text-primary hover:text-primary-foreground" />
@@ -32,7 +50,7 @@ export default function SafeguardStatus({ config }: { config: any }) {
             <>
               {config.verifiers.map(
                 (verifier: Tables<'verifiers'>, index: number) => (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between" key={index}>
                     <p className="text-sm truncate max-w-[11rem]">
                       {(verifier.metadata as Record<string, any>).first_name}{' '}
                       {(verifier.metadata as Record<string, any>).last_name}
