@@ -41,7 +41,7 @@ export default function App({
           <ThirdwebProvider
             clientId="2a4f7795555a65af9128f029c3c2b1fc"
             activeChain={Sepolia}
-            supportedWallets={[metamaskWallet(), localWallet()]}
+            supportedWallets={[metamaskWallet()]}
           >
             <Layout>
               <Component {...pageProps} />
