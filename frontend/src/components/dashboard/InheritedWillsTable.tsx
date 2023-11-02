@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { Badge } from '../ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import {
   Table,
@@ -9,6 +11,7 @@ import {
   TableRow,
 } from '../ui/table'
 import Image from 'next/image'
+import { ArrowRight } from 'lucide-react'
 
 type CoinData = {
   id: string
@@ -40,44 +43,46 @@ type CoinData = {
   price_change_percentage_24h_in_currency: number
 }
 
-export default function Market({ data }: { data: any }) {
+export default function InheritedWills({ data }: { data: any }) {
   return (
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
-          <CardTitle className="font-medium">Market</CardTitle>
+          <CardTitle className="font-medium">Inherited Wills</CardTitle>
+          <Link href="/wills">
+            <ArrowRight className="w-6 h-6 text-primary hover:text-primary-foreground" />
+          </Link>
         </CardHeader>
         <CardContent className="flex flex-col justify-center h-full space-y-1">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Coin</TableHead>
-                <TableHead>Price (USD)</TableHead>
-                <TableHead>24h %</TableHead>
+                <TableHead>Will Owner</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Division</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((coin: CoinData) => (
+              {data.map((data: any) => (
                 <TableRow>
                   <TableCell className="flex gap-2 font-medium">
-                    <Image
-                      src={coin.image}
-                      width={20}
-                      height={20}
-                      alt={coin.name}
-                    ></Image>
-                    {coin.symbol.toUpperCase()}
+                    {data.wills.metadata.first_name}{' '}
+                    {data.wills.metadata.last_name}
                   </TableCell>
-                  <TableCell>{coin.current_price.toFixed(2)}</TableCell>
-                  <TableCell
-                    className={
-                      coin.price_change_percentage_24h > 0
-                        ? 'text-success'
-                        : 'text-destructive'
-                    }
-                  >
-                    {coin.price_change_percentage_24h.toFixed(2)}%
+                  <TableCell>
+                    <Badge
+                      variant={
+                        data.wills.status === 'ACTIVE'
+                          ? 'success'
+                          : data.wills.status === 'INACTIVE'
+                          ? 'destructive'
+                          : 'default'
+                      }
+                    >
+                      {data.wills.status}
+                    </Badge>
                   </TableCell>
+                  <TableCell>{data.percentage}%</TableCell>
                 </TableRow>
               ))}
             </TableBody>
