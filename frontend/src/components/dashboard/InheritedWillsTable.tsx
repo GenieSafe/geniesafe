@@ -54,39 +54,45 @@ export default function InheritedWills({ data }: { data: any }) {
           </Link>
         </CardHeader>
         <CardContent className="flex flex-col justify-center h-full space-y-1">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Will Owner</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Division</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((data: any) => (
+          {data.length !== 0 ? (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell className="flex gap-2 font-medium">
-                    {data.wills.metadata.first_name}{' '}
-                    {data.wills.metadata.last_name}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        data.wills.status === 'ACTIVE'
-                          ? 'success'
-                          : data.wills.status === 'INACTIVE'
-                          ? 'destructive'
-                          : 'default'
-                      }
-                    >
-                      {data.wills.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{data.percentage}%</TableCell>
+                  <TableHead>Will Owner</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Division</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {data.map((data: any) => (
+                  <TableRow>
+                    <TableCell className="flex gap-2 font-medium">
+                      {data.wills.metadata.first_name}{' '}
+                      {data.wills.metadata.last_name}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          data.wills.status === 'ACTIVE'
+                            ? 'success'
+                            : data.wills.status === 'INACTIVE'
+                            ? 'destructive'
+                            : 'default'
+                        }
+                      >
+                        {data.wills.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{data.percentage}%</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-center text-primary-foreground/50">
+              You are currently not inheriting any wills
+            </p>
+          )}
         </CardContent>
       </Card>
     </>
