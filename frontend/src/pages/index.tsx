@@ -7,8 +7,8 @@ import { GetServerSidePropsContext } from 'next'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
 import ETHPriceChart from '../components/dashboard/ETHPriceChart'
-import Market from '../components/dashboard/Market'
 import { ethers } from 'ethers'
+import InheritedWills from '../components/dashboard/InheritedWillsTable'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -50,6 +50,13 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .eq('user_id', session.user.id)
     .single()
 
+  const { data: inherited_data, error: inherited_error } = await supabase
+    .from('beneficiaries')
+    .select(
+      `percentage, wills(status, metadata:user_id(first_name, last_name))`
+    )
+    .eq('user_id', session.user.id)
+
   // Get ETH balance
   const etherscanApiKey = '2Y2V7T5HCBPXU6MUME8HHQJSBK84ISZT23'
   const address = '0x19882AfC7913B21E2E414F8219eA3bdF3202aB99'
@@ -64,11 +71,6 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   const ethUsd = ethPriceData.ethereum.usd
   const eth24hrChange = ethPriceData.ethereum.usd_24h_change
 
-  // Get top 5 coins market data
-  const top5coinsData = await fetch(
-    '	https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=5&page=1&sparkline=false&price_change_percentage=24h%2C%207d&locale=en'
-  ).then((res) => res.json())
-
   return {
     props: {
       initialSession: session,
@@ -77,7 +79,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
       ethUsd: ethUsd,
       eth24hrChange: eth24hrChange,
-      top5coinsData: top5coinsData,
+      inherited_wills: inherited_data,
     },
   }
 }
@@ -88,14 +90,14 @@ export default function Home({
   balance,
   ethUsd,
   eth24hrChange,
-  top5coinsData,
+  inherited_wills,
 }: {
   will: any
   config: any
   balance: number
   ethUsd: number
   eth24hrChange: number
-  top5coinsData: any
+  inherited_wills: any
 }) {
   const user = useUser()
 
@@ -115,7 +117,7 @@ export default function Home({
             <ETHPriceChart />
           </div>
           <div className="col-span-4">
-            <Market data={top5coinsData}/>
+            <InheritedWills data={inherited_wills} />
           </div>
         </div>
       </div>
