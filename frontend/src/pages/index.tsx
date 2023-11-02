@@ -1,4 +1,4 @@
-import { useUser, useSession } from '@supabase/auth-helpers-react'
+import { useSession } from '@supabase/auth-helpers-react'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import { GetServerSidePropsContext } from 'next'
 import { ethers } from 'ethers'
@@ -9,8 +9,6 @@ import WillStatus from '../components/dashboard/WillStatus'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
 import InheritedWills from '../components/dashboard/InheritedWillsTable'
 import TrendOverviewChart from '../components/dashboard/TrendOverviewChart'
-import { metamaskWallet, useAddress, useConnect } from '@thirdweb-dev/react'
-import { useEffect, useState } from 'react'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -104,7 +102,6 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 }
 
 export default function Home({
-  user,
   will,
   config,
   balance,
@@ -113,7 +110,6 @@ export default function Home({
   ethPriceTrend,
   inherited_wills,
 }: {
-  user: any
   will: any
   config: any
   balance: number
