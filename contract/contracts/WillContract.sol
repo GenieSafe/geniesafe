@@ -11,14 +11,6 @@ contract WillContract {
 
     mapping(bytes32 => Will) public wills;
 
-    modifier onlyOwner(bytes32 id) {
-        require(
-            wills[id].owner == msg.sender,
-            "Only the owner can call this function"
-        );
-        _;
-    }
-
     constructor() {}
 
     function stringToBytes32(
@@ -36,6 +28,7 @@ contract WillContract {
 
     function createWill(
         string memory id,
+        address owner,
         address[] memory _beneficiaries,
         uint256[] memory _percentages
     ) public {
@@ -50,16 +43,14 @@ contract WillContract {
         );
 
         wills[idBytes] = Will({
-            owner: msg.sender,
+            owner: owner,
             beneficiaries: _beneficiaries,
             percentages: _percentages,
             validated: false
         });
     }
 
-    function validateWill(
-        string memory id
-    ) public onlyOwner(stringToBytes32(id)) {
+    function validateWill(string memory id) public {
         bytes32 idBytes = stringToBytes32(id);
         wills[idBytes].validated = true;
     }
