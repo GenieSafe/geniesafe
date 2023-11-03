@@ -34,7 +34,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Run queries with RLS on the server
-  const { data: will_data, error: will_error } = await supabase
+  const { data: willData, error: willError } = await supabase
     .from('wills')
     .select(
       `
@@ -46,15 +46,15 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .eq('user_id', session.user.id)
     .single()
 
-  const { data: user_data, error: user_error } = await supabase
+  const { data: userData, error: userError } = await supabase
     .from('profiles')
     .select('wallet_address')
     .eq('id', session.user.id)
     .single()
 
-  if (will_data !== null) {
+  if (willData !== null) {
     balance = await fetch(
-      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${user_data?.wallet_address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEYF}`
+      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${userData?.wallet_address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
     )
       .then((res) => res.json())
       .then((data) => data.result)
@@ -67,19 +67,20 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .then((res) => res.ethereum.usd)
 
   // Get inherited wills data
-  const { data: inherited_wills_data, error: inherited_wills_error } =
+  const { data: inheritedWillsData, error: inheritedWillsError } =
     await supabase
       .from('beneficiaries')
       .select(
-        `id, percentage, wills(id, status, profiles(first_name, last_name))`
+        `id, percentage, wills(id, status, profiles(first_name, last_name),
+        beneficiaries(percentage, profiles(first_name, last_name, wallet_address)))`
       )
       .eq('user_id', session.user.id)
 
   return {
     props: {
       initialSession: session,
-      willData: will_data,
-      inheritedWillsData: inherited_wills_data,
+      willData: willData,
+      inheritedWillsData: inheritedWillsData,
       balance: parseFloat(ethers.utils.formatEther(balance)).toFixed(4),
       ethUsd: ethUsd,
     },
