@@ -91,6 +91,7 @@ export default function InheritedWillsTable({ data }: { data: any }) {
         <TableRow>
           <TableHead className="">Will Owner</TableHead>
           <TableHead className="text-center">Status</TableHead>
+          <TableHead className="text-center">Validation Status</TableHead>
           <TableHead className="text-center">Division</TableHead>
           <TableHead className="text-right">Action</TableHead>
         </TableRow>
@@ -113,6 +114,20 @@ export default function InheritedWillsTable({ data }: { data: any }) {
               >
                 {item.wills.status}
               </Badge>
+            </TableCell>
+            <TableCell className="text-center">
+              {/* Display this badge if will status is active */}
+              {item.wills.status === 'ACTIVE' ? (
+                <Badge>
+                  {`${
+                    item.wills.validators.filter(
+                      (validator: any) => validator.has_validated
+                    ).length
+                  }/${item.wills.validators.length} VALIDATED`}
+                </Badge>
+              ) : (
+                <Badge>N/A</Badge>
+              )}
             </TableCell>
             <TableCell className="text-center ">{item.percentage}%</TableCell>
             <TableCell className="text-right">

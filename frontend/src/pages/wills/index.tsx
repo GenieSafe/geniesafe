@@ -20,7 +20,8 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
   const supabase = createPagesServerClient(ctx)
   let balance = 0
-  // Check if we have a session
+
+  // Get session data
   const {
     data: { session },
   } = await supabase.auth.getSession()
@@ -33,25 +34,27 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       },
     }
 
-  // Run queries with RLS on the server
+  // Get will data
   const { data: willData, error: willError } = await supabase
     .from('wills')
     .select(
       `
-    id, title, contract_address, deployed_at_block, status,
-    beneficiaries(percentage, profiles(first_name, last_name, wallet_address)),
-    validators(has_validated, profiles(first_name, last_name, wallet_address))
-  `
+      id, title, contract_address, deployed_at_block, status,
+      beneficiaries(percentage, profiles(first_name, last_name, wallet_address)),
+      validators(has_validated, profiles(first_name, last_name, wallet_address))
+      `
     )
     .eq('user_id', session.user.id)
     .single()
 
+  // Get user wallet address
   const { data: userData, error: userError } = await supabase
     .from('profiles')
     .select('wallet_address')
     .eq('id', session.user.id)
     .single()
 
+  // Get user wallet balance
   if (willData !== null) {
     balance = await fetch(
       `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${userData?.wallet_address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
@@ -60,6 +63,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       .then((data) => data.result)
   }
 
+  // Get ETH price in USD
   const ethUsd = await fetch(
     'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd'
   )
@@ -71,8 +75,11 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     await supabase
       .from('beneficiaries')
       .select(
-        `id, percentage, wills(id, status, profiles(first_name, last_name),
-        beneficiaries(percentage, profiles(first_name, last_name, wallet_address)))`
+        `
+        id, percentage, wills(id, status, profiles(first_name, last_name),
+        beneficiaries(percentage, profiles(first_name, last_name, wallet_address)),
+        validators(has_validated))
+        `
       )
       .eq('user_id', session.user.id)
 
