@@ -11,7 +11,12 @@ import React from 'react'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { LogOut } from 'lucide-react'
 import { useRouter } from 'next/router'
-import { ConnectWallet, useAddress, useConnectionStatus, useWallet } from '@thirdweb-dev/react'
+import {
+  ConnectWallet,
+  useAddress,
+  useConnectionStatus,
+  useWallet,
+} from '@thirdweb-dev/react'
 
 export default function Navbar() {
   const router = useRouter()
@@ -21,7 +26,11 @@ export default function Navbar() {
   const address = useAddress()
   const connectionStatus = useConnectionStatus()
 
-  if (connectionStatus === 'connected' && address !== undefined && wallet !== undefined) {
+  if (
+    connectionStatus === 'connected' &&
+    address !== undefined &&
+    wallet !== undefined
+  ) {
     if (address !== user?.user_metadata?.address) {
       console.error(
         'Disconnected wallet due to address mismatch',
@@ -31,7 +40,6 @@ export default function Navbar() {
       wallet.disconnect()
     }
   }
-  
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut()
@@ -66,13 +74,6 @@ export default function Navbar() {
               <Link href="/wills" legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Will
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/activate" legacyBehavior passHref>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Activate
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
