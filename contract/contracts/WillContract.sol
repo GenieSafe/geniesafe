@@ -83,5 +83,36 @@ contract WillContract {
         }
     }
 
+    function deleteWill(string memory id) public {
+        bytes32 idBytes = stringToBytes32(id);
+        require(
+            wills[idBytes].owner == msg.sender,
+            "Only the owner can delete this will"
+        );
+        delete wills[idBytes];
+    }
+
+    function getWill(
+        string memory id
+    )
+        public
+        view
+        returns (
+            address owner,
+            address[] memory beneficiaries,
+            uint256[] memory percentages,
+            bool validated
+        )
+    {
+        bytes32 idBytes = stringToBytes32(id);
+        Will storage will = wills[idBytes];
+        return (
+            will.owner,
+            will.beneficiaries,
+            will.percentages,
+            will.validated
+        );
+    }
+
     receive() external payable {}
 }
