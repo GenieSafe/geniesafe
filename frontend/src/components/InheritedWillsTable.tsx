@@ -131,10 +131,18 @@ export default function InheritedWillsTable({ data }: { data: any }) {
               )}
             </TableCell>
             <TableCell className="text-center ">{item.percentage}%</TableCell>
-            <TableCell className="text-right">
+            <TableCell className="text-center">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  {item.wills.status === 'INACTIVE' && (
+                  {item.wills.status === 'ACTIVE' ? (
+                    <Button variant="ghost" disabled>
+                      Activated
+                    </Button>
+                  ) : connectionStatus === 'disconnected' ? (
+                    <Button variant="ghost" disabled>
+                      Disconnected
+                    </Button>
+                  ) : (
                     <Button variant="ghost">Activate</Button>
                   )}
                 </AlertDialogTrigger>
