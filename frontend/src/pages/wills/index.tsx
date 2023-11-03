@@ -39,8 +39,8 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .select(
       `
     id, title, contract_address, deployed_at_block, status,
-    beneficiaries(percentage, metadata:user_id(first_name, last_name, wallet_address)),
-    validators(has_validated, metadata:user_id(first_name, last_name, wallet_address))
+    beneficiaries(percentage, profiles(first_name, last_name, wallet_address)),
+    validators(has_validated, profiles(first_name, last_name, wallet_address))
   `
     )
     .eq('user_id', session.user.id)
@@ -53,9 +53,8 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .single()
 
   if (will_data !== null) {
-    const etherscanApiKey = '2Y2V7T5HCBPXU6MUME8HHQJSBK84ISZT23'
     balance = await fetch(
-      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${user_data?.wallet_address}&tag=latest&apikey=${etherscanApiKey}`
+      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${user_data?.wallet_address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEYF}`
     )
       .then((res) => res.json())
       .then((data) => data.result)
@@ -72,7 +71,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     await supabase
       .from('beneficiaries')
       .select(
-        `id, percentage, wills(id, status), profiles(first_name, last_name)`
+        `id, percentage, wills(id, status, profiles(first_name, last_name))`
       )
       .eq('user_id', session.user.id)
 

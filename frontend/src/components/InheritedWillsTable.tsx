@@ -54,7 +54,7 @@ export default function InheritedWillsTable({ data }: { data: any }) {
         {data.map((item: any, i: number) => (
           <TableRow key={i}>
             <TableCell>
-              {item.profiles.first_name} {item.profiles.last_name}
+              {item.wills.profiles.first_name} {item.wills.profiles.last_name}
             </TableCell>
             <TableCell className="text-center">
               <Badge
@@ -73,7 +73,11 @@ export default function InheritedWillsTable({ data }: { data: any }) {
             <TableCell className="text-right">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  {item.wills.status === 'INACTIVE' && <div>Activate</div>}
+                  {item.wills.status === 'INACTIVE' && (
+                    <div className="hover:underline hover:cursor-pointer">
+                      Activate
+                    </div>
+                  )}
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>

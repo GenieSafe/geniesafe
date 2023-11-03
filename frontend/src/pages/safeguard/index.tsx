@@ -11,7 +11,6 @@ import {
   CardTitle,
   CardContent,
 } from '../../components/ui/card'
-import { Tables } from '../../lib/database.types'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -35,7 +34,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .select(
       `
     id, status,
-    verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
+    verifiers(has_verified, verified_at, profiles(first_name, last_name, wallet_address))
   `
     )
     .eq('user_id', session.user.id)
@@ -76,37 +75,26 @@ export default function Config({ data }: { data: any }) {
                 </Button>
               </CardHeader>
               <CardContent className="flex gap-4">
-                {data.verifiers.map(
-                  (verifier: Tables<'verifiers'>, index: number) => (
-                    <Card key={index} className="">
-                      <CardContent className="flex items-center gap-6 pt-6">
-                        <div className="flex flex-col w-24">
-                          <p className="text-lg font-semibold truncate">
-                            {
-                              (verifier.metadata as Record<string, any>)
-                                .first_name
-                            }{' '}
-                            {
-                              (verifier.metadata as Record<string, any>)
-                                .last_name
-                            }
-                          </p>
-                          <p className="truncate">
-                            {
-                              (verifier.metadata as Record<string, any>)
-                                .wallet_address
-                            }
-                          </p>
-                        </div>
-                        {verifier.has_verified ? (
-                          <CheckCircle2 className="text-success"></CheckCircle2>
-                        ) : (
-                          <XCircle className="text-destructive"></XCircle>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )
-                )}
+                {data.verifiers.map((verifier: any, index: number) => (
+                  <Card key={index} className="">
+                    <CardContent className="flex items-center gap-6 pt-6">
+                      <div className="flex flex-col w-24">
+                        <p className="text-lg font-semibold truncate">
+                          {verifier.profiles.first_name}{' '}
+                          {verifier.profiles.last_name}
+                        </p>
+                        <p className="truncate">
+                          {verifier.profiles.wallet_address}
+                        </p>
+                      </div>
+                      {verifier.has_verified ? (
+                        <CheckCircle2 className="text-success"></CheckCircle2>
+                      ) : (
+                        <XCircle className="text-destructive"></XCircle>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
               </CardContent>
             </Card>
             <div className="flex justify-end">

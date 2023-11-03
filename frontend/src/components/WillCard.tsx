@@ -68,39 +68,28 @@ export function WillCard({
           <p className="font-bold text-lg">Beneficiaries</p>
           <div className="flex gap-4 overflow-x-auto">
             {will.beneficiaries ? (
-              will.beneficiaries.map(
-                (beneficiary: Tables<'beneficiaries'>, index: number) => (
-                  <Card key={index} className="shadow-none">
-                    <CardContent className="pt-6">
-                      <div className="flex flex-row gap-8">
-                        <div className="flex flex-col w-24">
-                          <p className="text-lg font-semibold truncate">
-                            {
-                              (beneficiary.metadata as Record<string, any>)
-                                .first_name
-                            }{' '}
-                            {
-                              (beneficiary.metadata as Record<string, any>)
-                                .last_name
-                            }
-                          </p>
-                          <p className="truncate">
-                            {
-                              (beneficiary.metadata as Record<string, any>)
-                                .wallet_address
-                            }
-                          </p>
-                        </div>
-                        <div className="flex flex-col items-center justify-center">
-                          <p className="text-lg font-bold">
-                            {beneficiary.percentage}%
-                          </p>
-                        </div>
+              will.beneficiaries.map((beneficiary: any, index: number) => (
+                <Card key={index} className="shadow-none">
+                  <CardContent className="pt-6">
+                    <div className="flex flex-row gap-8">
+                      <div className="flex flex-col w-24">
+                        <p className="text-lg font-semibold truncate">
+                          {beneficiary.profiles.first_name}{' '}
+                          {beneficiary.profiles.last_name}
+                        </p>
+                        <p className="truncate">
+                          {beneficiary.profiles.wallet_address}
+                        </p>
                       </div>
-                    </CardContent>
-                  </Card>
-                )
-              )
+                      <div className="flex flex-col items-center justify-center">
+                        <p className="text-lg font-bold">
+                          {beneficiary.percentage}%
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
             ) : (
               <p className="">No beneficiaries found.</p>
             )}
@@ -111,40 +100,29 @@ export function WillCard({
           <p className="font-bold text-lg">Validators</p>
           <div className="flex gap-4 overflow-x-auto">
             {will.validators ? (
-              will.validators.map(
-                (validator: Tables<'validators'>, index: number) => (
-                  <Card key={index} className="shadow-none">
-                    <CardContent className="pt-6">
-                      <div className="flex flex-row items-center gap-8">
-                        <div className="flex flex-col w-24">
-                          <p className="text-lg font-semibold truncate">
-                            {
-                              (validator.metadata as Record<string, any>)
-                                .first_name
-                            }{' '}
-                            {
-                              (validator.metadata as Record<string, any>)
-                                .last_name
-                            }
-                          </p>
-                          <p className="truncate">
-                            {
-                              (validator.metadata as Record<string, any>)
-                                .wallet_address
-                            }
-                          </p>
-                        </div>
-
-                        {validator.has_validated ? (
-                          <CheckCircle2 className="text-success"></CheckCircle2>
-                        ) : (
-                          <XCircle className="text-destructive"></XCircle>
-                        )}
+              will.validators.map((validator: any, index: number) => (
+                <Card key={index} className="shadow-none">
+                  <CardContent className="pt-6">
+                    <div className="flex flex-row items-center gap-8">
+                      <div className="flex flex-col w-24">
+                        <p className="text-lg font-semibold truncate">
+                          {validator.profiles.first_name}{' '}
+                          {validator.profiles.last_name}
+                        </p>
+                        <p className="truncate">
+                          {validator.profiles.wallet_address}
+                        </p>
                       </div>
-                    </CardContent>
-                  </Card>
-                )
-              )
+
+                      {validator.has_validated ? (
+                        <CheckCircle2 className="text-success"></CheckCircle2>
+                      ) : (
+                        <XCircle className="text-destructive"></XCircle>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
             ) : (
               <p className="">No validators found.</p>
             )}
