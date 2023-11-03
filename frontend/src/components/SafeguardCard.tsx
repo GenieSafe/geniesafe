@@ -33,6 +33,7 @@ import {
   AlertDialogTrigger,
 } from './ui/alert-dialog'
 import { cn } from '../lib/utils'
+import { toast } from './ui/use-toast'
 
 export default function SafeguardCard({
   config,
@@ -44,6 +45,9 @@ export default function SafeguardCard({
   const supabase = useSupabaseClient()
   const copyText = () => {
     privateKey && navigator.clipboard.writeText(privateKey)
+    toast({
+      title: 'Private key copied!',
+    })
   }
 
   async function onDialogClose() {
