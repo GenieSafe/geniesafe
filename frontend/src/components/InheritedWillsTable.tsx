@@ -22,21 +22,33 @@ import {
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { Database } from '../lib/database.types'
 import { useRouter } from 'next/router'
+import { useToast } from './ui/use-toast'
+import { Button } from './ui/button'
 
 export default function InheritedWillsTable({ data }: { data: any }) {
   const supabase = useSupabaseClient<Database>()
   const router = useRouter()
+  const { toast } = useToast()
 
   // Update will status to ACTIVE
   async function handleActivateWill(id: string) {
     const { error } = await supabase
       .from('wills')
-      .update({ status: 'ACTIVE' })
+      .update({ status: 'INACTIVE' })
       .eq('id', id)
     if (error) {
       console.log(error)
     }
-    router.reload()
+
+    window.setTimeout(() => {
+      toast({
+        title: 'Will activated successfully!',
+        description: 'Validators will be notified via email.',
+      })
+      window.setTimeout(() => {
+        router.reload()
+      }, 2000)
+    }, 500)
   }
 
   return (
@@ -74,9 +86,7 @@ export default function InheritedWillsTable({ data }: { data: any }) {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   {item.wills.status === 'INACTIVE' && (
-                    <div className="hover:underline hover:cursor-pointer">
-                      Activate
-                    </div>
+                    <Button variant="ghost">Activate</Button>
                   )}
                 </AlertDialogTrigger>
                 <AlertDialogContent>
