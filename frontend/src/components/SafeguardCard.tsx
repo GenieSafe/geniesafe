@@ -70,22 +70,22 @@ export default function SafeguardCard({
     <>
       <Card className="hover:shadow-[0px_0px_20px_0px_hsl(var(--primary))] transition-shadow duration-500 p-4">
         <CardHeader className="flex flex-row items-center justify-between">
-          <Link
-            href={
-              config.status === 'INACTIVE'
-                ? `/safeguard/edit/${config.id}`
-                : '#'
-            }
-            className={
-              config.status === 'INACTIVE'
-                ? 'pointer-events-auto'
-                : 'pointer-events-none'
-            }
-          >
-            <CardTitle className="text-3xl font-semibold tracking-tight scroll-m-20 hover:bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] hover:from-violet-200 hover:via-violet-400 hover:to-violet-800 hover:text-transparent hover:bg-clip-text hover:transition-colors hover:duration-300 hover:ease-in-out">
+          <CardTitle className="text-3xl font-semibold tracking-tight scroll-m-20 hover:bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] hover:from-violet-200 hover:via-violet-400 hover:to-violet-800 hover:text-transparent hover:bg-clip-text hover:transition-colors hover:duration-300 hover:ease-in-out">
+            <Link
+              href={
+                config.status === 'INACTIVE'
+                  ? `/safeguard/edit/${config.id}`
+                  : '#'
+              }
+              className={
+                config.status === 'INACTIVE'
+                  ? 'pointer-events-auto'
+                  : 'pointer-events-none'
+              }
+            >
               Safeguard
-            </CardTitle>
-          </Link>
+            </Link>
+          </CardTitle>
           {!privateKey && (
             <Button size={'sm'} disabled={config.status === 'ACTIVE'}>
               {config.status === 'INACTIVE' && (
