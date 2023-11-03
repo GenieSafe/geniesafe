@@ -26,7 +26,7 @@ export function WillCard({
   balance: number
   ethUsd: number
 }) {
-  const willContract = '0xF9FCf5867bb26C116C85C66eB65B21fC50fFa510'
+  const willContract = process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
   return (
     <Card className="hover:shadow-[0px_0px_20px_0px_hsl(var(--primary))] transition-shadow duration-500 p-4">
       <CardHeader className="grid grid-cols-2">

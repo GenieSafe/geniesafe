@@ -30,7 +30,8 @@ export default function InheritedWillsTable({ data }: { data: any }) {
   const supabase = useSupabaseClient<Database>()
   const router = useRouter()
   const { toast } = useToast()
-  const willContract = '0xF9FCf5867bb26C116C85C66eB65B21fC50fFa510'
+
+  const willContract = process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
   const { contract } = useContract(willContract)
   const { mutateAsync: createWill, isLoading } = useContractWrite(
     contract,
