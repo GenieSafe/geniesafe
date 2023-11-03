@@ -76,10 +76,6 @@ contract WillContract {
 
     function deleteWill(string memory id) public {
         bytes32 idBytes = stringToBytes32(id);
-        require(
-            wills[idBytes].owner == msg.sender,
-            "Only the owner can delete this will"
-        );
         delete wills[idBytes];
     }
 
