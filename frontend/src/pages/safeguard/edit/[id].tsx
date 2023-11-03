@@ -52,14 +52,9 @@ export default function EditConfig({ config }: { config: any }) {
     config.verifiers
   )
   const [verifierInputVal, setVerifierInputVal] = useState('')
-  const [pkInputVal, setPkInputVal] = useState(config.private_key)
 
   const handleVerifierInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVerifierInputVal(e.target.value)
-  }
-
-  const handlePkInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setPkInputVal(e.target.value)
   }
 
   const handleAddVerifier = async () => {
@@ -115,7 +110,6 @@ export default function EditConfig({ config }: { config: any }) {
   const onSubmit = async () => {
     let { data, error } = await supabase.rpc('update_config', {
       in_verifiers: verifiersArr,
-      in_private_key: pkInputVal,
       in_config_id: config.id,
     })
 
@@ -146,16 +140,6 @@ export default function EditConfig({ config }: { config: any }) {
       </div>
       <Card>
         <CardContent className="p-12 space-y-8">
-          <div className="grid items-center w-full gap-2">
-            <Label>Private Key</Label>
-            <Input
-              type="password"
-              id="privateKey"
-              placeholder=""
-              onChange={handlePkInputChange}
-              value={pkInputVal}
-            />
-          </div>
           <div className="grid gap-2">
               <Label className="justify-self-end">
                 {verifiersArr.length}/3 verifiers
