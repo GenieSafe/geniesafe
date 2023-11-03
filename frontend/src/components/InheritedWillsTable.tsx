@@ -107,7 +107,6 @@ export default function InheritedWillsTable({ data }: { data: any }) {
     <Card>
       <CardContent className='p-6'>
         <Table>
-          {/* <TableCaption>A list of your inherited wills.</TableCaption> */}
           <TableHeader>
             <TableRow>
               <TableHead className="">Will Owner</TableHead>
