@@ -157,15 +157,15 @@ export default function InheritedWillsTable({ data }: { data: any }) {
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       {item.wills.status === 'ACTIVE' ? (
-                        <Button variant="ghost" disabled>
+                        <Button variant="ghost" size="sm" disabled>
                           Activated
                         </Button>
                       ) : connectionStatus === 'disconnected' ? (
-                        <Button variant="ghost" disabled>
-                          Disconnected
+                        <Button variant="ghost" size="sm" disabled>
+                          Wallet disconnected
                         </Button>
                       ) : (
-                        <Button variant="ghost">Activate</Button>
+                        <Button size="sm">Activate</Button>
                       )}
                     </AlertDialogTrigger>
                     <AlertDialogContent>
