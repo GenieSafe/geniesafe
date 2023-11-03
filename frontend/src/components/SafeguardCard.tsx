@@ -82,7 +82,7 @@ export default function SafeguardCard({
                 : 'pointer-events-none'
             }
           >
-            <CardTitle className="text-3xl font-semibold tracking-tight scroll-m-20">
+            <CardTitle className="text-3xl font-semibold tracking-tight scroll-m-20 hover:bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] hover:from-violet-200 hover:via-violet-400 hover:to-violet-800 hover:text-transparent hover:bg-clip-text hover:transition-colors hover:duration-300 hover:ease-in-out">
               Safeguard
             </CardTitle>
           </Link>
