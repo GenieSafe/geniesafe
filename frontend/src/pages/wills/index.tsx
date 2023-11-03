@@ -7,8 +7,14 @@ import { Plus } from 'lucide-react'
 import { WillCard } from '../../components/WillCard'
 import { Button } from '../../components/ui/button'
 import { ethers } from 'ethers'
-import { useAddress } from '@thirdweb-dev/react'
-import { useUser } from '@supabase/auth-helpers-react'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '../../components/ui/tabs'
+import InheritedWillsTable from '../../components/InheritedWillsTable'
+import { useState } from 'react'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -61,10 +67,20 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .then((res) => res.json())
     .then((res) => res.ethereum.usd)
 
+  // Get inherited wills data
+  const { data: inherited_wills_data, error: inherited_wills_error } =
+    await supabase
+      .from('beneficiaries')
+      .select(
+        `id, percentage, wills(id, status), profiles(first_name, last_name)`
+      )
+      .eq('user_id', session.user.id)
+
   return {
     props: {
       initialSession: session,
-      data: will_data,
+      willData: will_data,
+      inheritedWillsData: inherited_wills_data,
       balance: parseFloat(ethers.utils.formatEther(balance)).toFixed(4),
       ethUsd: ethUsd,
     },
@@ -72,36 +88,72 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 }
 
 export default function Wills({
-  data,
+  willData,
+  inheritedWillsData,
   balance,
   ethUsd,
 }: {
-  data: any
+  willData: any
+  inheritedWillsData: any
   balance: number
   ethUsd: number
 }) {
+  const [defaultTab, setDefaultTab] = useState('will')
+
   return (
     <>
-      <div className="flex items-center justify-between pb-12">
-        <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
-          Your Will
-        </h1>
-        {!data && (
-          <Button asChild>
-            <Link href="/wills/create">
-              <Plus className="w-4 h-4 mr-2" />
-              Create new will
-            </Link>
-          </Button>
-        )}
-      </div>
-      <div className="flex flex-col gap-16">
-        {data ? (
-          <WillCard will={data} balance={balance} ethUsd={ethUsd} />
-        ) : (
-          <p className="text-2xl font-bold text-center">No will found</p>
-        )}
-      </div>
+      <Tabs
+        defaultValue={defaultTab}
+        className="w-full md:col-span-8 xl:col-span-9"
+      >
+        <TabsList>
+          <TabsTrigger value="will" onClick={() => setDefaultTab('will')}>
+            Your Will
+          </TabsTrigger>
+          <TabsTrigger
+            value="inherited"
+            onClick={() => setDefaultTab('inherited')}
+          >
+            Inherited Wills
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="will">
+          <div className="flex items-center justify-between py-12">
+            <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
+              Your Will
+            </h1>
+            {!willData && (
+              <Button asChild>
+                <Link href="/wills/create">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create new will
+                </Link>
+              </Button>
+            )}
+          </div>
+          <div className="flex flex-col gap-16">
+            {willData ? (
+              <WillCard will={willData} balance={balance} ethUsd={ethUsd} />
+            ) : (
+              <p className="text-2xl font-bold text-center">No will found</p>
+            )}
+          </div>
+        </TabsContent>
+        <TabsContent value="inherited">
+          <div className="flex items-center justify-between py-12">
+            <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
+              Inherited Wills
+            </h1>
+          </div>
+          <div className="flex flex-col gap-16">
+            {inheritedWillsData.length > 0 ? (
+              InheritedWillsTable({ data: inheritedWillsData })
+            ) : (
+              <p className="text-2xl font-bold text-center">No will found</p>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </>
   )
 }
