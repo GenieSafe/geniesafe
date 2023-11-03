@@ -109,11 +109,8 @@ export default function Wills({
 
   return (
     <>
-      <Tabs
-        defaultValue={defaultTab}
-        className="w-full md:col-span-8 xl:col-span-9"
-      >
-        <TabsList>
+      <Tabs defaultValue={defaultTab} className='flex flex-col'>
+        <TabsList className='self-center w-fit'>
           <TabsTrigger value="will" onClick={() => setDefaultTab('will')}>
             Your Will
           </TabsTrigger>
@@ -124,8 +121,8 @@ export default function Wills({
             Inherited Wills
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="will">
-          <div className="flex items-center justify-between py-12">
+        <TabsContent value="will" className='mt-6'>
+          <div className="flex items-center justify-between pb-12">
             <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
               Your Will
             </h1>
@@ -146,8 +143,8 @@ export default function Wills({
             )}
           </div>
         </TabsContent>
-        <TabsContent value="inherited">
-          <div className="flex items-center justify-between py-12">
+        <TabsContent value="inherited" className='mt-6'>
+          <div className="flex items-center justify-between pb-12">
             <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
               Inherited Wills
             </h1>
