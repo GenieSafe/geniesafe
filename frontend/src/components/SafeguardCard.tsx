@@ -1,5 +1,13 @@
 import { Button } from './ui/button'
-import { Edit3, CheckCircle2, XCircle, Copy, Unlock, BellRing, CheckCheck } from 'lucide-react'
+import {
+  Edit3,
+  CheckCircle2,
+  XCircle,
+  Copy,
+  Unlock,
+  BellRing,
+  CheckCheck,
+} from 'lucide-react'
 import { Tables } from '../lib/database.types'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card'
 import Link from 'next/link'
@@ -32,7 +40,7 @@ export default function SafeguardCard({
       .from('wallet_recovery_config')
       .update({ status: 'INACTIVE' })
       .eq('id', config.id)
-      
+
     const { error: verifiers_error } = await supabase
       .from('verifiers')
       .update({ has_verified: false })
@@ -65,8 +73,12 @@ export default function SafeguardCard({
           </Link>
           {!privateKey && (
             <Button size={'sm'} disabled={config.status === 'ACTIVE'}>
-              {config.status === "INACTIVE" && <BellRing className="w-4 h-4 mr-2" />}
-              {config.status === "ACTIVE" && <CheckCheck className="w-4 h-4 mr-2" />}
+              {config.status === 'INACTIVE' && (
+                <BellRing className="w-4 h-4 mr-2" />
+              )}
+              {config.status === 'ACTIVE' && (
+                <CheckCheck className="w-4 h-4 mr-2" />
+              )}
               {config.status === 'ACTIVE'
                 ? 'Verifiers notified'
                 : 'Notify verifiers'}
@@ -134,37 +146,26 @@ export default function SafeguardCard({
             <>
               <p className="text-lg font-bold">Verifiers</p>
               <div className="flex gap-4">
-                {config.verifiers.map(
-                  (verifier: Tables<'verifiers'>, index: number) => (
-                    <Card key={index} className="">
-                      <CardContent className="flex items-center gap-6 pt-6">
-                        <div className="flex flex-col w-24">
-                          <p className="text-lg font-semibold truncate">
-                            {
-                              (verifier.metadata as Record<string, any>)
-                                .first_name
-                            }{' '}
-                            {
-                              (verifier.metadata as Record<string, any>)
-                                .last_name
-                            }
-                          </p>
-                          <p className="truncate">
-                            {
-                              (verifier.metadata as Record<string, any>)
-                                .wallet_address
-                            }
-                          </p>
-                        </div>
-                        {verifier.has_verified ? (
-                          <CheckCircle2 className="text-success"></CheckCircle2>
-                        ) : (
-                          <XCircle className="text-destructive"></XCircle>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )
-                )}
+                {config.verifiers.map((verifier: any, index: number) => (
+                  <Card key={index} className="">
+                    <CardContent className="flex items-center gap-6 pt-6">
+                      <div className="flex flex-col w-24">
+                        <p className="text-lg font-semibold truncate">
+                          {verifier.profiles.first_name}{' '}
+                          {verifier.profiles.last_name}
+                        </p>
+                        <p className="truncate">
+                          {verifier.profiles.wallet_address}
+                        </p>
+                      </div>
+                      {verifier.has_verified ? (
+                        <CheckCircle2 className="text-success"></CheckCircle2>
+                      ) : (
+                        <XCircle className="text-destructive"></XCircle>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </>
           )}
