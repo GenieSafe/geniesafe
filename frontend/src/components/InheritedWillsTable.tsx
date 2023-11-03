@@ -29,6 +29,7 @@ import {
   useContract,
   useContractWrite,
 } from '@thirdweb-dev/react'
+import { Card, CardContent } from './ui/card'
 
 export default function InheritedWillsTable({ data }: { data: any }) {
   const supabase = useSupabaseClient<Database>()
@@ -103,91 +104,98 @@ export default function InheritedWillsTable({ data }: { data: any }) {
   }
 
   return (
-    <Table>
-      <TableCaption>A list of your inherited wills.</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="">Will Owner</TableHead>
-          <TableHead className="text-center">Status</TableHead>
-          <TableHead className="text-center">Validation Status</TableHead>
-          <TableHead className="text-center">Division</TableHead>
-          <TableHead className="text-center">Action</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.map((item: any, i: number) => (
-          <TableRow key={i}>
-            <TableCell>
-              {item.wills.profiles.first_name} {item.wills.profiles.last_name}
-            </TableCell>
-            <TableCell className="text-center">
-              <Badge
-                variant={
-                  item.wills.status === 'ACTIVE'
-                    ? 'success'
-                    : item.wills.status === 'INACTIVE'
-                    ? 'destructive'
-                    : 'default'
-                }
-              >
-                {item.wills.status}
-              </Badge>
-            </TableCell>
-            <TableCell className="text-center">
-              {/* Display this badge if will status is active */}
-              {item.wills.status === 'ACTIVE' ? (
-                <Badge>
-                  {`${
-                    item.wills.validators.filter(
-                      (validator: any) => validator.has_validated
-                    ).length
-                  }/${item.wills.validators.length} VALIDATED`}
-                </Badge>
-              ) : (
-                <Badge>N/A</Badge>
-              )}
-            </TableCell>
-            <TableCell className="text-center ">{item.percentage}%</TableCell>
-            <TableCell className="text-center">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
+    <Card>
+      <CardContent className='p-6'>
+        <Table>
+          {/* <TableCaption>A list of your inherited wills.</TableCaption> */}
+          <TableHeader>
+            <TableRow>
+              <TableHead className="">Will Owner</TableHead>
+              <TableHead className="text-center">Status</TableHead>
+              <TableHead className="text-center">Validation Status</TableHead>
+              <TableHead className="text-center">Division</TableHead>
+              <TableHead className="text-center">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.map((item: any, i: number) => (
+              <TableRow key={i}>
+                <TableCell>
+                  {item.wills.profiles.first_name}{' '}
+                  {item.wills.profiles.last_name}
+                </TableCell>
+                <TableCell className="text-center">
+                  <Badge
+                    variant={
+                      item.wills.status === 'ACTIVE'
+                        ? 'success'
+                        : item.wills.status === 'INACTIVE'
+                        ? 'destructive'
+                        : 'default'
+                    }
+                  >
+                    {item.wills.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                  {/* Display this badge if will status is active */}
                   {item.wills.status === 'ACTIVE' ? (
-                    <Button variant="ghost" disabled>
-                      Activated
-                    </Button>
-                  ) : connectionStatus === 'disconnected' ? (
-                    <Button variant="ghost" disabled>
-                      Disconnected
-                    </Button>
+                    <Badge>
+                      {`${
+                        item.wills.validators.filter(
+                          (validator: any) => validator.has_validated
+                        ).length
+                      }/${item.wills.validators.length} VALIDATED`}
+                    </Badge>
                   ) : (
-                    <Button variant="ghost">Activate</Button>
+                    <Badge>N/A</Badge>
                   )}
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Activate will?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Activate this will only upon the owner's death. Once
-                      activated, validators will receive email notifications for
-                      will validation.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => {
-                        handleActivateWill(item.wills.id)
-                      }}
-                    >
-                      Activate
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+                </TableCell>
+                <TableCell className="text-center ">
+                  {item.percentage}%
+                </TableCell>
+                <TableCell className="text-center">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      {item.wills.status === 'ACTIVE' ? (
+                        <Button variant="ghost" disabled>
+                          Activated
+                        </Button>
+                      ) : connectionStatus === 'disconnected' ? (
+                        <Button variant="ghost" disabled>
+                          Disconnected
+                        </Button>
+                      ) : (
+                        <Button variant="ghost">Activate</Button>
+                      )}
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Activate will?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Activate this will only upon the owner's death. Once
+                          activated, validators will receive email notifications
+                          for will validation.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => {
+                            handleActivateWill(item.wills.id)
+                          }}
+                        >
+                          Activate
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   )
 }
