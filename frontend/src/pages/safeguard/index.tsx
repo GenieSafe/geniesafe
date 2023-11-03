@@ -60,7 +60,9 @@ export default function Config({ data }: { data: any }) {
   }
 
   useEffect(() => {
-    if (data.status == 'VERIFIED') getPrivateKey(data.id)
+    if (data !== null) {
+      if (data.status == 'VERIFIED') getPrivateKey(data.id)
+    }
   })
 
   return (
