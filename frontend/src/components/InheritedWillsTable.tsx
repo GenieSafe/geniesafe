@@ -24,22 +24,55 @@ import { Database } from '../lib/database.types'
 import { useRouter } from 'next/router'
 import { useToast } from './ui/use-toast'
 import { Button } from './ui/button'
+import { useContract, useContractWrite } from '@thirdweb-dev/react'
 
 export default function InheritedWillsTable({ data }: { data: any }) {
   const supabase = useSupabaseClient<Database>()
   const router = useRouter()
   const { toast } = useToast()
+  const willContract = '0xF9FCf5867bb26C116C85C66eB65B21fC50fFa510'
+  const { contract } = useContract(willContract)
+  const { mutateAsync: createWill, isLoading } = useContractWrite(
+    contract,
+    'createWill'
+  )
 
-  // Update will status to ACTIVE
   async function handleActivateWill(id: string) {
-    const { error } = await supabase
-      .from('wills')
-      .update({ status: 'INACTIVE' })
-      .eq('id', id)
-    if (error) {
-      console.log(error)
+    // Initialize empty arrays for beneficiaries and percentages
+    const _beneficiaries: string[] = []
+    const _percentages: number[] = []
+
+    // Get will data based on id
+    const will = data.filter((item: any) => item.wills.id === id)[0]
+
+    // Get beneficiaries array from will
+    const beneficiaries = will.wills.beneficiaries
+
+    // Extract beneficiaries and percentages from beneficiaries array
+    // Data is formatted for WillContract
+    for (const beneficiary of beneficiaries) {
+      _beneficiaries.push(beneficiary.profiles.wallet_address)
+      _percentages.push(beneficiary.percentage)
     }
 
+    // Create will on WillContract
+    try {
+      const data = await createWill({
+        args: [id, _beneficiaries, _percentages],
+      })
+      console.info('Create will successful', data)
+    } catch (error) {
+      console.error('Create will failed', error)
+    }
+
+    // Update will DB status to ACTIVE
+    const { error } = await supabase
+      .from('wills')
+      .update({ status: 'ACTIVE' })
+      .eq('id', id)
+    if (error) console.error('Update status failed', error)
+
+    // Show toast and reload page after 2 seconds
     window.setTimeout(() => {
       toast({
         title: 'Will activated successfully!',
