@@ -26,20 +26,21 @@ export default function Navbar() {
   const address = useAddress()
   const connectionStatus = useConnectionStatus()
 
-  if (
-    connectionStatus === 'connected' &&
-    address !== undefined &&
-    wallet !== undefined
-  ) {
-    if (address !== user?.user_metadata?.address) {
-      console.error(
-        'Disconnected wallet due to address mismatch',
-        address,
-        user?.user_metadata?.address
-      )
-      wallet.disconnect()
-    }
-  }
+  // Disconnect wallet if address does not match user address in DB
+  // if (
+  //   connectionStatus === 'connected' &&
+  //   address !== undefined &&
+  //   wallet !== undefined
+  // ) {
+  //   if (address !== user?.user_metadata?.address) {
+  //     console.error(
+  //       'Disconnected wallet due to address mismatch',
+  //       address,
+  //       user?.user_metadata?.address
+  //     )
+  //     wallet.disconnect()
+  //   }
+  // }
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut()
