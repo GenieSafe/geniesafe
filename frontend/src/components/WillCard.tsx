@@ -26,7 +26,7 @@ export function WillCard({
   balance: number
   ethUsd: number
 }) {
-  const willContractAddress = '0x95fe4dd93d2bA758b71223DC988F0199b56d53eC'
+  const willContract = '0xF9FCf5867bb26C116C85C66eB65B21fC50fFa510'
   return (
     <Card className="hover:shadow-[0px_0px_20px_0px_hsl(var(--primary))] transition-shadow duration-500 p-4">
       <CardHeader className="grid grid-cols-2">
@@ -36,10 +36,10 @@ export function WillCard({
               {will.title}
             </CardTitle>
           </Link>
-          {willContractAddress !== null && (
+          {willContract !== null && (
             <Button variant={'link'} className="p-0 h-fit" asChild>
               <Link
-                href={`https://sepolia.etherscan.io/address/${willContractAddress}`}
+                href={`https://sepolia.etherscan.io/address/${willContract}`}
                 target="_blank"
               >
                 <span className="text-sm font-semibold text-primary-foreground/50">
