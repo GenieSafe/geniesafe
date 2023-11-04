@@ -29,7 +29,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .select(
       `
     id, status,
-    verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
+    verifiers(has_verified, verified_at, profiles(first_name, last_name, wallet_address))
   `
     )
     .eq('user_id', session.user.id)
@@ -60,7 +60,9 @@ export default function Config({ data }: { data: any }) {
   }
 
   useEffect(() => {
-    if (data.status == 'VERIFIED') getPrivateKey(data.id)
+    if (data !== null) {
+      if (data.status == 'VERIFIED') getPrivateKey(data.id)
+    }
   })
 
   return (

@@ -1,0 +1,52 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\Dev\\geniesafe\\contract\\contracts\\WillContract.sol": {
+      "lastModificationDate": 1699041808117,
+      "contentHash": "32a7650544689de26ba4be14c20726a8",
+      "sourceName": "contracts/WillContract.sol",
+      "solcConfig": {
+        "version": "0.8.7",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        },
+        "zksolc": {
+          "version": "1.3.7",
+          "compilerSource": "binary",
+          "settings": {
+            "optimizer": {
+              "enabled": true,
+              "mode": "3"
+            },
+            "compilerPath": "",
+            "experimental": {}
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.7"
+      ],
+      "artifacts": [
+        "WillContract"
+      ]
+    }
+  }
+}

@@ -4,17 +4,13 @@ import {
   createPagesBrowserClient,
   Session,
 } from '@supabase/auth-helpers-nextjs'
-import {
-  ThirdwebProvider,
-  localWallet,
-  metamaskWallet,
-} from '@thirdweb-dev/react'
+import { ThirdwebProvider, metamaskWallet } from '@thirdweb-dev/react'
 import { Sepolia } from '@thirdweb-dev/chains'
 import { useState } from 'react'
 import '../styles/global.css'
 import { Layout } from '../components/layout/Layout'
 import { Outfit } from 'next/font/google'
-import { MetaMaskProvider } from '@metamask/sdk-react'
+import { Toaster } from '../components/ui/toaster'
 
 const outfit = Outfit({ subsets: ['latin'] })
 
@@ -34,20 +30,21 @@ export default function App({
           font-family: ${outfit.style.fontFamily};
         }
       `}</style>
-        <SessionContextProvider
-          supabaseClient={supabaseClient}
-          initialSession={pageProps.initialSession}
+      <SessionContextProvider
+        supabaseClient={supabaseClient}
+        initialSession={pageProps.initialSession}
+      >
+        <ThirdwebProvider
+          clientId="2a4f7795555a65af9128f029c3c2b1fc"
+          activeChain={Sepolia}
+          supportedWallets={[metamaskWallet()]}
         >
-          <ThirdwebProvider
-            clientId="2a4f7795555a65af9128f029c3c2b1fc"
-            activeChain={Sepolia}
-            supportedWallets={[metamaskWallet()]}
-          >
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          </ThirdwebProvider>
-        </SessionContextProvider>
+          <Layout>
+            <Component {...pageProps} />
+            <Toaster />
+          </Layout>
+        </ThirdwebProvider>
+      </SessionContextProvider>
     </>
   )
 }
