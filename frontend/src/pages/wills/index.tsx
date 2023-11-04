@@ -4,16 +4,11 @@ import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 
 import { Plus } from 'lucide-react'
 
-import { WillCard } from '../../components/WillCard'
-import { Button } from '../../components/ui/button'
+import { WillCard } from '@/components/WillCard'
+import { Button } from '@/components/ui/button'
 import { ethers } from 'ethers'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '../../components/ui/tabs'
-import InheritedWillsTable from '../../components/InheritedWillsTable'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import InheritedWillsTable from '@/components/InheritedWillsTable'
 import { useState } from 'react'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
