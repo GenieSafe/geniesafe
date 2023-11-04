@@ -1,4 +1,4 @@
-import { Button } from './ui/button'
+import { Button, buttonVariants } from './ui/button'
 import {
   Edit3,
   CheckCircle2,
@@ -8,7 +8,6 @@ import {
   BellRing,
   CheckCheck,
 } from 'lucide-react'
-import { Tables } from '../lib/database.types'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card'
 import Link from 'next/link'
 import {
@@ -22,6 +21,19 @@ import {
 } from './ui/dialog'
 import { Input } from './ui/input'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog'
+import { cn } from '../lib/utils'
+import { toast } from './ui/use-toast'
 
 export default function SafeguardCard({
   config,
@@ -33,6 +45,9 @@ export default function SafeguardCard({
   const supabase = useSupabaseClient()
   const copyText = () => {
     privateKey && navigator.clipboard.writeText(privateKey)
+    toast({
+      title: 'Private key copied!',
+    })
   }
 
   async function onDialogClose() {
@@ -55,22 +70,22 @@ export default function SafeguardCard({
     <>
       <Card className="hover:shadow-[0px_0px_20px_0px_hsl(var(--primary))] transition-shadow duration-500 p-4">
         <CardHeader className="flex flex-row items-center justify-between">
-          <Link
-            href={
-              config.status === 'INACTIVE'
-                ? `/safeguard/edit/${config.id}`
-                : '#'
-            }
-            className={
-              config.status === 'INACTIVE'
-                ? 'pointer-events-auto'
-                : 'pointer-events-none'
-            }
-          >
-            <CardTitle className="text-3xl font-semibold tracking-tight scroll-m-20">
+          <CardTitle className="text-3xl font-semibold tracking-tight scroll-m-20 hover:bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] hover:from-violet-200 hover:via-violet-400 hover:to-violet-800 hover:text-transparent hover:bg-clip-text hover:transition-colors hover:duration-300 hover:ease-in-out">
+            <Link
+              href={
+                config.status === 'INACTIVE'
+                  ? `/safeguard/edit/${config.id}`
+                  : '#'
+              }
+              className={
+                config.status === 'INACTIVE'
+                  ? 'pointer-events-auto'
+                  : 'pointer-events-none'
+              }
+            >
               Safeguard
-            </CardTitle>
-          </Link>
+            </Link>
+          </CardTitle>
           {!privateKey && (
             <Button size={'sm'} disabled={config.status === 'ACTIVE'}>
               {config.status === 'INACTIVE' && (
@@ -92,28 +107,25 @@ export default function SafeguardCard({
         >
           {privateKey ? (
             <>
-              <Dialog>
-                <DialogTrigger asChild>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
                   <Button className="w-fit">
                     <Unlock className="w-4 h-4 mr-2" />
                     Reveal private key
                   </Button>
-                </DialogTrigger>
-                <DialogContent
-                  className="flex flex-col"
-                  onInteractOutside={(e) => {
-                    e.preventDefault()
-                  }}
-                >
-                  <DialogHeader>
-                    <DialogTitle>Here is your private key</DialogTitle>
-                    <DialogDescription className="text-destructive">
+                </AlertDialogTrigger>
+                <AlertDialogContent className="flex flex-col">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Here is your private key
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-destructive">
                       You can only view this{' '}
                       <span className="font-bold">ONCE</span> and will need to
                       go through the same process once this window is closed.
                       Please save this private key somewhere safe.
-                    </DialogDescription>
-                  </DialogHeader>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
                   <div className="flex items-center w-full space-x-2">
                     <Input
                       type="text"
@@ -130,17 +142,19 @@ export default function SafeguardCard({
                       <Copy className="w-4 h-4" />
                     </Button>
                   </div>
-                  <DialogClose asChild>
-                    <Button
-                      size="sm"
-                      variant={'destructive'}
+                  <AlertDialogFooter>
+                    <AlertDialogAction
+                      className={cn(
+                        buttonVariants({ variant: 'destructive' }),
+                        'w-full'
+                      )}
                       onClick={() => onDialogClose()}
                     >
                       Close
-                    </Button>
-                  </DialogClose>
-                </DialogContent>
-              </Dialog>
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </>
           ) : (
             <>

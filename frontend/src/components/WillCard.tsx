@@ -31,11 +31,9 @@ export function WillCard({
     <Card className="hover:shadow-[0px_0px_20px_0px_hsl(var(--primary))] transition-shadow duration-500 p-4">
       <CardHeader className="grid grid-cols-2">
         <div className="space-y-2">
-          <Link href={`wills/edit/${will.id}`}>
-            <CardTitle className="text-3xl font-semibold tracking-tight scroll-m-20">
-              {will.title}
-            </CardTitle>
-          </Link>
+          <CardTitle className="w-fit text-3xl font-semibold tracking-tight scroll-m-20 hover:bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] hover:from-violet-200 hover:via-violet-400 hover:to-violet-800 hover:text-transparent hover:bg-clip-text hover:transition-colors hover:duration-300 hover:ease-in-out">
+            <Link href={`wills/edit/${will.id}`}>{will.title}</Link>
+          </CardTitle>
           {willContract !== null && (
             <Button variant={'link'} className="p-0 h-fit" asChild>
               <Link
@@ -65,7 +63,7 @@ export function WillCard({
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-12">
         <div className="flex flex-col gap-4 overflow-clip">
-          <p className="font-bold text-lg">Beneficiaries</p>
+          <p className="text-lg font-bold">Beneficiaries</p>
           <div className="flex gap-4 overflow-x-auto">
             {will.beneficiaries ? (
               will.beneficiaries.map((beneficiary: any, index: number) => (
@@ -97,7 +95,7 @@ export function WillCard({
         </div>
 
         <div className="flex flex-col gap-4">
-          <p className="font-bold text-lg">Validators</p>
+          <p className="text-lg font-bold">Validators</p>
           <div className="flex gap-4 overflow-x-auto">
             {will.validators ? (
               will.validators.map((validator: any, index: number) => (
