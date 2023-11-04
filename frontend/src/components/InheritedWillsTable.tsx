@@ -29,6 +29,7 @@ import {
   useContract,
   useContractWrite,
 } from '@thirdweb-dev/react'
+import { sendMail } from '@/lib/emailHelper'
 
 export default function InheritedWillsTable({ data }: { data: any }) {
   const supabase = useSupabaseClient<Database>()
@@ -100,6 +101,15 @@ export default function InheritedWillsTable({ data }: { data: any }) {
     } catch (error) {
       console.error('Create will failed', error)
     }
+
+    // Email validators
+    const payload = {
+      // to: will.wills.validators.map((validator: any) => validator.email),
+      to: 'fivowa4723@mainmile.com',
+      subject: 'Will Validation',
+      html: `<strong>You have been selected as a validator for ${will.wills.profiles.first_name} ${will.wills.profiles.last_name}'s will. Please login to your account to validate the will.</strong>`,
+    }
+    sendMail(payload)
   }
 
   return (
