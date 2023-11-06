@@ -13,6 +13,7 @@ import {
   Text,
 } from '@react-email/components'
 import { Tailwind } from '@react-email/tailwind'
+import { AlertCircle } from 'lucide-react'
 import * as React from 'react'
 
 interface EmailProps {
@@ -48,7 +49,7 @@ export const ValidationPromptEmail = ({ redirectUrl }: EmailProps) => (
             alt="geniesafe"
           />
 
-          <Section className="w-full pt-6">
+          <Section className="w-full my-6">
             <Row>
               <Column className="border border-gray-400/30 border-solid w-[140px]" />
               <Column className="border border-solid border-brand w-[200px]" />
@@ -56,7 +57,11 @@ export const ValidationPromptEmail = ({ redirectUrl }: EmailProps) => (
             </Row>
           </Section>
 
-          <Text className="pt-4 mb-6 text-2xl text-center text-white">
+          <Section className="text-center">
+            <AlertCircle className="text-yellow-500" size={100} />
+          </Section>
+
+          <Text className="text-2xl text-center text-white">
             A will has been <strong className="text-brand">activated</strong>
           </Text>
 
