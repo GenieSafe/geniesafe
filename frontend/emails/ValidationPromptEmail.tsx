@@ -1,12 +1,14 @@
 import {
   Body,
   Button,
+  Column,
   Container,
   Head,
   Html,
   Img,
   Link,
   Preview,
+  Row,
   Section,
   Text,
 } from '@react-email/components'
@@ -45,6 +47,14 @@ export const ValidationPromptEmail = ({ redirectUrl }: EmailProps) => (
             height="50"
             alt="geniesafe"
           />
+
+          <Section className="w-full pt-6">
+            <Row>
+              <Column className="border border-gray-400/30 border-solid w-[140px]" />
+              <Column className="border border-solid border-brand w-[200px]" />
+              <Column className="border border-gray-400/30 border-solid w-[140px]" />
+            </Row>
+          </Section>
 
           <Text className="pt-4 mb-6 text-2xl text-center text-white">
             A will has been <strong className="text-brand">activated</strong>
