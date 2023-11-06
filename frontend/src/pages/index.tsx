@@ -44,7 +44,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .single()
 
   // Get config data
-  const { data: config, error: configError } = await supabase
+  const { data: safeguard, error: safeguardError } = await supabase
     .from('wallet_recovery_config')
     .select(
       `
@@ -87,7 +87,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     props: {
       initialSession: session,
       will: will,
-      config: config,
+      config: safeguard,
       balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
       ethUsd: ethUsd,
       eth24hrChange: eth24hrChange,
@@ -99,7 +99,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 
 export default function Home({
   will,
-  config,
+  safeguard,
   balance,
   ethUsd,
   eth24hrChange,
@@ -107,7 +107,7 @@ export default function Home({
   inheritedWills,
 }: {
   will: any
-  config: any
+  safeguard: any
   balance: number
   ethUsd: number
   eth24hrChange: number
@@ -164,7 +164,7 @@ export default function Home({
       <div className="flex flex-col gap-6">
         <div className="grid grid-cols-4 gap-6">
           <WillStatus will={will} />
-          <SafeguardStatus config={config} />
+          <SafeguardStatus config={safeguard} />
           <WalletBalance balance={balance} ethUsd={ethUsd} />
           <ETHPrice ethUsd={ethUsd} eth24hrChange={eth24hrChange} />
         </div>
