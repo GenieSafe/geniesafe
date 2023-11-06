@@ -9,6 +9,10 @@ import WillStatus from '../components/dashboard/WillStatus'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
 import InheritedWills from '../components/dashboard/InheritedWillsTable'
 import TrendOverviewChart from '../components/dashboard/TrendOverviewChart'
+import { useToast } from '@/components/ui/use-toast'
+import { useEffect } from 'react'
+import { ToastAction } from '@/components/ui/toast'
+import Link from 'next/link'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -111,8 +115,39 @@ export default function Home({
   inheritedWills: any
 }) {
   const session = useSession()
+  const { toast } = useToast()
 
   if (!session) return <Login />
+
+  useEffect(() => {
+    if (will === undefined || config === undefined) {
+      setTimeout(() => {
+        toast({
+          title: 'Finish setting up your account',
+          description: 'Setup your will and safeguard config.',
+          duration: 100000,
+          action: (
+            <div className="space-y-2">
+              <ToastAction
+                altText="Will"
+                className="w-full"
+                disabled={will !== undefined}
+              >
+                <Link href="/wills">Will</Link>
+              </ToastAction>
+              <ToastAction
+                altText="Safeguard"
+                className="w-full"
+                disabled={config !== undefined}
+              >
+                <Link href="/safeguard">Safeguard</Link>
+              </ToastAction>
+            </div>
+          ),
+        })
+      }, 1000)
+    }
+  }, [])
 
   return (
     <>
