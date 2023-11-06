@@ -9,11 +9,10 @@ import WillStatus from '../components/dashboard/WillStatus'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
 import InheritedWills from '../components/dashboard/InheritedWillsTable'
 import TrendOverviewChart from '../components/dashboard/TrendOverviewChart'
-import { useToast } from '@/components/ui/use-toast'
+import { toast, useToast } from '@/components/ui/use-toast'
 import { useEffect } from 'react'
 import { ToastAction } from '@/components/ui/toast'
 import { useRouter } from 'next/router'
-import Link from 'next/link'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -117,7 +116,6 @@ export default function Home({
 }) {
   const session = useSession()
   const router = useRouter()
-  const { toast } = useToast()
 
   if (!session) return <Login />
 
