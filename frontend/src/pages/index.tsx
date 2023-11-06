@@ -26,14 +26,6 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       },
     }
 
-  // Get user wallet address
-  const { data: userWalletAddress, error: userWalletAddressError } =
-    await supabase
-      .from('profiles')
-      .select('wallet_address')
-      .eq('id', session.user.id)
-      .single()
-
   // Get will data
   const { data: will, error: willError } = await supabase
     .from('wills')
@@ -90,7 +82,6 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   return {
     props: {
       initialSession: session,
-      user: userWalletAddress,
       will: will,
       config: config,
       balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
