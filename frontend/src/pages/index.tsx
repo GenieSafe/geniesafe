@@ -12,6 +12,7 @@ import TrendOverviewChart from '../components/dashboard/TrendOverviewChart'
 import { useToast } from '@/components/ui/use-toast'
 import { useEffect } from 'react'
 import { ToastAction } from '@/components/ui/toast'
+import { useRouter } from 'next/router'
 import Link from 'next/link'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
@@ -115,6 +116,7 @@ export default function Home({
   inheritedWills: any
 }) {
   const session = useSession()
+  const router = useRouter()
   const { toast } = useToast()
 
   if (!session) return <Login />
@@ -132,15 +134,17 @@ export default function Home({
                 altText="Will"
                 className="w-full"
                 disabled={will !== null}
+                onClick={() => router.push('/wills/create')}
               >
-                <Link href="/wills">Will</Link>
+                Will
               </ToastAction>
               <ToastAction
                 altText="Safeguard"
                 className="w-full"
                 disabled={config !== null}
+                onClick={() => router.push('/safeguard/assign')}
               >
-                <Link href="/safeguard">Safeguard</Link>
+                Safeguard
               </ToastAction>
             </div>
           ),
