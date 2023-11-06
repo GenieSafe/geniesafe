@@ -27,6 +27,7 @@ import { Button } from './ui/button'
 import {
   useConnectionStatus,
   useContract,
+  useContractEvents,
   useContractWrite,
 } from '@thirdweb-dev/react'
 import { sendMail } from '@/lib/emailHelper'
@@ -40,6 +41,15 @@ export default function InheritedWillsTable({ data }: { data: any }) {
 
   const willContract = process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
   const { contract } = useContract(willContract)
+  const {
+    data: contractEvents,
+    isLoading: isContractEventsLoading,
+    error: contractEventsError,
+  } = useContractEvents(contract, 'createWill', {
+    queryFilter: {
+      order: 'desc',
+    },
+  })
   const { mutateAsync: createWill, isLoading } = useContractWrite(
     contract,
     'createWill'
@@ -85,11 +95,22 @@ export default function InheritedWillsTable({ data }: { data: any }) {
       // Update will DB status to ACTIVE
       const { error: updateWillStatusError } = await supabase
         .from('wills')
-        .update({ status: 'ACTIVE' })
+        .update({
+          status: 'ACTIVE',
+          deployed_at_block:
+            contractEvents?.[0]?.transaction?.transactionHash || '000',
+          deployed_at: new Date().toString(),
+          activated_at: new Date().toString(),
+        })
         .eq('id', id)
 
       if (updateWillStatusError) {
         console.error('Update status failed', updateWillStatusError)
+        toast({
+          title: 'Will activation failed!',
+          description: 'Please refresh and try again.',
+          variant: 'destructive',
+        })
       } else {
         toast({
           title: 'Will activated successfully!',
@@ -106,6 +127,7 @@ export default function InheritedWillsTable({ data }: { data: any }) {
     // Email validators
     const payload = {
       // to: will.wills.validators.map((validator: any) => validator.email),
+      // TODO: Remove hardcoded email
       to: 'fivowa4723@mainmile.com',
       subject: 'Will Validation',
       html: `<strong>You have been selected as a validator for ${will.wills.profiles.first_name} ${will.wills.profiles.last_name}'s will. Please login to your account to validate the will.</strong>`,
