@@ -120,7 +120,7 @@ export default function Home({
   if (!session) return <Login />
 
   useEffect(() => {
-    if (will === undefined || config === undefined) {
+    if (will === null || config === null) {
       setTimeout(() => {
         toast({
           title: 'Finish setting up your account',
@@ -131,14 +131,14 @@ export default function Home({
               <ToastAction
                 altText="Will"
                 className="w-full"
-                disabled={will !== undefined}
+                disabled={will !== null}
               >
                 <Link href="/wills">Will</Link>
               </ToastAction>
               <ToastAction
                 altText="Safeguard"
                 className="w-full"
-                disabled={config !== undefined}
+                disabled={config !== null}
               >
                 <Link href="/safeguard">Safeguard</Link>
               </ToastAction>
