@@ -88,7 +88,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       ethUsd: ethUsd,
       eth24hrChange: eth24hrChange,
       ethPriceTrend: ethPriceTrend,
-      inherited_wills: inheritedWills,
+      inheritedWills: inheritedWills,
     },
   }
 }
@@ -100,7 +100,7 @@ export default function Home({
   ethUsd,
   eth24hrChange,
   ethPriceTrend,
-  inherited_wills,
+  inheritedWills,
 }: {
   will: any
   config: any
@@ -108,7 +108,7 @@ export default function Home({
   ethUsd: number
   eth24hrChange: number
   ethPriceTrend: any
-  inherited_wills: any
+  inheritedWills: any
 }) {
   const session = useSession()
 
@@ -141,7 +141,7 @@ export default function Home({
             />
           </div>
           <div className="col-span-4">
-            <InheritedWills data={inherited_wills} />
+            <InheritedWills data={inheritedWills} />
           </div>
         </div>
       </div>
