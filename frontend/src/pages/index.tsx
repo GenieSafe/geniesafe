@@ -27,39 +27,40 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Get user wallet address
-  const { data: user_data, error: user_error } = await supabase
-    .from('profiles')
-    .select('wallet_address')
-    .eq('id', session.user.id)
-    .single()
+  const { data: userWalletAddress, error: userWalletAddressError } =
+    await supabase
+      .from('profiles')
+      .select('wallet_address')
+      .eq('id', session.user.id)
+      .single()
 
   // Get will data
-  const { data: will_data, error: will_error } = await supabase
+  const { data: will, error: willError } = await supabase
     .from('wills')
     .select(
       `
-    id, title, contract_address, deployed_at_block, status,
-    beneficiaries(percentage, metadata:user_id(first_name, last_name, wallet_address)),
-    validators(has_validated, metadata:user_id(first_name, last_name, wallet_address))
-  `
+      id, title, contract_address, deployed_at_block, status,
+      beneficiaries(percentage, metadata:user_id(first_name, last_name, wallet_address)),
+      validators(has_validated, metadata:user_id(first_name, last_name, wallet_address))
+      `
     )
     .eq('user_id', session.user.id)
     .single()
 
   // Get config data
-  const { data: config_data, error: config_error } = await supabase
+  const { data: config, error: configError } = await supabase
     .from('wallet_recovery_config')
     .select(
       `
-    id, status,
-    verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
-  `
+      id, status,
+      verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
+      `
     )
     .eq('user_id', session.user.id)
     .single()
 
   // Get inherited wills data
-  const { data: inherited_data, error: inherited_error } = await supabase
+  const { data: inheritedWills, error: inheritedWillsError } = await supabase
     .from('beneficiaries')
     .select(
       `percentage, wills(status, metadata:user_id(first_name, last_name))`
@@ -89,14 +90,14 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   return {
     props: {
       initialSession: session,
-      user: user_data,
-      will: will_data,
-      config: config_data,
+      user: userWalletAddress,
+      will: will,
+      config: config,
       balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
       ethUsd: ethUsd,
       eth24hrChange: eth24hrChange,
       ethPriceTrend: ethPriceTrend,
-      inherited_wills: inherited_data,
+      inherited_wills: inheritedWills,
     },
   }
 }
