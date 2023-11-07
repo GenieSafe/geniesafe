@@ -68,22 +68,21 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .limit(4)
 
   // Get ETH balance
-  const etherscanApiKey = '2Y2V7T5HCBPXU6MUME8HHQJSBK84ISZT23'
   const address = '0x19882AfC7913B21E2E414F8219eA3bdF3202aB99'
   const balance = await fetch(
-    `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${etherscanApiKey}`
+    `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
   ).then((res) => res.json())
 
   // Get ETH price
   const ethPriceData = await fetch(
-    'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_change=true'
+    `https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_change=true&x_cg_demo_api_key=${process.env.NEXT_PUBLIC_COINGECKO_API_KEY}`
   ).then((res) => res.json())
   const ethUsd = ethPriceData.ethereum.usd
   const eth24hrChange = ethPriceData.ethereum.usd_24h_change
 
   // Get ETH price trend
   const ethPriceTrend = await fetch(
-    `https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=30&interval=daily`
+    `https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=30&interval=daily&x_cg_demo_api_key=${process.env.NEXT_PUBLIC_COINGECKO_API_KEY}`
   ).then((res) => res.json())
 
   return {
