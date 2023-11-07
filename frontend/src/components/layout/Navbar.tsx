@@ -88,7 +88,7 @@ export default function Navbar() {
           </NavigationMenuList>
         </NavigationMenu>
         <div className="flex items-center justify-end space-x-2">
-          <span className="text-sm">Hi, {user?.email}!</span>
+          <span className="text-sm">Hi, {name}!</span>
           <Button
             variant={'link'}
             className="font-bold"

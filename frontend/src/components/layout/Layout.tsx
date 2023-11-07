@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Head, MetaProps } from './Head'
-import { useSession } from '@supabase/auth-helpers-react'
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 
 import Navbar from './Navbar'
 
@@ -11,6 +11,25 @@ interface LayoutProps {
 
 export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
   const session = useSession()
+  const supabase = useSupabaseClient()
+  const [name, setName] = useState({ first_name: '', last_name: '' })
+
+  useEffect(() => {
+    async function fetchName() {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', session?.user.id)
+        .single()
+
+      if (!error) {
+        setName(data)
+      } else {
+        setName({ first_name: 'User', last_name: '' })
+      }
+    }
+    fetchName()
+  }, [])
 
   return (
     <>
@@ -25,7 +44,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
         <>
           <Head customMeta={customMeta} />
           <header>
-            <Navbar />
+            <Navbar name={`${name.first_name} ${name.last_name}`} />
           </header>
           <main className="container px-40 py-16 mx-auto">{children}</main>
           <footer></footer>
