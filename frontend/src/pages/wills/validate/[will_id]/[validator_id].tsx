@@ -22,7 +22,7 @@ import { Database } from '@/lib/database.types'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useContract, useContractWrite } from '@thirdweb-dev/react'
-import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import Head from 'next/head'
 import { useEffect } from 'react'
 
