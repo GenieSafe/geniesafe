@@ -42,7 +42,7 @@ export const SafeguardVerifiedEmail = ({ redirectUrl }: EmailProps) => (
       <Body style={main} className="bg-black">
         <Container style={container}>
           <Img
-            src={`/geniesafe-logo-text-hor.png`}
+            src={`https://xppazbevnejnfkzhjdab.supabase.co/storage/v1/object/public/images/logos/geniesafe-logo-text-hor.png?t=2023-11-07T19%3A10%3A42.995Z`}
             className="mx-auto my-0"
             width="150"
             height="50"
@@ -68,7 +68,8 @@ export const SafeguardVerifiedEmail = ({ redirectUrl }: EmailProps) => (
 
           <Section className="px-8 py-10 text-center border border-white border-solid rounded-md">
             <Text className="mt-0 text-white">
-              All safeguard verifiers has verified your request. Click the button below to view your private key.
+              All safeguard verifiers has verified your request. Click the
+              button below to view your private key.
             </Text>
 
             <Button

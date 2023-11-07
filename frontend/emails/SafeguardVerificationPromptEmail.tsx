@@ -44,7 +44,7 @@ export const SafeguardVerificationPromptEmail = ({
       <Body style={main} className="bg-black">
         <Container style={container}>
           <Img
-            src={`/geniesafe-logo-text-hor.png`}
+            src={`https://xppazbevnejnfkzhjdab.supabase.co/storage/v1/object/public/images/logos/geniesafe-logo-text-hor.png?t=2023-11-07T19%3A10%3A42.995Z`}
             className="mx-auto my-0"
             width="150"
             height="50"
