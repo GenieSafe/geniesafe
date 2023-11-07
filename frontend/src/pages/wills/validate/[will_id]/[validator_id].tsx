@@ -10,6 +10,13 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { useToast } from '@/components/ui/use-toast'
 import { Database } from '@/lib/database.types'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
@@ -86,12 +93,6 @@ export default function ValidationPage({
           validated_at: new Date(),
         })
         .eq('id', validator.id)
-
-      toast({
-        title: 'Validation successful!',
-        description:
-          'This will will be executed once all validators have completed validation.',
-      })
     } catch (e) {
       toast({
         title: 'Error',
@@ -100,6 +101,7 @@ export default function ValidationPage({
       })
     }
 
+    // Runs only when all validators have validated
     // Get unvalidated count
     try {
       const { count: unvalidatedCount, error: unvalidatedError } =
@@ -143,6 +145,7 @@ export default function ValidationPage({
             title: 'Validation successful!',
             description:
               'This will will be executed once all validators have completed validation.',
+            variant: 'success',
           })
         } catch (e) {
           toast({
@@ -156,6 +159,7 @@ export default function ValidationPage({
           title: 'Validation successful!',
           description:
             'The will will be executed once all validators have validated.',
+          variant: 'success',
         })
       }
 
@@ -176,36 +180,65 @@ export default function ValidationPage({
       <Head>
         <title>Validate - geniesafe</title>
       </Head>
-      {!validator.has_validated ? (
+      {will !== null && validator !== null && !validator.has_validated ? (
         <>
-          <div>
-            Will owner: {will.profiles.first_name} {will.profiles.last_name}
+          <div className="flex flex-col gap-2 pb-12">
+            <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
+              Validate will
+            </h1>
+            <p className="leading-7">
+              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ad
+              cumque ipsum voluptas? Impedit sit velit est deserunt aspernatur
+              modi ipsum, nemo illo fuga. Sit unde reiciendis suscipit quos, at
+              necessitatibus.
+            </p>
           </div>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button>Validate</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  By continuing, you confirm that the this person is deceased
-                  and therefore allow the will to be executed by our smart
-                  contract.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={onSubmit}>
-                  Activate
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-3xl font-semibold tracking-tight scroll-m-20">
+                {will.profiles.first_name} {will.profiles.last_name}'s will
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="leading-7">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Nam
+                cumque atque iste veritatis deleniti natus eius nihil soluta id
+                aspernatur quod voluptas qui laborum exercitationem omnis
+                ratione excepturi, perspiciatis dolorum!
+              </p>
+            </CardContent>
+            <CardFooter className="flex justify-end">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button>Validate</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      By continuing, you confirm that the this person is
+                      deceased and therefore allow the will to be executed by
+                      our smart contract.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={onSubmit}>
+                      Confirm
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardFooter>
+          </Card>
         </>
       ) : (
-        <div>You have validated. You may exit this page.</div>
+        <div className="flex flex-col gap-2 pb-12 text-center">
+          <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
+            Validation completed
+          </h1>
+          <p className="leading-7">You may exit this page.</p>
+        </div>
       )}
     </>
   )
