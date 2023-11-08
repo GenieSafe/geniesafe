@@ -163,13 +163,58 @@ export default function ValidationPage({
         })
       }
 
-      setTimeout(() => {
-        window.location.reload()
-      }, 3000)
+      setIsFallbackInterface(true)
     } catch (e) {
       toast({
         title: 'Error',
         description: 'Failed to get unvalidated count.Please try again.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const onInvalidate = async (e: any) => {
+    console.log('invalidate')
+
+    // Update all validators of the will has_validated to false
+    try {
+      const { error: updateValidatorStatusError } = await supabase
+        .from('validators')
+        .update({
+          has_validated: false,
+          validated_at: null,
+        })
+        .eq('will_id', will.id)
+    } catch (e) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update validator status. ',
+        variant: 'destructive',
+      })
+    }
+
+    // Update will status to INACTIVE
+    try {
+      const { error: updateWillStatusError } = await supabase
+        .from('wills')
+        .update({
+          status: 'INACTIVE',
+        })
+        .eq('id', will.id)
+      toast({
+        title: 'Will invalidated!',
+        description: 'This will is now inactive.',
+        variant: 'success',
+      })
+      setIsFallbackInterface(true)
+
+      // setTimeout(() => {
+      //   window.location.reload()
+      // }, 3000)
+    } catch (e) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update will status. Please try again.',
         variant: 'destructive',
       })
     }
@@ -180,7 +225,11 @@ export default function ValidationPage({
       <Head>
         <title>Validate - geniesafe</title>
       </Head>
-      {will !== null && validator !== null && !validator.has_validated ? (
+      {will !== null &&
+      validator !== null &&
+      will.status === 'ACTIVE' &&
+      !validator.has_validated &&
+      !isFallbackInterface ? (
         <>
           <div className="flex flex-col gap-2 pb-12">
             <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
@@ -207,7 +256,31 @@ export default function ValidationPage({
                 ratione excepturi, perspiciatis dolorum!
               </p>
             </CardContent>
-            <CardFooter className="flex justify-end">
+            <CardFooter className="flex justify-end gap-2">
+              {/* Invalidate */}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant={'destructive'}>Invalidate</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Invalidate this will?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      By invalidating, you confirm that the will is falsely
+                      activated and the owner is not deceased. The will will
+                      become inactive once again.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={onInvalidate}>
+                      Confirm
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              {/* Validate */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button>Validate</Button>
