@@ -9,6 +9,10 @@ import WillStatus from '../components/dashboard/WillStatus'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
 import InheritedWills from '../components/dashboard/InheritedWillsTable'
 import TrendOverviewChart from '../components/dashboard/TrendOverviewChart'
+import { toast } from '@/components/ui/use-toast'
+import { useEffect } from 'react'
+import { ToastAction } from '@/components/ui/toast'
+import { useRouter } from 'next/router'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -26,40 +30,33 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       },
     }
 
-  // Get user wallet address
-  const { data: user_data, error: user_error } = await supabase
-    .from('profiles')
-    .select('wallet_address')
-    .eq('id', session.user.id)
-    .single()
-
   // Get will data
-  const { data: will_data, error: will_error } = await supabase
+  const { data: will, error: willError } = await supabase
     .from('wills')
     .select(
       `
-    id, title, contract_address, deployed_at_block, status,
-    beneficiaries(percentage, metadata:user_id(first_name, last_name, wallet_address)),
-    validators(has_validated, metadata:user_id(first_name, last_name, wallet_address))
-  `
+      id, title, contract_address, deployed_at_block, status,
+      beneficiaries(percentage, metadata:user_id(first_name, last_name, wallet_address)),
+      validators(has_validated, metadata:user_id(first_name, last_name, wallet_address))
+      `
     )
     .eq('user_id', session.user.id)
     .single()
 
   // Get config data
-  const { data: config_data, error: config_error } = await supabase
+  const { data: config, error: configError } = await supabase
     .from('wallet_recovery_config')
     .select(
       `
-    id, status,
-    verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
-  `
+      id, status,
+      verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
+      `
     )
     .eq('user_id', session.user.id)
     .single()
 
   // Get inherited wills data
-  const { data: inherited_data, error: inherited_error } = await supabase
+  const { data: inheritedWills, error: inheritedWillsError } = await supabase
     .from('beneficiaries')
     .select(
       `percentage, wills(status, metadata:user_id(first_name, last_name))`
@@ -68,35 +65,42 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .limit(4)
 
   // Get ETH balance
-  const etherscanApiKey = '2Y2V7T5HCBPXU6MUME8HHQJSBK84ISZT23'
-  const address = '0x19882AfC7913B21E2E414F8219eA3bdF3202aB99'
-  const balance = await fetch(
-    `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${etherscanApiKey}`
-  ).then((res) => res.json())
+  const { data: user, error: userError } = await supabase
+    .from('profiles')
+    .select('wallet_address')
+    .eq('id', session.user.id)
+    .single()
+  let balance = 'N/A'
+  if (!userError) {
+    const address = user?.wallet_address
+    const balanceRaw = await fetch(
+      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
+    ).then((res) => res.json())
+    balance = parseFloat(ethers.utils.formatEther(balanceRaw.result)).toFixed(4)
+  }
 
   // Get ETH price
   const ethPriceData = await fetch(
-    'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_change=true'
+    `https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_change=true&x_cg_demo_api_key=${process.env.NEXT_PUBLIC_COINGECKO_API_KEY}`
   ).then((res) => res.json())
   const ethUsd = ethPriceData.ethereum.usd
   const eth24hrChange = ethPriceData.ethereum.usd_24h_change
 
   // Get ETH price trend
   const ethPriceTrend = await fetch(
-    `https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=30&interval=daily`
+    `https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=30&interval=daily&x_cg_demo_api_key=${process.env.NEXT_PUBLIC_COINGECKO_API_KEY}`
   ).then((res) => res.json())
 
   return {
     props: {
       initialSession: session,
-      user: user_data,
-      will: will_data,
-      config: config_data,
-      balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
+      will: will,
+      config: config,
+      balance: balance,
       ethUsd: ethUsd,
       eth24hrChange: eth24hrChange,
       ethPriceTrend: ethPriceTrend,
-      inherited_wills: inherited_data,
+      inheritedWills: inheritedWills,
     },
   }
 }
@@ -108,7 +112,7 @@ export default function Home({
   ethUsd,
   eth24hrChange,
   ethPriceTrend,
-  inherited_wills,
+  inheritedWills,
 }: {
   will: any
   config: any
@@ -116,11 +120,44 @@ export default function Home({
   ethUsd: number
   eth24hrChange: number
   ethPriceTrend: any
-  inherited_wills: any
+  inheritedWills: any
 }) {
   const session = useSession()
+  const router = useRouter()
 
   if (!session) return <Login />
+
+  useEffect(() => {
+    if (will === null || config === null) {
+      setTimeout(() => {
+        toast({
+          title: 'Finish setting up your account',
+          description: 'Setup your will and safeguard config.',
+          duration: 100000,
+          action: (
+            <div className="space-y-2">
+              <ToastAction
+                altText="Will"
+                className="w-full"
+                disabled={will !== null}
+                onClick={() => router.push('/wills/create')}
+              >
+                Will
+              </ToastAction>
+              <ToastAction
+                altText="Safeguard"
+                className="w-full"
+                disabled={config !== null}
+                onClick={() => router.push('/safeguard/assign')}
+              >
+                Safeguard
+              </ToastAction>
+            </div>
+          ),
+        })
+      }, 1000)
+    }
+  }, [])
 
   return (
     <>
@@ -149,7 +186,7 @@ export default function Home({
             />
           </div>
           <div className="col-span-4">
-            <InheritedWills data={inherited_wills} />
+            <InheritedWills data={inheritedWills} />
           </div>
         </div>
       </div>

@@ -9,7 +9,6 @@ import {
 } from '../ui/navigation-menu'
 import React from 'react'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
-import { LogOut } from 'lucide-react'
 import { useRouter } from 'next/router'
 import {
   ConnectWallet,
@@ -17,8 +16,9 @@ import {
   useConnectionStatus,
   useWallet,
 } from '@thirdweb-dev/react'
+import { toast } from '@/components/ui/use-toast'
 
-export default function Navbar() {
+export default function Navbar({ name }: { name?: string }) {
   const router = useRouter()
   const user = useUser()
   const supabase = useSupabaseClient()
@@ -27,20 +27,20 @@ export default function Navbar() {
   const connectionStatus = useConnectionStatus()
 
   // Disconnect wallet if address does not match user address in DB
-  // if (
-  //   connectionStatus === 'connected' &&
-  //   address !== undefined &&
-  //   wallet !== undefined
-  // ) {
-  //   if (address !== user?.user_metadata?.address) {
-  //     console.error(
-  //       'Disconnected wallet due to address mismatch',
-  //       address,
-  //       user?.user_metadata?.address
-  //     )
-  //     wallet.disconnect()
-  //   }
-  // }
+  if (
+    connectionStatus === 'connected' &&
+    address !== undefined &&
+    wallet !== undefined
+  ) {
+    if (address !== user?.user_metadata?.address) {
+      toast({
+        title: 'Wallet mismatch!',
+        description: `This wallet address does not match your address in our record. Check the connected account on your Metamask.`,
+        variant: 'destructive',
+      })
+      wallet.disconnect()
+    }
+  }
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut()
@@ -88,7 +88,7 @@ export default function Navbar() {
           </NavigationMenuList>
         </NavigationMenu>
         <div className="flex items-center justify-end space-x-2">
-          <span className="text-sm">Hi, {user?.email}!</span>
+          <span className="text-sm">Hello, {name}!</span>
           <Button
             variant={'link'}
             className="font-bold"
