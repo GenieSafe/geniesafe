@@ -9,7 +9,7 @@ import WillStatus from '../components/dashboard/WillStatus'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
 import InheritedWills from '../components/dashboard/InheritedWillsTable'
 import TrendOverviewChart from '../components/dashboard/TrendOverviewChart'
-import { toast, useToast } from '@/components/ui/use-toast'
+import { toast } from '@/components/ui/use-toast'
 import { useEffect } from 'react'
 import { ToastAction } from '@/components/ui/toast'
 import { useRouter } from 'next/router'
@@ -65,10 +65,19 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .limit(4)
 
   // Get ETH balance
-  const address = '0x19882AfC7913B21E2E414F8219eA3bdF3202aB99'
-  const balance = await fetch(
-    `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
-  ).then((res) => res.json())
+  const { data: user, error: userError } = await supabase
+    .from('profiles')
+    .select('wallet_address')
+    .eq('id', session.user.id)
+    .single()
+  let balance = 'N/A'
+  if (!userError) {
+    const address = user?.wallet_address
+    const balanceRaw = await fetch(
+      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
+    ).then((res) => res.json())
+    balance = parseFloat(ethers.utils.formatEther(balanceRaw.result)).toFixed(4)
+  }
 
   // Get ETH price
   const ethPriceData = await fetch(
@@ -87,7 +96,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       initialSession: session,
       will: will,
       config: config,
-      balance: parseFloat(ethers.utils.formatEther(balance.result)).toFixed(4),
+      balance: balance,
       ethUsd: ethUsd,
       eth24hrChange: eth24hrChange,
       ethPriceTrend: ethPriceTrend,

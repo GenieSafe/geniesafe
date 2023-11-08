@@ -1,20 +1,11 @@
 import { Info, Wallet } from 'lucide-react'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from '../ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '../ui/tooltip'
-
-// TODO: getServerSideProps here
+} from '@/components/ui/tooltip'
 
 export default function WalletBalance({
   balance,
@@ -47,9 +38,13 @@ export default function WalletBalance({
         </CardHeader>
         <CardContent className="flex flex-col justify-center h-full space-y-1">
           <div className="text-2xl font-bold">{balance} ETH</div>
-          <p className="text-primary-foreground/50">
-            ~${(balance * ethUsd).toFixed(2)}
-          </p>
+          {balance > 0 ? (
+            <p className="text-primary-foreground/50">
+              ~${(balance * ethUsd).toFixed(2)}
+            </p>
+          ) : (
+            <p className="text-primary-foreground/50">~$0</p>
+          )}
         </CardContent>
       </Card>
     </>
