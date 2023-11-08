@@ -1,5 +1,3 @@
-import { render } from '@react-email/render'
-
 type Payload = {
   to: string
   subject: string
@@ -12,7 +10,7 @@ export const sendMail = async (data: Payload) => {
   const payload = {
     to: to,
     subject: subject,
-    html: render(html),
+    html: html,
   }
   const postData = async () => {
     const response = await fetch('/api/send-email', {

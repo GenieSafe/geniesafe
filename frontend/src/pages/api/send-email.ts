@@ -1,6 +1,4 @@
-import HelloEmail from '../../../emails/HelloEmail'
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { render } from '@react-email/render'
 import nodemailer from 'nodemailer'
 
 const transporter = nodemailer.createTransport({
@@ -10,7 +8,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.NODEMAILER_PW,
+    pass: process.env.GMAIL_APP_PASSWORD,
   },
 })
 
@@ -23,7 +21,10 @@ export default async function handler(
     const { to, subject, html } = req.body
 
     const info = await transporter.sendMail({
-      from: process.env.SMTP_FROM || 'alifmazli01@gmail.com', // sender address
+      from: {
+        name: 'geniesafe',
+        address: process.env.SMTP_FROM || 'geniesafedev@gmail.com',
+      },
       to: to,
       subject: subject,
       html: html,
