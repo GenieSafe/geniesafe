@@ -30,7 +30,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Get will data
-  const { data: willData, error: willError } = await supabase
+  const { data: will, error: willError } = await supabase
     .from('wills')
     .select(
       `
@@ -50,7 +50,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .single()
 
   // Get user wallet balance
-  if (willData !== null) {
+  if (will !== null) {
     balance = await fetch(
       `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${userData?.wallet_address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
     )
@@ -81,7 +81,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   return {
     props: {
       initialSession: session,
-      willData: willData,
+      will: will,
       inheritedWillsData: inheritedWillsData,
       balance: parseFloat(ethers.utils.formatEther(balance)).toFixed(4),
       ethUsd: ethUsd,
@@ -90,12 +90,12 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 }
 
 export default function Wills({
-  willData,
+  will,
   inheritedWillsData,
   balance,
   ethUsd,
 }: {
-  willData: any
+  will: any
   inheritedWillsData: any
   balance: number
   ethUsd: number
@@ -104,8 +104,8 @@ export default function Wills({
 
   return (
     <>
-      <Tabs defaultValue={defaultTab} className='flex flex-col'>
-        <TabsList className='self-center w-fit'>
+      <Tabs defaultValue={defaultTab} className="flex flex-col">
+        <TabsList className="self-center w-fit">
           <TabsTrigger value="will" onClick={() => setDefaultTab('will')}>
             Your Will
           </TabsTrigger>
@@ -116,12 +116,12 @@ export default function Wills({
             Inherited Wills
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="will" className='mt-6'>
+        <TabsContent value="will" className="mt-6">
           <div className="flex items-center justify-between pb-12">
             <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
               Your Will
             </h1>
-            {!willData && (
+            {!will && (
               <Button asChild>
                 <Link href="/wills/create">
                   <Plus className="w-4 h-4 mr-2" />
@@ -131,14 +131,14 @@ export default function Wills({
             )}
           </div>
           <div className="flex flex-col gap-16">
-            {willData ? (
-              <WillCard will={willData} balance={balance} ethUsd={ethUsd} />
+            {will ? (
+              <WillCard will={will} balance={balance} ethUsd={ethUsd} />
             ) : (
               <p className="text-2xl font-bold text-center">No will found</p>
             )}
           </div>
         </TabsContent>
-        <TabsContent value="inherited" className='mt-6'>
+        <TabsContent value="inherited" className="mt-6">
           <div className="flex items-center justify-between pb-12">
             <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
               Inherited Wills

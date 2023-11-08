@@ -16,22 +16,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../../../components/ui/form'
-import { Label } from '../../../components/ui/label'
-import { Button } from '../../../components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '../../../components/ui/card'
-import { Input } from '../../../components/ui/input'
+} from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 
 import { Plus, Trash2 } from 'lucide-react'
 
-import { Database, Tables } from '../../../lib/database.types'
+import { Database, Tables } from '@/lib/database.types'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
