@@ -25,7 +25,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
       if (!error) {
         setName(data)
       } else {
-        setName({ first_name: 'User', last_name: '' })
+        setName({ first_name: 'geniesafe', last_name: 'User' })
       }
     }
     fetchName()
