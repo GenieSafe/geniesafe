@@ -88,7 +88,7 @@ export default function Navbar({ name }: { name?: string }) {
           </NavigationMenuList>
         </NavigationMenu>
         <div className="flex items-center justify-end space-x-2">
-          <span className="text-sm">Hi, {name}!</span>
+          <span className="text-sm">Hello, {name}!</span>
           <Button
             variant={'link'}
             className="font-bold"
