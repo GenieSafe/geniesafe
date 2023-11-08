@@ -24,7 +24,7 @@ import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useContract, useContractWrite } from '@thirdweb-dev/react'
 import { GetServerSidePropsContext } from 'next'
 import Head from 'next/head'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   const will_id = ctx.query.will_id
@@ -35,7 +35,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Get will and validator data
   const { data: will, error: willError } = await supabase
     .from('wills')
-    .select('id, title, profiles(first_name, last_name)')
+    .select('id, title, profiles(first_name, last_name), status')
     .eq('id', will_id as string)
     .single()
 
@@ -76,8 +76,9 @@ export default function ValidationPage({
     useContractWrite(contract, 'validateWill')
   const { mutateAsync: executeWill, isLoading: isExecuteWillLoading } =
     useContractWrite(contract, 'executeWill')
+  const [isFallbackInterface, setIsFallbackInterface] = useState(false)
 
-  const onSubmit = async (e: any) => {
+  const onValidate = async (e: any) => {
     // Ensure both will_id and validator_id are valid
     if (!will || !validator) {
       window.location.href = '/404'
@@ -296,7 +297,7 @@ export default function ValidationPage({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={onSubmit}>
+                    <AlertDialogAction onClick={onValidate}>
                       Confirm
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -306,12 +307,14 @@ export default function ValidationPage({
           </Card>
         </>
       ) : (
-        <div className="flex flex-col gap-2 pb-12 text-center">
-          <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
-            Validation completed
-          </h1>
-          <p className="leading-7">You may exit this page.</p>
-        </div>
+        { isComplete: isFallbackInterface } && (
+          <div className="flex flex-col gap-2 pb-12 text-center">
+            <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
+              Validation completed
+            </h1>
+            <p className="leading-7">You may exit this page.</p>
+          </div>
+        )
       )}
     </>
   )
