@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import Highlight, { defaultProps, Language } from 'prism-react-renderer';
+import { Highlight, Language } from 'prism-react-renderer';
 import * as React from 'react';
 
 interface CodeProps {
@@ -54,7 +54,6 @@ export const Code: React.FC<Readonly<CodeProps>> = ({
 
   return (
     <Highlight
-      {...defaultProps}
       theme={theme}
       code={value}
       language={language as Language}
