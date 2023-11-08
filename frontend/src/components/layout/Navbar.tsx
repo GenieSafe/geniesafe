@@ -35,8 +35,7 @@ export default function Navbar({ name }: { name?: string }) {
     if (address !== user?.user_metadata?.address) {
       toast({
         title: 'Wallet mismatch!',
-        description:
-          'This wallet address does not match your address in our record.',
+        description: `This wallet address does not match your address in our record. Check the connected account on your Metamask.`,
         variant: 'destructive',
       })
       wallet.disconnect()
