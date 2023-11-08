@@ -25,6 +25,7 @@ import { useContract, useContractWrite } from '@thirdweb-dev/react'
 import { GetServerSidePropsContext } from 'next'
 import Head from 'next/head'
 import { useEffect, useState } from 'react'
+import { formatDistanceToNow } from 'date-fns'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   const will_id = ctx.query.will_id
@@ -35,7 +36,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Get will and validator data
   const { data: will, error: willError } = await supabase
     .from('wills')
-    .select('id, title, profiles(first_name, last_name), status')
+    .select('id, title, profiles(first_name, last_name), status, activated_at')
     .eq('id', will_id as string)
     .single()
 
@@ -221,6 +222,10 @@ export default function ValidationPage({
     }
   }
 
+  const relativeActivatedAt = formatDistanceToNow(new Date(will.activated_at), {
+    addSuffix: true,
+  })
+
   return (
     <>
       <Head>
@@ -237,10 +242,11 @@ export default function ValidationPage({
               Validate will
             </h1>
             <p className="leading-7">
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ad
-              cumque ipsum voluptas? Impedit sit velit est deserunt aspernatur
-              modi ipsum, nemo illo fuga. Sit unde reiciendis suscipit quos, at
-              necessitatibus.
+              Hello {validator.profiles.first_name}. Your role is to verify if
+              the owner of this will has passed away. If it was activated in
+              error, you have the authority to invalidate this will. Upon
+              successful validation, the will's execution will proceed
+              automatically via our smart contract.
             </p>
           </div>
           <Card>
@@ -250,11 +256,8 @@ export default function ValidationPage({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="leading-7">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Nam
-                cumque atque iste veritatis deleniti natus eius nihil soluta id
-                aspernatur quod voluptas qui laborum exercitationem omnis
-                ratione excepturi, perspiciatis dolorum!
+              <p className="text-sm leading-7">
+                Activated {relativeActivatedAt}
               </p>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
@@ -267,9 +270,10 @@ export default function ValidationPage({
                   <AlertDialogHeader>
                     <AlertDialogTitle>Invalidate this will?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      By invalidating, you confirm that the will is falsely
-                      activated and the owner is not deceased. The will will
-                      become inactive once again.
+                      By choosing to invalidate, you are confirming that the
+                      will was mistakenly activated, and the owner is not
+                      deceased. This action will render the will inactive once
+                      more.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -288,11 +292,11 @@ export default function ValidationPage({
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogTitle>Validate this will?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      By continuing, you confirm that the this person is
-                      deceased and therefore allow the will to be executed by
-                      our smart contract.
+                      By validating, you are confirming the owner's passing.
+                      Once all validators have completed the validation process,
+                      the will's execution will proceed.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
