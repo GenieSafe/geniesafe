@@ -6,8 +6,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './ui/table'
-import { Badge } from './ui/badge'
+} from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -18,12 +18,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from './ui/alert-dialog'
+} from '@/components/ui/alert-dialog'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
-import { Database } from '../lib/database.types'
+import { Database } from '@/lib/database.types'
 import { useRouter } from 'next/router'
-import { useToast } from './ui/use-toast'
-import { Button } from './ui/button'
+import { useToast } from '@/components/ui/use-toast'
+import { Button } from '@/components/ui/button'
 import {
   useConnectionStatus,
   useContract,
@@ -31,7 +31,9 @@ import {
   useContractWrite,
 } from '@thirdweb-dev/react'
 import { sendMail } from '@/lib/emailHelper'
-import { Card, CardContent } from './ui/card'
+import { Card, CardContent } from '@/components/ui/card'
+import ValidationPromptEmail from '../../emails/ValidationPromptEmail'
+import { render } from '@react-email/components'
 
 export default function InheritedWillsTable({ data }: { data: any }) {
   const supabase = useSupabaseClient<Database>()
