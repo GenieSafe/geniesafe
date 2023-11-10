@@ -72,8 +72,8 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       .select(
         `
         id, percentage, wills(id, status, profiles(id, wallet_address, first_name, last_name),
-        beneficiaries(percentage, profiles(first_name, last_name, wallet_address)),
-        validators(has_validated))
+        beneficiaries(id, percentage, profiles(first_name, last_name, wallet_address, email)),
+        validators(id, has_validated, profiles(first_name, last_name, email)))
         `
       )
       .eq('user_id', session.user.id)
