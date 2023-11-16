@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Dev\\geniesafe\\contract\\contracts\\WillContract.sol": {
-      "lastModificationDate": 1699041808117,
-      "contentHash": "32a7650544689de26ba4be14c20726a8",
+      "lastModificationDate": 1700106131528,
+      "contentHash": "4b04fb4e12fa5a08159edaf47994c28e",
       "sourceName": "contracts/WillContract.sol",
       "solcConfig": {
         "version": "0.8.7",

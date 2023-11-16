@@ -1,104 +1,168 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.7;
 
-contract WillContract {
-    struct Will {
-        address owner;
-        address[] beneficiaries;
-        uint256[] percentages;
-        bool validated;
-    }
+// v0.0.3
 
-    mapping(bytes32 => Will) public wills;
+struct Will {
+    string willId;
+    address ownerAddress;
+    uint256 weiAmount;
+    Beneficiary[] beneficiaries;
+}
+
+struct Beneficiary {
+    address beneficiaryAddress;
+    uint256 percentage;
+}
+
+contract WillContract {
+    mapping(string => Will) wills;
+
+    // Event to notify that a will already exists
+    event WillAlreadyExists(string indexed willId, address indexed owner);
 
     constructor() {}
 
-    function stringToBytes32(
-        string memory source
-    ) internal pure returns (bytes32 result) {
-        bytes memory tempEmptyStringTest = bytes(source);
-        if (tempEmptyStringTest.length == 0) {
-            return 0x0;
-        }
-
-        assembly {
-            result := mload(add(source, 32))
-        }
+    function getWill(string memory _willId)
+        external
+        view
+        returns (Will memory)
+    {
+        return wills[_willId];
     }
 
     function createWill(
-        string memory id,
-        address owner,
-        address[] memory _beneficiaries,
-        uint256[] memory _percentages
-    ) public {
-        bytes32 idBytes = stringToBytes32(id);
-        require(
-            wills[idBytes].owner == address(0),
-            "Will with this ID already exists"
-        );
-        require(
-            _beneficiaries.length == _percentages.length,
-            "Invalid input data"
-        );
+        string memory _willId,
+        Beneficiary[] memory _beneficiaries
+    ) external payable {
+        address _ownerAddress = msg.sender;
 
-        wills[idBytes] = Will({
-            owner: owner,
-            beneficiaries: _beneficiaries,
-            percentages: _percentages,
-            validated: false
-        });
-    }
-
-    function validateWill(string memory id) public {
-        bytes32 idBytes = stringToBytes32(id);
-        wills[idBytes].validated = true;
-    }
-
-    function executeWill(string memory id) public payable {
-        bytes32 idBytes = stringToBytes32(id);
-        Will storage will = wills[idBytes];
-        require(will.validated, "Will must be validated");
-
-        uint256 totalpercentages = 0;
-        for (uint256 i = 0; i < will.percentages.length; i++) {
-            totalpercentages += will.percentages[i];
+        // Check if the will already exists
+        if (wills[_willId].ownerAddress != address(0)) {
+            emit WillAlreadyExists(_willId, _ownerAddress);
+            revert("Will already exists, Ether refunded.");
         }
 
-        require(totalpercentages == 100, "percentages must total 100");
+        // Create a new will
+        Will storage newWill = wills[_willId];
+        newWill.willId = _willId;
+        newWill.ownerAddress = _ownerAddress;
+        newWill.weiAmount = msg.value;
 
-        for (uint256 i = 0; i < will.beneficiaries.length; i++) {
-            uint256 amount = (address(this).balance * will.percentages[i]) /
-                100;
-            payable(will.beneficiaries[i]).transfer(amount);
+        // Use a temporary variable to store the array
+        Beneficiary[] storage tempBeneficiaries = newWill.beneficiaries;
+        for (uint256 i = 0; i < _beneficiaries.length; i++) {
+            tempBeneficiaries.push(_beneficiaries[i]);
         }
     }
 
-    function deleteWill(string memory id) public {
-        bytes32 idBytes = stringToBytes32(id);
-        delete wills[idBytes];
+    function updateWill(
+        string memory _willId,
+        Beneficiary[] memory _newBeneficiaries
+    ) external payable {
+        // Check if the will already exists
+        if (wills[_willId].ownerAddress == address(0)) {
+            emit WillAlreadyExists(_willId, msg.sender);
+            // Refund the Ether sent by reverting the transaction
+            revert("Will does not exist, Ether refunded.");
+        }
+
+        // If Ether is sent with the transaction, treat it as a deposit
+        if (msg.value > 0) {
+            // Update the will's weiAmount
+            wills[_willId].weiAmount += msg.value;
+        }
+
+        // Update the beneficiaries if new data is provided
+        if (_newBeneficiaries.length > 0) {
+            // Clear existing beneficiaries
+            delete wills[_willId].beneficiaries;
+
+            // Use a temporary variable to store the array
+            Beneficiary[] storage tempBeneficiaries = wills[_willId]
+                .beneficiaries;
+            for (uint256 i = 0; i < _newBeneficiaries.length; i++) {
+                tempBeneficiaries.push(_newBeneficiaries[i]);
+            }
+        }
     }
 
-    function getWill(
-        string memory id
-    )
-        public
-        view
-        returns (
-            address owner,
-            address[] memory beneficiaries,
-            uint256[] memory percentages,
-            bool validated
-        )
-    {
-        bytes32 idBytes = stringToBytes32(id);
-        Will storage will = wills[idBytes];
-        return (
-            will.owner,
-            will.beneficiaries,
-            will.percentages,
-            will.validated
+    function deleteWill(string memory _willId) external {
+        // Check if the will exists
+        if (wills[_willId].ownerAddress == address(0)) {
+            emit WillAlreadyExists(_willId, msg.sender);
+            revert("Will does not exist.");
+        }
+
+        // Delete the will
+        delete wills[_willId];
+    }
+
+    function disburse(string memory _willId) external {
+        // Check if the will exists
+        if (wills[_willId].ownerAddress == address(0)) {
+            emit WillAlreadyExists(_willId, msg.sender);
+            revert("Will does not exist.");
+        }
+
+        Will storage currentWill = wills[_willId];
+
+        // Check if there are beneficiaries in the will
+        require(
+            currentWill.beneficiaries.length > 0,
+            "No beneficiaries in the will."
         );
+
+        // Calculate total percentage to validate it sums to 100
+        uint256 totalPercentage;
+        for (uint256 i = 0; i < currentWill.beneficiaries.length; i++) {
+            totalPercentage += currentWill.beneficiaries[i].percentage;
+        }
+        require(
+            totalPercentage == 100,
+            "Beneficiary percentages do not sum to 100."
+        );
+
+        // Disburse funds to beneficiaries based on their percentages
+        for (uint256 i = 0; i < currentWill.beneficiaries.length; i++) {
+            address beneficiary = currentWill
+                .beneficiaries[i]
+                .beneficiaryAddress;
+            uint256 amountToSend = (currentWill.weiAmount *
+                currentWill.beneficiaries[i].percentage) / 100;
+            payable(beneficiary).transfer(amountToSend);
+        }
+
+        // Reset the weiAmount after disbursement
+        currentWill.weiAmount = 0;
+    }
+
+    function withdraw(string memory _willId, uint256 _weiAmount) external {
+        // Check if the will exists
+        if (wills[_willId].ownerAddress == address(0)) {
+            emit WillAlreadyExists(_willId, msg.sender);
+            revert("Will does not exist.");
+        }
+
+        Will storage currentWill = wills[_willId];
+
+        // Check if the caller is the owner of the will
+        require(
+            msg.sender == currentWill.ownerAddress,
+            "Only the owner can withdraw funds."
+        );
+
+        // Check if the requested withdrawal amount is not greater than the available funds
+        require(
+            _weiAmount <= currentWill.weiAmount,
+            "Insufficient funds in the will."
+        );
+
+        // Transfer the requested amount to the owner
+        payable(msg.sender).transfer(_weiAmount);
+
+        // Update the weiAmount in the will after withdrawal
+        currentWill.weiAmount -= _weiAmount;
     }
 
     receive() external payable {}
