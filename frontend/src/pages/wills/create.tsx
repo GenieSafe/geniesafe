@@ -12,18 +12,22 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../../components/ui/form'
-import { Label } from '../../components/ui/label'
-import { Button } from '../../components/ui/button'
-import { Card, CardContent } from '../../components/ui/card'
-import { Input } from '../../components/ui/input'
+} from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 
 import { Plus, Trash2 } from 'lucide-react'
 
-import { Database, Tables } from '../../lib/database.types'
+import { Database, Tables } from '@/lib/database.types'
+import { useContract, useContractWrite } from '@thirdweb-dev/react'
+import { toast } from '@/components/ui/use-toast'
+import { utils } from 'ethers'
 
 const formSchema = z.object({
   title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
+  ethAmount: z.string({ required_error: 'Amount is required' }),
 })
 
 export default function CreateWill() {
