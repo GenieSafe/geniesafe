@@ -232,6 +232,7 @@ export interface Database {
           title: string
           updated_at: string
           user_id: string
+          eth_amount: string
         }
         Insert: {
           activated_at?: string | null
@@ -243,6 +244,7 @@ export interface Database {
           title: string
           updated_at?: string
           user_id: string
+          eth_amount?: string
         }
         Update: {
           activated_at?: string | null
@@ -254,6 +256,7 @@ export interface Database {
           title?: string
           updated_at?: string
           user_id?: string
+          eth_amount?: string
         }
         Relationships: [
           {
