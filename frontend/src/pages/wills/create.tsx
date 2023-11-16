@@ -176,7 +176,7 @@ export default function CreateWill() {
   }
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.info('Inserting will data')
+    console.info('Inserting will')
     const { data: newWill, error: createWillError } = await supabase
       .from('wills')
       .insert({
