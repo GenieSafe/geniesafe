@@ -260,7 +260,7 @@ export default function CreateWill() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Will Title</FormLabel>
+                    <FormLabel>Will title</FormLabel>
                     <FormControl>
                       <Input placeholder="My First Will" {...field} />
                     </FormControl>
@@ -273,11 +273,20 @@ export default function CreateWill() {
                 name="ethAmount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Amount</FormLabel>
+                    <FormLabel>Deposit fund</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        placeholder="Enter amount of ETH"
+                        placeholder="Enter ETH amount to deposit"
+                        type="text"
+                        pattern="[0-9]*" // Allow only numbers
+                        inputMode="numeric" // Set the input mode to numeric for better mobile support
+                        onInput={(e) => {
+                          const inputElement = e.target as HTMLInputElement
+                          inputElement.value = inputElement.value.replace(
+                            /[^0-9.]/g,
+                            ''
+                          ) // Remove non-numeric characters
+                        }}
                         {...field}
                       />
                     </FormControl>
@@ -293,7 +302,7 @@ export default function CreateWill() {
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-5 gap-2">
                       <Label htmlFor="email">
-                        Beneficiary's Wallet Address
+                        Beneficiary's address
                       </Label>
                       <Input
                         type="text"
@@ -305,7 +314,7 @@ export default function CreateWill() {
                       />
                     </div>
                     <div className="grid items-center w-full col-span-5 gap-2">
-                      <Label htmlFor="email">Division Percentage</Label>
+                      <Label htmlFor="email">Percentage (%)</Label>
                       <Input
                         type="number"
                         name="field2"
@@ -371,7 +380,7 @@ export default function CreateWill() {
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-10 gap-2">
-                      <Label htmlFor="email">Validator's Wallet Address</Label>
+                      <Label htmlFor="email">Validator's address</Label>
                       <Input
                         type="text"
                         name="field1"
