@@ -231,26 +231,146 @@ export default function EditWill({ will }: { will: any }) {
     setValidatorsArr(newArr)
   }
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    let { data, error } = await supabase.rpc('update_will', {
-      in_beneficiaries: beneficiariesArr,
-      in_title: values.title,
-      in_validators: validatorsArr,
-      in_will_id: will.id,
-    })
+  const onSave = async (values: z.infer<typeof formSchema>) => {
+    try {
+      // If total percentages of beneficiaries is less than 100%, show alert and return
+      if (totalPercentage < 100) {
+        alert('Total percentage of beneficiaries must be 100%')
+        return
+      }
 
-    if (!error) {
-      router.push('/wills')
-    } else {
-      console.log(error)
+      console.info('Updating will')
+      // Adding throws for the supabase.rpc call
+      let { data: updatedWill, error: updateWillError } = await supabase.rpc(
+        'update_will',
+        {
+          in_beneficiaries: beneficiariesArr,
+          in_title: values.title,
+          in_validators: validatorsArr,
+          in_will_id: will.id,
+        }
+      )
+      if (updateWillError) {
+        throw new Error(`Supabase RPC error: ${updateWillError.message}`)
+      }
+
+      // Add old ethAmount to new ethAmount
+      const oldEthAmount = will.eth_amount
+      const newEthAmount = values.ethAmount
+      const totalEthAmount = (
+        parseFloat(oldEthAmount) + parseFloat(newEthAmount)
+      ).toString()
+
+      // Update eth_amount in wills table
+      console.info(`Updating eth_amount (${totalEthAmount})`)
+      const { data: updatedWillEthAmount, error: updateWillEthAmountError } =
+        await supabase
+          .from('wills')
+          .update({ eth_amount: totalEthAmount })
+          .eq('id', will.id)
+
+      if (updateWillEthAmountError) {
+        throw new Error(
+          `Supabase update error: ${updateWillEthAmountError.message}`
+        )
+      }
+
+      // Call WillContract
+      const _willId = will.id
+      const _newBeneficiaries = beneficiariesArr.map((beneficiary) => ({
+        beneficiaryAddress: (
+          beneficiary.metadata as Record<string, any>
+        ).wallet_address.toString(),
+        percentage: beneficiary.percentage.toString(),
+      }))
+
+      console.info('Calling WillContract')
+      try {
+        const updatedWillContract = await updateWill({
+          args: [_willId, _newBeneficiaries],
+          overrides: {
+            value: utils.parseEther(values.ethAmount),
+          },
+        })
+
+        console.info('WillContract call success', updatedWillContract)
+        toast({
+          title: 'WillContract call success',
+          description: `Your will has been updated!`,
+          variant: 'success',
+        })
+      } catch (e) {
+        console.error('WillContract call failure', e)
+        toast({
+          title: 'WillContract call error',
+          description: `Error: ${e}`,
+          variant: 'destructive',
+        })
+      }
+
+      if (!updateWillError) {
+        router.push('/wills')
+      } else {
+        console.log(updateWillError)
+      }
+    } catch (e) {
+      console.error('Error during form submission:', e)
+      toast({
+        title: 'Form submission error',
+        description: `Error: ${e}`,
+        variant: 'destructive',
+      })
     }
   }
 
   const onDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    const { error } = await supabase.from('wills').delete().eq('id', will[0].id)
+    try {
+      const { error } = await supabase.from('wills').delete().eq('id', will.id)
 
-    if (!error) {
-      router.push('/wills')
+      const _willId = will.id
+      const _weiAmount = utils.parseEther(will.eth_amount)
+
+      console.info('Calling WillContract to withdraw funds')
+      try {
+        const data = await withdraw({ args: [_willId, _weiAmount] })
+        console.info('Contract call success', data)
+      } catch (e) {
+        console.error('Contract call failure', e)
+        toast({
+          title: 'Withdrawal Error',
+          description: `Error calling WillContract to withdraw funds: ${e}`,
+          variant: 'destructive',
+        })
+      }
+
+      console.info('Calling WillContract to delete will')
+      try {
+        const data = await deleteWill({ args: [_willId] })
+        console.info('Contract call success', data)
+        toast({
+          title: 'Will Deleted',
+          description: 'Your will has been successfully deleted!',
+          variant: 'success',
+        })
+      } catch (e) {
+        console.error('Contract call failure', e)
+        toast({
+          title: 'Deletion Error',
+          description: `Error calling WillContract to delete will: ${e}`,
+          variant: 'destructive',
+        })
+      }
+
+      if (!error) {
+        router.push('/wills')
+      }
+    } catch (e) {
+      console.error('Error during deletion:', e)
+      toast({
+        title: 'Deletion Error',
+        description: `Error deleting the will: ${e}`,
+        variant: 'destructive',
+      })
     }
   }
 
@@ -264,15 +384,41 @@ export default function EditWill({ will }: { will: any }) {
       <Card>
         <CardContent className="p-12">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSave)} className="space-y-8">
               <FormField
                 control={form.control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Will Title</FormLabel>
+                    <FormLabel>Will title</FormLabel>
                     <FormControl>
-                      <Input placeholder="My First Will" {...field} />
+                      <Input placeholder="Enter will title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="ethAmount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Deposit fund (optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter ETH amount to deposit"
+                        type="text"
+                        pattern="[0-9.]*" // Allow only numbers
+                        inputMode="numeric" // Set the input mode to numeric for better mobile support
+                        onInput={(e) => {
+                          const inputElement = e.target as HTMLInputElement
+                          inputElement.value = inputElement.value.replace(
+                            /[^0-9.]/g,
+                            ''
+                          ) // Remove non-numeric characters
+                        }}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -285,9 +431,7 @@ export default function EditWill({ will }: { will: any }) {
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-5 gap-2">
-                      <Label htmlFor="email">
-                        Beneficiary's Wallet Address
-                      </Label>
+                      <Label htmlFor="email">Beneficiary's address</Label>
                       <Input
                         type="text"
                         name="field1"
@@ -298,7 +442,7 @@ export default function EditWill({ will }: { will: any }) {
                       />
                     </div>
                     <div className="grid items-center w-full col-span-5 gap-2">
-                      <Label htmlFor="email">Division Percentage</Label>
+                      <Label htmlFor="email">Division percentage (%)</Label>
                       <Input
                         type="number"
                         name="field2"
