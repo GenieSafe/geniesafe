@@ -25,6 +25,20 @@ import { Input } from '@/components/ui/input'
 import { Plus, Trash2 } from 'lucide-react'
 
 import { Database, Tables } from '@/lib/database.types'
+import { useContract, useContractWrite } from '@thirdweb-dev/react'
+import { utils } from 'ethers'
+import { toast } from '@/components/ui/use-toast'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -346,7 +360,7 @@ export default function EditWill({ will }: { will: any }) {
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-10 gap-2">
-                      <Label htmlFor="email">Validator's Wallet Address</Label>
+                      <Label htmlFor="email">Validator's address</Label>
                       <Input
                         type="text"
                         name="field1"
