@@ -35,7 +35,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .from('wills')
     .select(
       `
-      id, title, deployed_at_block, status,
+      id, title, deployed_at_block, status, eth_amount,
       beneficiaries(percentage, metadata:user_id(first_name, last_name, wallet_address)),
       validators(has_validated, metadata:user_id(first_name, last_name, wallet_address))
       `
@@ -55,6 +55,12 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .eq('user_id', session.user.id)
     .single()
 
+  // Get inheritable fund
+  const balance =
+    will !== null && will.eth_amount !== null
+      ? parseFloat(will.eth_amount)
+      : '0.0000'
+
   // Get inherited wills data
   const { data: inheritedWills, error: inheritedWillsError } = await supabase
     .from('beneficiaries')
@@ -63,21 +69,6 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     )
     .eq('user_id', session.user.id)
     .limit(4)
-
-  // Get ETH balance
-  const { data: user, error: userError } = await supabase
-    .from('profiles')
-    .select('wallet_address')
-    .eq('id', session.user.id)
-    .single()
-  let balance = 'N/A'
-  if (!userError) {
-    const address = user?.wallet_address
-    const balanceRaw = await fetch(
-      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
-    ).then((res) => res.json())
-    balance = parseFloat(ethers.utils.formatEther(balanceRaw.result)).toFixed(4)
-  }
 
   // Get ETH price
   const ethPriceData = await fetch(
