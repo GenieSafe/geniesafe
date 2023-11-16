@@ -1,5 +1,3 @@
-'use client'
-
 import { ChangeEvent, useState } from 'react'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { useRouter } from 'next/router'
