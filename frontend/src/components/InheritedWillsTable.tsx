@@ -1,7 +1,6 @@
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -24,12 +23,7 @@ import { Database } from '@/lib/database.types'
 import { useRouter } from 'next/router'
 import { useToast } from '@/components/ui/use-toast'
 import { Button } from '@/components/ui/button'
-import {
-  useConnectionStatus,
-  useContract,
-  useContractEvents,
-  useContractWrite,
-} from '@thirdweb-dev/react'
+import { useConnectionStatus, useContract } from '@thirdweb-dev/react'
 import { sendMail } from '@/lib/emailHelper'
 import { Card, CardContent } from '@/components/ui/card'
 import ValidationPromptEmail from '../../emails/ValidationPromptEmail'
@@ -41,100 +35,74 @@ export default function InheritedWillsTable({ data }: { data: any }) {
   const { toast } = useToast()
   const connectionStatus = useConnectionStatus()
 
-  const willContract = process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
-  const { contract } = useContract(willContract)
-  const {
-    data: contractEvents,
-    isLoading: isContractEventsLoading,
-    error: contractEventsError,
-  } = useContractEvents(contract, 'createWill', {
-    queryFilter: {
-      order: 'desc',
-    },
-  })
-  const { mutateAsync: createWill, isLoading } = useContractWrite(
-    contract,
-    'createWill'
+  const { contract } = useContract(
+    process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
   )
 
   async function handleActivateWill(id: string) {
-    // Initialize empty arrays for beneficiaries and percentages
-    let owner = ''
-    const _beneficiaries: string[] = []
-    const _percentages: number[] = []
-
     // Get will data based on id
     const will = data.find((item: any) => item.wills.id === id)
 
     if (!will) {
       console.error('Will not found for id:', id)
+      toast({
+        title: 'Will not found!',
+        description: 'Please refresh and try again.',
+        variant: 'destructive',
+      })
       return
     }
-
-    // Get owner wallet address from will
-    owner = will.wills.profiles.wallet_address
-
-    // Extract beneficiaries and percentages from beneficiaries array
-    will.wills.beneficiaries.forEach((beneficiary: any) => {
-      _beneficiaries.push(beneficiary.profiles.wallet_address)
-      _percentages.push(beneficiary.percentage)
-    })
-
-    // Create will on WillContract
     try {
-      const data = await createWill({
-        args: [id, owner, _beneficiaries, _percentages],
-      })
-
-      // Show toast and reload page after 2 seconds
-      toast({
-        title: 'Creating will...',
-        description: 'Please wait while we create your will.',
-      })
-
-      console.info('Create will successful', data)
-
-      // Update will DB status to ACTIVE
+      // Update will status to ACTIVE
       const { error: updateWillStatusError } = await supabase
         .from('wills')
         .update({
           status: 'ACTIVE',
-          deployed_at_block:
-            contractEvents?.[0]?.transaction?.transactionHash || '000',
-          deployed_at: new Date().toString(),
-          activated_at: new Date().toString(),
+          activated_at: new Date().toISOString(),
         })
         .eq('id', id)
 
       if (updateWillStatusError) {
         console.error('Update status failed', updateWillStatusError)
         toast({
-          title: 'Will activation failed!',
+          title: 'Update will status failed!',
           description: 'Please refresh and try again.',
           variant: 'destructive',
         })
       } else {
         toast({
-          title: 'Will activated successfully!',
+          title: 'Will status updated successfully!',
           description: 'Validators will be notified via email.',
         })
+
+        // Extract emails from will.wills.validators.profiles.email
+        const validatorEmails = will.wills.validators
+          .map((validator: any) => validator.profiles.email)
+          .join(', ')
+
+        const willId = will.wills.id
+        for (const validator of will.wills.validators) {
+          const validatorId = validator.id
+          // Email validators
+          const payload = {
+            to: validator.profiles.email,
+            subject: `Will is pending your validation, ${validator.profiles.first_name}`,
+            html: render(
+              ValidationPromptEmail({
+                redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/wills/validate/${willId}/${validatorId}`,
+              })
+            ),
+          }
+          sendMail(payload)
+        }
+
         setTimeout(() => {
           router.reload()
-        }, 2000)
+        }, 3000)
       }
     } catch (error) {
       console.error('Create will failed', error)
     }
-
-    // Email validators
-    const payload = {
-      // to: will.wills.validators.map((validator: any) => validator.email),
-      // TODO: Remove hardcoded email
-      to: 'fivowa4723@mainmile.com',
-      subject: 'Will Validation',
-      html: `<strong>You have been selected as a validator for ${will.wills.profiles.first_name} ${will.wills.profiles.last_name}'s will. Please login to your account to validate the will.</strong>`,
-    }
-    sendMail(payload)
   }
 
   return (
@@ -206,9 +174,11 @@ export default function InheritedWillsTable({ data }: { data: any }) {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Activate will?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Activate this will only upon the owner's death. Once
-                          activated, validators will receive email notifications
-                          for will validation.
+                          Activate this will upon the owner's death. Once
+                          activated, the will will be created on our smart
+                          contract, and validators will receive email
+                          notifications for will validation. Please note that
+                          activation incurs a gas fee.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

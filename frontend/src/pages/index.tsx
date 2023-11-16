@@ -3,7 +3,7 @@ import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 import { GetServerSidePropsContext } from 'next'
 import { ethers } from 'ethers'
 import Login from './auth/login'
-import WalletBalance from '../components/dashboard/WalletBalance'
+import InheritableFund from '../components/dashboard/InheritableFund'
 import ETHPrice from '../components/dashboard/ETHPrice'
 import WillStatus from '../components/dashboard/WillStatus'
 import SafeguardStatus from '../components/dashboard/SafeguardStatus'
@@ -175,7 +175,7 @@ export default function Home({
         <div className="grid grid-cols-4 gap-6">
           <WillStatus will={will} />
           <SafeguardStatus config={config} />
-          <WalletBalance balance={balance} ethUsd={ethUsd} />
+          <InheritableFund balance={balance} ethUsd={ethUsd} />
           <ETHPrice ethUsd={ethUsd} eth24hrChange={eth24hrChange} />
         </div>
         <div className="grid grid-cols-12 gap-6">
