@@ -1,5 +1,3 @@
-'use client'
-
 import { ChangeEvent, useState } from 'react'
 import { GetServerSidePropsContext } from 'next'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
