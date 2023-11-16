@@ -34,7 +34,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .from('wills')
     .select(
       `
-      id, title, contract_address, deployed_at_block, status,
+      id, title, deployed_at_block, status,
       beneficiaries(percentage, profiles(first_name, last_name, wallet_address)),
       validators(has_validated, profiles(first_name, last_name, wallet_address))
       `
