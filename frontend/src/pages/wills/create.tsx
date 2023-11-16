@@ -222,6 +222,23 @@ export default function CreateWill() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="ethAmount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Amount</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Enter amount of ETH"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="grid grid-cols-2 gap-12">
                 <div className="flex flex-col gap-6">
                   <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
