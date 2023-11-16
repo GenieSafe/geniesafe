@@ -48,6 +48,12 @@ export default function CreateWill() {
   const [percentageInputVal, setPercentageInputVal] = useState('')
   const [totalPercentage, setTotalPercentage] = useState(0)
 
+  const { contract } = useContract(
+    process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
+  )
+  const { mutateAsync: createWill, isLoading: isCreateWillLoading } =
+    useContractWrite(contract, 'createWill')
+
   const handleBeneficiaryInputValChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -170,32 +176,70 @@ export default function CreateWill() {
   }
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const { data: wills_data, error: wills_error } = await supabase
+    console.info('Inserting will data')
+    const { data: newWill, error: createWillError } = await supabase
       .from('wills')
-      .insert({ title: values.title as string, user_id: user?.id as string })
+      .insert({
+        title: values.title as string,
+        user_id: user?.id as string,
+        eth_amount: values.ethAmount as string,
+      })
       .select()
 
-    if (!wills_error) {
+    if (!createWillError) {
       beneficiariesArr.forEach(async (beneficiary) => {
-        beneficiary.will_id = wills_data[0].id as string
+        beneficiary.will_id = newWill[0].id as string
       })
       validatorsArr.forEach(async (validator) => {
-        validator.will_id = wills_data[0].id as string
+        validator.will_id = newWill[0].id as string
       })
 
-      const { data: ben_data, error: ben_error } = await supabase
+      console.info('Inserting beneficiaries and validators data')
+      const { data: newBeneficiary, error: createBenError } = await supabase
         .from('beneficiaries')
         .insert(beneficiariesArr)
         .select()
-      const { data: val_data, error: val_error } = await supabase
+
+      const { data: newValidator, error: createValError } = await supabase
         .from('validators')
         .insert(validatorsArr)
         .select()
 
-      if (!ben_error && !val_error) {
+      console.info('Calling WillContract')
+      try {
+        // Prep data for createWill contract call
+        const _willId = newWill[0].id as string
+        const _beneficiaries = beneficiariesArr.map((beneficiary) => ({
+          beneficiaryAddress: (
+            beneficiary.metadata as Record<string, any>
+          ).wallet_address.toString(),
+          percentage: beneficiary.percentage.toString(),
+        }))
+        const data = await createWill({
+          args: [_willId, _beneficiaries],
+          overrides: {
+            value: utils.parseEther(values.ethAmount),
+          },
+        })
+        console.info('WillContract call success', data)
+        toast({
+          title: 'WillContract call success',
+          description: `Your will has been created!`,
+          variant: 'success',
+        })
+      } catch (e) {
+        console.error('WillContract call error', e)
+        toast({
+          title: 'WillContract call error',
+          description: `Error: ${e}`,
+          variant: 'destructive',
+        })
+      }
+
+      if (!createBenError && !createValError) {
         router.push('/wills')
       } else {
-        console.log(ben_error, val_error)
+        console.log(createBenError, createValError)
       }
     }
   }
