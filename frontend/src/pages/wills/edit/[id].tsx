@@ -57,11 +57,11 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Run queries with RLS on the server
-  const { data, error } = await supabase
+  const { data: will, error: getWillError } = await supabase
     .from('wills')
     .select(
       `
-    id, title, deployed_at_block, status,
+    id, title, deployed_at_block, status, eth_amount,
     beneficiaries(user_id, percentage, metadata:user_id(first_name, last_name, wallet_address)),
     validators(user_id, has_validated, metadata:user_id(first_name, last_name, wallet_address))
   `
@@ -72,18 +72,30 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   return {
     props: {
       initialSession: session,
-      will: data ?? error,
+      will: will,
     },
   }
 }
 
 const formSchema = z.object({
   title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
+  ethAmount: z.string({ required_error: 'Amount is required' }).default('0'),
 })
 
 export default function EditWill({ will }: { will: any }) {
   const supabase = useSupabaseClient<Database>()
   const router = useRouter()
+
+  const { contract } = useContract(
+    process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
+  )
+  const { mutateAsync: updateWill, isLoading: isUpdateWillLoading } =
+    useContractWrite(contract, 'updateWill')
+  const { mutateAsync: deleteWill, isLoading: isDeleteWillLoading } =
+    useContractWrite(contract, 'deleteWill')
+  const { mutateAsync: withdraw, isLoading: isWithdrawLoading } =
+    useContractWrite(contract, 'withdraw')
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
