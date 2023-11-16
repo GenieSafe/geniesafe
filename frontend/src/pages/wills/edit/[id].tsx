@@ -554,17 +554,56 @@ export default function EditWill({ will }: { will: any }) {
                 </div>
               </div>
               <div className="flex justify-end gap-4">
-                <Button
-                  size={'lg'}
-                  variant="destructive"
-                  type="submit"
-                  onClick={onDelete}
-                >
-                  Delete
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size={'lg'} variant={'destructive'}>
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Are you sure you want to delete this will?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        You will not be able to undo this action. All funds will
+                        be returned to your address. Please proceed with
+                        caution.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={onDelete}>
+                        Confirm
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
                 <Button size={'lg'} type="submit">
                   Save
                 </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size={'lg'}>Save</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Save changes?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action updates the on-chain will. It will require a
+                        transaction.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction type="submit">
+                        Confirm
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </form>
           </Form>
