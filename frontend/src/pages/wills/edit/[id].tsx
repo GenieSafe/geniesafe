@@ -335,52 +335,57 @@ export default function EditWill({ will }: { will: any }) {
 
   const onDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
     try {
-      const { error } = await supabase.from('wills').delete().eq('id', will.id)
-
       const _willId = will.id
       const _weiAmount = utils.parseEther(will.eth_amount)
 
       console.info('Calling WillContract to withdraw funds')
+      setLoadingText('Withdrawing funds')
       try {
         const data = await withdraw({ args: [_willId, _weiAmount] })
         console.info('Contract call success', data)
       } catch (e) {
         console.error('Contract call failure', e)
         toast({
-          title: 'Withdrawal Error',
+          title: 'Error withdrawing funds',
           description: `Error calling WillContract to withdraw funds: ${e}`,
           variant: 'destructive',
         })
+        return
       }
 
       console.info('Calling WillContract to delete will')
+      setLoadingText('Deleting will')
       try {
         const data = await deleteWill({ args: [_willId] })
         console.info('Contract call success', data)
         toast({
-          title: 'Will Deleted',
+          title: 'Will deleted',
           description: 'Your will has been successfully deleted!',
           variant: 'success',
         })
       } catch (e) {
         console.error('Contract call failure', e)
         toast({
-          title: 'Deletion Error',
+          title: 'Error deleting will',
           description: `Error calling WillContract to delete will: ${e}`,
           variant: 'destructive',
         })
+        return
       }
 
+      console.info('Deleting will')
+      const { error } = await supabase.from('wills').delete().eq('id', will.id)
       if (!error) {
         router.push('/wills')
       }
     } catch (e) {
       console.error('Error during deletion:', e)
       toast({
-        title: 'Deletion Error',
+        title: 'Error deleting will',
         description: `Error deleting the will: ${e}`,
         variant: 'destructive',
       })
+      return
     }
   }
 
