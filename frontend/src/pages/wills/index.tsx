@@ -46,7 +46,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd'
   )
     .then((res) => res.json())
-    .then((res) => (res ? res.ethereum.usd : 0.0))
+    .then((res) => (res.ethereum.usd !== null ? res.ethereum.usd : 1892.93))
 
   // Get inherited wills data
   const { data: inheritedWillsData, error: inheritedWillsError } =
