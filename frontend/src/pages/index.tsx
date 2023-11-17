@@ -17,6 +17,7 @@ import { useRouter } from 'next/router'
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
   const supabase = createPagesServerClient(ctx)
+  
   // Check if we have a session
   const {
     data: { session },
