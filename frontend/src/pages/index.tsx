@@ -82,11 +82,30 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     `https://api.coingecko.com/api/v3/coins/ethereum/market_chart?vs_currency=usd&days=30&interval=daily&x_cg_demo_api_key=${process.env.NEXT_PUBLIC_COINGECKO_API_KEY}`
   ).then((res) => res.json())
 
+  // Get wallet balance
+  let balance = '0.0000'
+  const { data: user, error: getUserError } = await supabase
+    .from('profiles')
+    .select('wallet_address')
+    .eq('id', session.user.id)
+    .single()
+  if (!getUserError) {
+    const address = user?.wallet_address
+    balance = await fetch(
+      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        return parseFloat(ethers.utils.formatEther(data.result)).toFixed(4)
+      })
+  }
+
   return {
     props: {
       initialSession: session,
       will: will,
       config: config,
+      inheritableFund: inheritableFund,
       balance: balance,
       ethUsd: ethUsd,
       eth24hrChange: eth24hrChange,
@@ -99,6 +118,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 export default function Home({
   will,
   config,
+  inheritableFund,
   balance,
   ethUsd,
   eth24hrChange,
@@ -107,6 +127,7 @@ export default function Home({
 }: {
   will: any
   config: any
+  inheritableFund: number
   balance: number
   ethUsd: number
   eth24hrChange: number
@@ -122,8 +143,8 @@ export default function Home({
     if (will === null || config === null) {
       setTimeout(() => {
         toast({
-          title: 'Finish setting up your account',
-          description: 'Setup your will and safeguard config.',
+          title: 'Hello there!',
+          description: `Let's set up your will and safeguard config.`,
           duration: 100000,
           action: (
             <div className="space-y-2">
@@ -165,8 +186,8 @@ export default function Home({
       <div className="flex flex-col gap-6">
         <div className="grid grid-cols-4 gap-6">
           <WillStatus will={will} />
+          <InheritableFund inheritableFund={inheritableFund} ethUsd={ethUsd} />
           <SafeguardStatus config={config} />
-          <InheritableFund balance={balance} ethUsd={ethUsd} />
           <ETHPrice ethUsd={ethUsd} eth24hrChange={eth24hrChange} />
         </div>
         <div className="grid grid-cols-12 gap-6">
