@@ -325,14 +325,14 @@ export default function ValidationPage({
           </Card>
         </>
       ) : (
-        { isFallbackInterface } && (
-          <div className="flex flex-col gap-2 pb-12 text-center">
-            <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
-              Validation completed
-            </h1>
-            <p className="leading-7">You may exit this page.</p>
-          </div>
-        )
+        <div className="flex flex-col gap-2 pb-12 text-center">
+          <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
+            {isErrorInterface ? 'Something went wrong' : 'Validation completed'}
+          </h1>
+          <p className="leading-7">
+            {isErrorInterface ? 'Please try again.' : 'You may exit this page.'}
+          </p>
+        </div>
       )}
     </>
   )
