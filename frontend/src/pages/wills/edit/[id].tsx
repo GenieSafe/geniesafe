@@ -83,6 +83,7 @@ const formSchema = z.object({
 export default function EditWill({ will }: { will: any }) {
   const supabase = useSupabaseClient<Database>()
   const router = useRouter()
+  const [loadingText, setLoadingText] = useState('Loading')
 
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
@@ -250,6 +251,7 @@ export default function EditWill({ will }: { will: any }) {
       }
 
       console.info('Updating will')
+      setLoadingText('Updating will')
       // Adding throws for the supabase.rpc call
       let { data: updatedWill, error: updateWillError } = await supabase.rpc(
         'update_will',
@@ -295,6 +297,7 @@ export default function EditWill({ will }: { will: any }) {
       }))
 
       console.info('Calling WillContract')
+      setLoadingText('Calling WillContract')
       try {
         const updatedWillContract = await updateWill({
           args: [_willId, _newBeneficiaries],
@@ -571,9 +574,16 @@ export default function EditWill({ will }: { will: any }) {
               <div className="flex justify-end gap-4">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size={'lg'} variant={'destructive'}>
-                      Delete
-                    </Button>
+                    {!isWithdrawLoading || !isDeleteWillLoading ? (
+                      <Button size={'lg'} variant={'destructive'}>
+                        Delete
+                      </Button>
+                    ) : (
+                      <Button size={'lg'} variant={'destructive'} disabled>
+                        <div className="animate-spin inline-block mr-2 w-4 h-4 border-[3px] border-current border-t-transparent text-secondary rounded-full dark:text-secondary"></div>
+                        {loadingText}
+                      </Button>
+                    )}
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -595,13 +605,16 @@ export default function EditWill({ will }: { will: any }) {
                   </AlertDialogContent>
                 </AlertDialog>
 
-                <Button size={'lg'} type="submit">
-                  Save
-                </Button>
-
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size={'lg'}>Save</Button>
+                    {!isUpdateWillLoading ? (
+                      <Button size={'lg'}>Save</Button>
+                    ) : (
+                      <Button size={'lg'} disabled>
+                        <div className="animate-spin inline-block mr-2 w-4 h-4 border-[3px] border-current border-t-transparent text-secondary rounded-full dark:text-secondary"></div>
+                        {loadingText}
+                      </Button>
+                    )}
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
