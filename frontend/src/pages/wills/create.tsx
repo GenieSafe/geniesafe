@@ -47,6 +47,7 @@ export default function CreateWill() {
   const [beneficiaryInputVal, setBeneficiaryInputVal] = useState('')
   const [percentageInputVal, setPercentageInputVal] = useState('')
   const [totalPercentage, setTotalPercentage] = useState(0)
+  const [loadingText, setLoadingText] = useState('Loading')
 
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
@@ -175,8 +176,9 @@ export default function CreateWill() {
     setValidatorsArr(newArr)
   }
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onCreate = async (values: z.infer<typeof formSchema>) => {
     console.info('Inserting will')
+    setLoadingText('Creating will')
     const { data: newWill, error: createWillError } = await supabase
       .from('wills')
       .insert({
@@ -185,16 +187,18 @@ export default function CreateWill() {
         eth_amount: values.ethAmount as string,
       })
       .select()
+      .single()
 
     if (!createWillError) {
       beneficiariesArr.forEach(async (beneficiary) => {
-        beneficiary.will_id = newWill[0].id as string
+        beneficiary.will_id = newWill.id as string
       })
       validatorsArr.forEach(async (validator) => {
-        validator.will_id = newWill[0].id as string
+        validator.will_id = newWill.id as string
       })
 
       console.info('Inserting beneficiaries and validators data')
+      setLoadingText('Creating beneficiaries and validators')
       const { data: newBeneficiary, error: createBenError } = await supabase
         .from('beneficiaries')
         .insert(beneficiariesArr)
@@ -206,9 +210,10 @@ export default function CreateWill() {
         .select()
 
       console.info('Calling WillContract')
+      setLoadingText('Calling WillContract')
       try {
         // Prep data for createWill contract call
-        const _willId = newWill[0].id as string
+        const _willId = newWill.id as string
         const _beneficiaries = beneficiariesArr.map((beneficiary) => ({
           beneficiaryAddress: (
             beneficiary.metadata as Record<string, any>
@@ -231,15 +236,19 @@ export default function CreateWill() {
         console.error('WillContract call error', e)
         toast({
           title: 'WillContract call error',
-          description: `Error: ${e}`,
+          description: `Transaction failed. Please try again.`,
           variant: 'destructive',
         })
+
+        // Delete will if contract call fails
+        console.info('Transaction failed, deleting will')
+        await supabase.from('wills').delete().eq('id', newWill.id)
       }
 
       if (!createBenError && !createValError) {
         router.push('/wills')
       } else {
-        console.log(createBenError, createValError)
+        console.error(createBenError, createValError)
       }
     }
   }
@@ -254,7 +263,7 @@ export default function CreateWill() {
       <Card>
         <CardContent className="p-12">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onCreate)} className="space-y-8">
               <FormField
                 control={form.control}
                 name="title"
@@ -430,9 +439,16 @@ export default function CreateWill() {
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button size={'lg'} type="submit">
-                  Create will
-                </Button>
+                {!isCreateWillLoading ? (
+                  <Button size={'lg'} type="submit">
+                    Create will
+                  </Button>
+                ) : (
+                  <Button disabled>
+                    <div className="animate-spin inline-block mr-2 w-4 h-4 border-[3px] border-current border-t-transparent text-secondary rounded-full dark:text-secondary"></div>
+                    {loadingText}
+                  </Button>
+                )}
               </div>
             </form>
           </Form>
