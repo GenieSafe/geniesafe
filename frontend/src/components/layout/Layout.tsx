@@ -44,7 +44,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
         <>
           <Head customMeta={customMeta} />
           <header>
-            <Navbar name={`${name.first_name} ${name.last_name}`} />
+            {!hideNavbar && <Navbar name={`${name.first_name}`} />}
           </header>
           <main className="container px-40 py-16 mx-auto">{children}</main>
           <footer></footer>
