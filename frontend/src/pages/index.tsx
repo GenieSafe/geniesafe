@@ -31,7 +31,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Get will data
-  const { data: will, error: willError } = await supabase
+  const { data: will, error: getWillError } = await supabase
     .from('wills')
     .select(
       `
@@ -44,7 +44,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .single()
 
   // Get config data
-  const { data: config, error: configError } = await supabase
+  const { data: config, error: getConfigError } = await supabase
     .from('wallet_recovery_config')
     .select(
       `
@@ -56,13 +56,13 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .single()
 
   // Get inheritable fund
-  const balance =
+  const inheritableFund =
     will !== null && will.eth_amount !== null
       ? parseFloat(will.eth_amount)
-      : '0.0000'
+      : null
 
   // Get inherited wills data
-  const { data: inheritedWills, error: inheritedWillsError } = await supabase
+  const { data: inheritedWills, error: getInheritedWillsError } = await supabase
     .from('beneficiaries')
     .select(
       `percentage, wills(status, metadata:user_id(first_name, last_name))`
