@@ -51,8 +51,8 @@ export default function InheritedWills({ data }: { data: any }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((data: any) => (
-                  <TableRow>
+                {data.map((data: any, i: number) => (
+                  <TableRow key={i}>
                     <TableCell className="flex gap-2 font-medium">
                       {data.wills.metadata.first_name}{' '}
                       {data.wills.metadata.last_name}
