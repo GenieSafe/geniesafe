@@ -445,7 +445,7 @@ export default function CreateWill() {
                   </Button>
                 ) : (
                   <Button disabled>
-                    <div className="animate-spin inline-block mr-2 w-4 h-4 border-[3px] border-current border-t-transparent text-secondary rounded-full dark:text-secondary"></div>
+                    <div className="loading-spinner"></div>
                     {loadingText}
                   </Button>
                 )}

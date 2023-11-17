@@ -580,7 +580,7 @@ export default function EditWill({ will }: { will: any }) {
                       </Button>
                     ) : (
                       <Button size={'lg'} variant={'destructive'} disabled>
-                        <div className="animate-spin inline-block mr-2 w-4 h-4 border-[3px] border-current border-t-transparent text-secondary rounded-full dark:text-secondary"></div>
+                        <div className="loading-spinner"></div>
                         {loadingText}
                       </Button>
                     )}
@@ -611,7 +611,7 @@ export default function EditWill({ will }: { will: any }) {
                       <Button size={'lg'}>Save</Button>
                     ) : (
                       <Button size={'lg'} disabled>
-                        <div className="animate-spin inline-block mr-2 w-4 h-4 border-[3px] border-current border-t-transparent text-secondary rounded-full dark:text-secondary"></div>
+                        <div className="loading-spinner"></div>
                         {loadingText}
                       </Button>
                     )}

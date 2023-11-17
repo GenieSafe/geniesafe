@@ -257,14 +257,21 @@ export default function ValidationPage({
             </CardHeader>
             <CardContent>
               <p className="text-sm leading-7">
-                Activated {relativeActivatedAt}
+                Activated {getRelativeActivatedAt()}
               </p>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
               {/* Invalidate */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant={'destructive'}>Invalidate</Button>
+                  {!isButtonLoading ? (
+                    <Button variant={'destructive'}>Invalidate</Button>
+                  ) : (
+                    <Button variant={'destructive'} disabled>
+                      <div className="loading-spinner"></div>
+                      {loadingText}
+                    </Button>
+                  )}
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -288,7 +295,14 @@ export default function ValidationPage({
               {/* Validate */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button>Validate</Button>
+                  {!isButtonLoading ? (
+                    <Button>Validate</Button>
+                  ) : (
+                    <Button disabled>
+                      <div className="loading-spinner"></div>
+                      {loadingText}
+                    </Button>
+                  )}
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>

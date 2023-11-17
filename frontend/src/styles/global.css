@@ -32,7 +32,7 @@
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    
+
     --success: 160.1 84.1% 39.4%;
     --success-foreground: 0 0% 100%;
 
@@ -51,7 +51,7 @@
       radial-gradient(at 31% 2%, rgb(0, 0, 0) 0, transparent 76%),
       radial-gradient(at 37% 91%, rgb(124, 58, 237) 0, transparent 84%),
       radial-gradient(at 74% 31%, rgb(91, 33, 182) 0, transparent 92%);
-      min-height: 100vh;
+    min-height: 100vh;
   }
 
   .glass {
@@ -66,8 +66,8 @@
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
 
-   /* Firefox */
-   * {
+  /* Firefox */
+  * {
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
   }
@@ -94,5 +94,11 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+}
+
+@layer components {
+  .loading-spinner {
+    @apply animate-spin inline-block mr-2 w-4 h-4 border-[3px] border-current border-t-transparent text-secondary rounded-full dark:text-secondary;
   }
 }
