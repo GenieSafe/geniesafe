@@ -30,9 +30,7 @@ export default function InheritedWills({ data }: { data: any }) {
                   <Info className="w-4 h-4 mr-2 text-primary-foreground/50 hover:text-primary" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>
-                    Tabulation summarising all the wills you are currently inheriting
-                  </p>
+                  <p>Wills you are currently inheriting</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
