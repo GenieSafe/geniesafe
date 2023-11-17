@@ -20,18 +20,32 @@ import {
 import { useToast } from '@/components/ui/use-toast'
 import { Database } from '@/lib/database.types'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
-import { useSupabaseClient } from '@supabase/auth-helpers-react'
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useContract, useContractWrite } from '@thirdweb-dev/react'
 import { GetServerSidePropsContext } from 'next'
 import Head from 'next/head'
 import { useEffect, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
+import Login from '@/pages/auth/login'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   const will_id = ctx.query.will_id
   const validator_id = ctx.query.validator_id
 
   const supabase = createPagesServerClient(ctx)
+
+  // Check if we have a session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session)
+    return {
+      redirect: {
+        destination: '/auth/login',
+        permanent: false,
+      },
+    }
 
   // Get will and validator data
   const { data: will, error: willError } = await supabase
@@ -44,7 +58,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 
   const { data: validator, error: validatorError } = await supabase
     .from('validators')
-    .select('id, has_validated, profiles(first_name, last_name)')
+    .select('id, has_validated, profiles(id, first_name, last_name)')
     .eq('id', validator_id as string)
     .single()
 
@@ -71,9 +85,15 @@ export default function ValidationPage({
   validator: any
   beneficiaries: any
 }) {
+  const session = useSession()
+
+  if (!session) return <Login />
+
   useEffect(() => {
-    // If will or validator is not found, redirect to 404
-    if (!will || !validator) {
+    // If will or validator is not found
+    // or if validator is not the current user
+    // redirect to 404
+    if (!will || !validator || validator.profiles.id !== session.user.id) {
       window.location.href = '/404'
     }
   })
