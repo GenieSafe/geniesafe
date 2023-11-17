@@ -36,7 +36,9 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Get will and validator data
   const { data: will, error: willError } = await supabase
     .from('wills')
-    .select('id, title, profiles(first_name, last_name), status, activated_at')
+    .select(
+      'id, title, profiles(first_name, last_name, wallet_address), status, activated_at)'
+    )
     .eq('id', will_id as string)
     .single()
 
@@ -46,10 +48,16 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .eq('id', validator_id as string)
     .single()
 
+  const { data: beneficiaries, error: beneficiariesError } = await supabase
+    .from('beneficiaries')
+    .select('id, profiles(wallet_address), percentage')
+    .eq('will_id', will_id as string)
+
   return {
     props: {
       will: will,
       validator: validator,
+      beneficiaries: beneficiaries,
     },
   }
 }
@@ -57,9 +65,11 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 export default function ValidationPage({
   will,
   validator,
+  beneficiaries,
 }: {
   will: any
   validator: any
+  beneficiaries: any
 }) {
   useEffect(() => {
     // If will or validator is not found, redirect to 404
@@ -73,89 +83,94 @@ export default function ValidationPage({
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
   )
-  const { mutateAsync: validateWill, isLoading: isValidateWillLoading } =
-    useContractWrite(contract, 'validateWill')
-  const { mutateAsync: executeWill, isLoading: isExecuteWillLoading } =
-    useContractWrite(contract, 'executeWill')
+  const { mutateAsync: disburse, isLoading: isDisburseLoading } =
+    useContractWrite(contract, 'disburse')
+
   const [isFallbackInterface, setIsFallbackInterface] = useState(false)
+  const [isErrorInterface, setIsErrorInterface] = useState(false)
+  const [isButtonLoading, setIsButtonLoading] = useState(false)
+  const [loadingText, setLoadingText] = useState('Loading')
 
   const onValidate = async (e: any) => {
-    // Ensure both will_id and validator_id are valid
-    if (!will || !validator) {
-      window.location.href = '/404'
-      return
-    }
-
-    // Update validator's has_validated to true
     try {
+      // Ensure both will_id and validator_id are valid
+      if (!will || !validator) {
+        window.location.href = '/404'
+        return
+      }
+
+      setIsButtonLoading(true)
+
+      // Update validator's has_validated to true
+      console.info('Updating validator status')
+      setLoadingText('Updating validator status')
       const { error: updateValidatorStatusError } = await supabase
         .from('validators')
         .update({
           has_validated: true,
-          validated_at: new Date(),
+          validated_at: new Date().toISOString(),
         })
         .eq('id', validator.id)
-    } catch (e) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update validator status. ',
-        variant: 'destructive',
-      })
-    }
 
-    // Runs only when all validators have validated
-    // Get unvalidated count
-    try {
-      const { count: unvalidatedCount, error: unvalidatedError } =
+      if (updateValidatorStatusError) {
+        throw new Error(
+          `Failed to update validator status. Error: ${updateValidatorStatusError.message}`
+        )
+      }
+
+      // Get unvalidated count
+      console.info('Getting unvalidated count')
+      const { count: unvalidatedCount, error: getUnvalidatedCountError } =
         await supabase
           .from('validators')
           .select('has_validated', { count: 'exact', head: true })
           .eq('will_id', will.id)
           .eq('has_validated', false)
 
+      if (getUnvalidatedCountError) {
+        throw new Error(
+          `Failed to get unvalidated count. Error: ${getUnvalidatedCountError.message}`
+        )
+      }
+
+      // Runs this block only when all validators have validated
       if (unvalidatedCount === 0) {
-        // Call validateWill and executeWill in WillContract
-        try {
-          const [validateWillData, executeWillData] = await Promise.all([
-            validateWill({ args: [will.id] }),
-            executeWill({ args: [will.id] }),
-          ])
+        const _willId = will.id
 
-          console.info(
-            'Contract calls successful',
-            validateWillData,
-            executeWillData
+        // Disburse funds to beneficiaries
+        try {
+          const data = await disburse({ args: [_willId] })
+          console.info('Fund disbursement success', data)
+        } catch (e) {
+          console.error('Fund disbursement error', e)
+          throw new Error(`Fund disbursement error: ${e}`)
+        }
+
+        // Update will status to EXECUTED
+        console.info('Updating will status')
+        const { error: updateWillStatusError } = await supabase
+          .from('wills')
+          .update({
+            status: 'EXECUTED',
+            deployed_at_block: null,
+            deployed_at: new Date().toISOString(),
+            activated_at: new Date().toISOString(),
+          })
+          .eq('id', will.id)
+
+        if (updateWillStatusError) {
+          throw new Error(
+            `Failed to update will status. Error: ${updateWillStatusError.message}`
           )
-        } catch (e) {
-          console.error('Contract calls failure', e)
-          toast({
-            title: 'Error',
-            description: 'Failed to call contract. Please try again.',
-            variant: 'destructive',
-          })
         }
 
-        // Update will status to VALIDATED
-        try {
-          const { error: updateWillStatusError } = await supabase
-            .from('wills')
-            .update({
-              status: 'VALIDATED',
-            })
-            .eq('id', will.id)
-          toast({
-            title: 'Validation successful!',
-            description:
-              'This will will be executed once all validators have completed validation.',
-            variant: 'success',
-          })
-        } catch (e) {
-          toast({
-            title: 'Error',
-            description: 'Failed to update will status. Please try again.',
-            variant: 'destructive',
-          })
-        }
+        toast({
+          title: 'Validation and execution successful!',
+          description:
+            'The will has been executed, and the beneficiaries have received their inheritance.',
+          variant: 'success',
+        })
+        setIsFallbackInterface(true)
       } else {
         toast({
           title: 'Validation successful!',
@@ -163,23 +178,27 @@ export default function ValidationPage({
             'The will will be executed once all validators have validated.',
           variant: 'success',
         })
+        setIsFallbackInterface(true)
       }
-
-      setIsFallbackInterface(true)
-    } catch (e) {
+    } catch (error: any) {
+      // Handle errors at any step
       toast({
         title: 'Error',
-        description: 'Failed to get unvalidated count.Please try again.',
+        description: error.message,
         variant: 'destructive',
       })
+      setIsErrorInterface(true)
+      return
+    } finally {
+      setIsButtonLoading(false)
     }
   }
 
   const onInvalidate = async (e: any) => {
-    console.log('invalidate')
+    console.info('Invalidating will')
 
-    // Update all validators of the will has_validated to false
     try {
+      // Update all validators of the will has_validated to false
       const { error: updateValidatorStatusError } = await supabase
         .from('validators')
         .update({
@@ -187,44 +206,51 @@ export default function ValidationPage({
           validated_at: null,
         })
         .eq('will_id', will.id)
-    } catch (e) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update validator status. ',
-        variant: 'destructive',
-      })
-    }
 
-    // Update will status to INACTIVE
-    try {
+      if (updateValidatorStatusError) {
+        throw new Error(
+          `Failed to update validator status. Error: ${updateValidatorStatusError.message}`
+        )
+      }
+
+      // Update will status to INACTIVE
       const { error: updateWillStatusError } = await supabase
         .from('wills')
         .update({
           status: 'INACTIVE',
         })
         .eq('id', will.id)
+
+      if (updateWillStatusError) {
+        throw new Error(
+          `Failed to update will status. Error: ${updateWillStatusError.message}`
+        )
+      }
+
       toast({
         title: 'Will invalidated!',
         description: 'This will is now inactive.',
         variant: 'success',
       })
       setIsFallbackInterface(true)
-
-      // setTimeout(() => {
-      //   window.location.reload()
-      // }, 3000)
-    } catch (e) {
+    } catch (error: any) {
+      // Handle errors at any step
       toast({
         title: 'Error',
-        description: 'Failed to update will status. Please try again.',
+        description: error.message,
         variant: 'destructive',
       })
+      setIsErrorInterface(true)
     }
   }
 
-  const relativeActivatedAt = formatDistanceToNow(new Date(will.activated_at), {
-    addSuffix: true,
-  })
+  const getRelativeActivatedAt = () => {
+    if (will.activated_at !== null)
+      return formatDistanceToNow(new Date(will.activated_at), {
+        addSuffix: true,
+      })
+    return null
+  }
 
   return (
     <>
