@@ -28,8 +28,8 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .from('wallet_recovery_config')
     .select(
       `
-    id, status,
-    verifiers(has_verified, verified_at, profiles(first_name, last_name, wallet_address))
+    id, status, profiles(first_name),
+    verifiers(id, has_verified, verified_at, profiles(email, first_name, last_name, wallet_address))
   `
     )
     .eq('user_id', session.user.id)
