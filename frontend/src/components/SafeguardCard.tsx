@@ -34,6 +34,10 @@ import {
 } from './ui/alert-dialog'
 import { cn } from '../lib/utils'
 import { toast } from './ui/use-toast'
+import { useState } from 'react'
+import { render } from '@react-email/components'
+import SafeguardVerificationPromptEmail from '../../emails/SafeguardVerificationPromptEmail'
+import { sendMail } from '@/lib/emailHelper'
 
 export default function SafeguardCard({
   config,
@@ -42,6 +46,8 @@ export default function SafeguardCard({
   config: any
   privateKey?: string | null
 }) {
+  const [configStatus, setConfigStatus] = useState(config.status)
+  const [isLoading, setIsLoading] = useState(false)
   const supabase = useSupabaseClient()
   const copyText = () => {
     privateKey && navigator.clipboard.writeText(privateKey)
@@ -66,6 +72,64 @@ export default function SafeguardCard({
     }
   }
 
+  async function onNotify() {
+    setIsLoading(true)
+
+    // Update config status to ACTIVE
+    try {
+      console.info('Updating config status')
+      const { error: updateConfigError } = await supabase
+        .from('wallet_recovery_config')
+        .update({ status: 'ACTIVE' })
+        .eq('id', config.id)
+
+      if (updateConfigError) {
+        throw new Error(`${updateConfigError}`)
+      }
+
+      // Send email to verifiers
+      console.info('Sending email to verifiers')
+
+      for (const verifier of config.verifiers) {
+        const verifierId = verifier.id
+        const payload = {
+          to: verifier.profiles.email,
+          subject: `${config.profiles.first_name} is requesting your verification, ${verifier.profiles.first_name}`,
+          html: render(
+            SafeguardVerificationPromptEmail({
+              redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/safeguard/verify/${config.id}/${verifierId}`,
+            })
+          ),
+        }
+        sendMail(payload)
+      }
+
+      setConfigStatus('ACTIVE')
+
+      toast({
+        title: 'Update config status success!',
+        description: 'Verifiers have been notified.',
+        variant: 'success',
+      })
+    } catch (e) {
+      toast({
+        title: 'Update config status failed!',
+        description: `Error: ${e}`,
+        variant: 'destructive',
+      })
+
+      // Revert config status to INACTIVE
+      console.info('Reverting config status')
+      await supabase
+        .from('wallet_recovery_config')
+        .update({ status: 'INACTIVE' })
+        .eq('id', config.id)
+      return
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <>
       <Card className="hover:shadow-[0px_0px_20px_0px_hsl(var(--primary))] transition-shadow duration-500 p-4">
@@ -87,16 +151,29 @@ export default function SafeguardCard({
             </Link>
           </CardTitle>
           {!privateKey && (
-            <Button size={'sm'} disabled={config.status === 'ACTIVE'}>
-              {config.status === 'INACTIVE' && (
-                <BellRing className="w-4 h-4 mr-2" />
+            <Button
+              size={'sm'}
+              disabled={configStatus === 'ACTIVE' || isLoading}
+              onClick={onNotify}
+            >
+              {configStatus === 'INACTIVE' &&
+                (isLoading ? (
+                  <>
+                    <div className="loading-spinner"></div>
+                    Loading
+                  </>
+                ) : (
+                  <>
+                    <BellRing className="w-4 h-4 mr-2" />
+                    Notify verifiers
+                  </>
+                ))}
+              {configStatus === 'ACTIVE' && (
+                <>
+                  <CheckCheck className="w-4 h-4 mr-2" />
+                  Verifiers notified
+                </>
               )}
-              {config.status === 'ACTIVE' && (
-                <CheckCheck className="w-4 h-4 mr-2" />
-              )}
-              {config.status === 'ACTIVE'
-                ? 'Verifiers notified'
-                : 'Notify verifiers'}
             </Button>
           )}
         </CardHeader>
