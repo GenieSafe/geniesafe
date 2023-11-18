@@ -86,7 +86,7 @@ export default function InheritedWillsTable({ data }: { data: any }) {
           // Email validators
           const payload = {
             to: validator.profiles.email,
-            subject: `Will is pending your validation, ${validator.profiles.first_name}`,
+            subject: `${will.profiles.first_name}'s will is pending your validation, ${validator.profiles.first_name}`,
             html: render(
               ValidationPromptEmail({
                 redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/wills/validate/${willId}/${validatorId}`,
