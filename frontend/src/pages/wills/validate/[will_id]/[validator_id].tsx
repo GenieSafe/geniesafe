@@ -29,43 +29,43 @@ import { formatDistanceToNow } from 'date-fns'
 import Login from '@/pages/auth/login'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
-  const will_id = ctx.query.will_id
-  const validator_id = ctx.query.validator_id
+  const willId = ctx.query.will_id
+  const validatorId = ctx.query.validator_id
 
   const supabase = createPagesServerClient(ctx)
 
-  // Check if we have a session
   const {
     data: { session },
   } = await supabase.auth.getSession()
 
-  if (!session)
+  if (!session) {
     return {
       redirect: {
         destination: '/auth/login',
         permanent: false,
       },
     }
+  }
 
   // Get will and validator data
-  const { data: will, error: willError } = await supabase
+  const { data: will, error: getWillError } = await supabase
     .from('wills')
     .select(
       'id, title, profiles(first_name, last_name, wallet_address), status, activated_at)'
     )
-    .eq('id', will_id as string)
+    .eq('id', willId as string)
     .single()
 
-  const { data: validator, error: validatorError } = await supabase
+  const { data: validator, error: getValidatorError } = await supabase
     .from('validators')
     .select('id, has_validated, profiles(id, first_name, last_name)')
-    .eq('id', validator_id as string)
+    .eq('id', validatorId as string)
     .single()
 
-  const { data: beneficiaries, error: beneficiariesError } = await supabase
+  const { data: beneficiaries, error: getBeneficiariesError } = await supabase
     .from('beneficiaries')
     .select('id, profiles(wallet_address), percentage')
-    .eq('will_id', will_id as string)
+    .eq('will_id', willId as string)
 
   return {
     props: {
