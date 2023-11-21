@@ -1,6 +1,5 @@
 import { Button, buttonVariants } from './ui/button'
 import {
-  Edit3,
   CheckCircle2,
   XCircle,
   Copy,
@@ -8,23 +7,13 @@ import {
   BellRing,
   CheckCheck,
 } from 'lucide-react'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import Link from 'next/link'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from './ui/dialog'
 import { Input } from './ui/input'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -36,7 +25,7 @@ import { cn } from '../lib/utils'
 import { toast } from './ui/use-toast'
 import { useState } from 'react'
 import { render } from '@react-email/components'
-import SafeguardVerificationPromptEmail from '../../emails/SafeguardVerificationPromptEmail'
+import SafeguardVerificationPromptEmail from '@/../emails/SafeguardVerificationPromptEmail'
 import { sendMail } from '@/lib/emailHelper'
 
 export default function SafeguardCard({
