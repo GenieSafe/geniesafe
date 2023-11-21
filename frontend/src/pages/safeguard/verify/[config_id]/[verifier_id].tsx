@@ -18,6 +18,9 @@ import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 import { GetServerSidePropsContext } from 'next'
 import Head from 'next/head'
 import { useEffect, useState } from 'react'
+import SafeguardVerifiedEmail from '@/../emails/SafeguardVerifiedEmail'
+import { render } from '@react-email/components'
+import { sendMail } from '@/lib/emailHelper'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   const configId = ctx.query.config_id
@@ -40,7 +43,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 
   const { data: config, error: getConfigError } = await supabase
     .from('wallet_recovery_config')
-    .select(`id, status, profiles(id, first_name, last_name)`)
+    .select(`id, status, profiles(id, email, first_name, last_name)`)
     .eq('id', configId)
     .single()
 
@@ -142,7 +145,7 @@ export default function VerificationPage({
           .from('verifiers')
           .select('has_verified', { count: 'exact', head: true })
           .eq('config_id', config.id)
-          .eq('has_verified', true)
+          .eq('has_verified', false)
 
       if (getUnverifiedCountError) {
         throw new Error(`${getUnverifiedCountError}`)
@@ -160,6 +163,25 @@ export default function VerificationPage({
         if (updateConfigStatusError) {
           throw new Error(`${updateConfigStatusError}`)
         }
+
+        // Send email to owner
+        console.info('Sending email to owner')
+        const payload = {
+          to: config.profiles.email,
+          subject: `${config.profiles.first_name}, your safeguard request has been verified`,
+          html: render(
+            SafeguardVerifiedEmail({
+              redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/safeguard`,
+            })
+          ),
+        }
+        sendMail(payload)
+
+        toast({
+          title: 'Verification successful',
+          description: `Successfully verified request. Owner has been notified.`,
+          variant: 'success',
+        })
       } else {
         toast({
           title: 'Verification successful',
@@ -167,6 +189,7 @@ export default function VerificationPage({
           variant: 'success',
         })
       }
+      setIsFallbackInterface(true)
     } catch (e) {
       console.error(e)
       toast({
@@ -174,6 +197,7 @@ export default function VerificationPage({
         description: `${e}`,
         variant: 'destructive',
       })
+      setIsErrorInterface(true)
     } finally {
       setIsLoading(false)
     }
