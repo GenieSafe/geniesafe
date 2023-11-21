@@ -94,7 +94,8 @@ export default function ValidationPage({
     // or if validator is not the current user
     // redirect to 404
     if (!will || !validator || validator.profiles.id !== session.user.id) {
-      window.location.href = '/404'
+      setIsFallbackInterface(true)
+      setIsErrorInterface(true)
     }
   })
 
@@ -108,7 +109,7 @@ export default function ValidationPage({
 
   const [isFallbackInterface, setIsFallbackInterface] = useState(false)
   const [isErrorInterface, setIsErrorInterface] = useState(false)
-  const [isButtonLoading, setIsButtonLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [loadingText, setLoadingText] = useState('Loading')
 
   const onValidate = async (e: any) => {
@@ -119,7 +120,7 @@ export default function ValidationPage({
         return
       }
 
-      setIsButtonLoading(true)
+      setIsLoading(true)
 
       // Update validator's has_validated to true
       console.info('Updating validator status')
@@ -210,7 +211,7 @@ export default function ValidationPage({
       setIsErrorInterface(true)
       return
     } finally {
-      setIsButtonLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -310,7 +311,7 @@ export default function ValidationPage({
               {/* Invalidate */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  {!isButtonLoading ? (
+                  {!isLoading ? (
                     <Button variant={'destructive'}>Invalidate</Button>
                   ) : (
                     <Button variant={'destructive'} disabled>
@@ -341,7 +342,7 @@ export default function ValidationPage({
               {/* Validate */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  {!isButtonLoading ? (
+                  {!isLoading ? (
                     <Button>Validate</Button>
                   ) : (
                     <Button disabled>
@@ -373,10 +374,14 @@ export default function ValidationPage({
       ) : (
         <div className="flex flex-col gap-2 pb-12 text-center">
           <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
-            {isErrorInterface ? 'Something went wrong' : 'Validation completed'}
+            {isErrorInterface
+              ? 'You are not authorized to view this'
+              : 'Validation complete'}
           </h1>
           <p className="leading-7">
-            {isErrorInterface ? 'Please try again.' : 'You may exit this page.'}
+            {isErrorInterface
+              ? 'Please log in again.'
+              : 'You may exit this page.'}
           </p>
         </div>
       )}
