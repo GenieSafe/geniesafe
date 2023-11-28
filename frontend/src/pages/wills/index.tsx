@@ -14,7 +14,6 @@ import { useState } from 'react'
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
   const supabase = createPagesServerClient(ctx)
-  let balance = 0
 
   // Get session data
   const {
@@ -34,7 +33,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .from('wills')
     .select(
       `
-      id, title, contract_address, deployed_at_block, status,
+      id, title, deployed_at_block, status, eth_amount, profiles(first_name),
       beneficiaries(percentage, profiles(first_name, last_name, wallet_address)),
       validators(has_validated, profiles(first_name, last_name, wallet_address))
       `
@@ -42,28 +41,12 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .eq('user_id', session.user.id)
     .single()
 
-  // Get user wallet address
-  const { data: userData, error: userError } = await supabase
-    .from('profiles')
-    .select('wallet_address')
-    .eq('id', session.user.id)
-    .single()
-
-  // Get user wallet balance
-  if (will !== null) {
-    balance = await fetch(
-      `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${userData?.wallet_address}&tag=latest&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
-    )
-      .then((res) => res.json())
-      .then((data) => data.result)
-  }
-
   // Get ETH price in USD
   const ethUsd = await fetch(
     'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd'
   )
     .then((res) => res.json())
-    .then((res) => res.ethereum.usd)
+    .then((res) => (res.ethereum.usd !== null ? res.ethereum.usd : 1892.93))
 
   // Get inherited wills data
   const { data: inheritedWillsData, error: inheritedWillsError } =
@@ -72,18 +55,23 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       .select(
         `
         id, percentage, wills(id, status, profiles(id, wallet_address, first_name, last_name),
-        beneficiaries(percentage, profiles(first_name, last_name, wallet_address)),
-        validators(has_validated))
+        beneficiaries(id, percentage, profiles(first_name, last_name, wallet_address, email)),
+        validators(id, has_validated, profiles(first_name, last_name, email)))
         `
       )
       .eq('user_id', session.user.id)
+
+  const balance =
+    will !== null && will.eth_amount !== null
+      ? parseFloat(will.eth_amount)
+      : '0.0000'
 
   return {
     props: {
       initialSession: session,
       will: will,
       inheritedWillsData: inheritedWillsData,
-      balance: parseFloat(ethers.utils.formatEther(balance)).toFixed(4),
+      balance: balance,
       ethUsd: ethUsd,
     },
   }

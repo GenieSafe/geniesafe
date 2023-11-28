@@ -129,7 +129,7 @@ export function WillCard({
       </CardContent>
       <CardFooter className="flex justify-between">
         <div className="space-y-1">
-          <CardDescription>Transferable fund:</CardDescription>
+          <CardDescription>Inheritable fund:</CardDescription>
           <p className="text-5xl font-semibold tracking-tight scroll-m-20">
             {balance} ETH
           </p>

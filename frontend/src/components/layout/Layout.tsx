@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Head, MetaProps } from './Head'
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
-
 import Navbar from './Navbar'
+import { useRouter } from 'next/router'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -12,7 +12,12 @@ interface LayoutProps {
 export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
   const session = useSession()
   const supabase = useSupabaseClient()
+  const router = useRouter()
   const [name, setName] = useState({ first_name: '', last_name: '' })
+
+  // Array of pages that don't need the navbar
+  const noNavbarPaths = ['']
+  const hideNavbar = noNavbarPaths.includes(router.pathname)
 
   useEffect(() => {
     async function fetchName() {
@@ -25,7 +30,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
       if (!error) {
         setName(data)
       } else {
-        setName({ first_name: 'geniesafe', last_name: 'User' })
+        setName({ first_name: 'User', last_name: '' })
       }
     }
     fetchName()
@@ -44,7 +49,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
         <>
           <Head customMeta={customMeta} />
           <header>
-            <Navbar name={`${name.first_name} ${name.last_name}`} />
+            {!hideNavbar && <Navbar name={`${name.first_name}`} />}
           </header>
           <main className="container px-40 py-16 mx-auto">{children}</main>
           <footer></footer>

@@ -7,11 +7,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
-export default function WalletBalance({
-  balance,
+export default function InheritableFund({
+  inheritableFund,
   ethUsd,
 }: {
-  balance: number
+  inheritableFund: number
   ethUsd: number
 }) {
   return (
@@ -25,25 +25,28 @@ export default function WalletBalance({
                   <Info className="w-4 h-4 mr-2 text-primary-foreground/50 hover:text-primary" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>
-                    Your transferable Metamask wallet balance and its value in
-                    USD ($)
-                  </p>
+                  <p>Fund stored in your will and its value in USD ($)</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            Transferable Fund
+            Inheritable Fund
           </CardTitle>
           <Wallet className="w-6 h-6 text-primary" />
         </CardHeader>
         <CardContent className="flex flex-col justify-center h-full space-y-1">
-          <div className="text-2xl font-bold">{balance} ETH</div>
-          {balance > 0 ? (
-            <p className="text-primary-foreground/50">
-              ~${(balance * ethUsd).toFixed(2)}
-            </p>
+          {inheritableFund !== null ? (
+            <>
+              <div className="text-2xl font-bold">{inheritableFund} ETH</div>
+              <p className="text-primary-foreground/50">
+                ~${(inheritableFund * ethUsd).toFixed(2)}
+              </p>
+            </>
           ) : (
-            <p className="text-primary-foreground/50">~$0</p>
+            <>
+              <p className="text-center text-primary-foreground/50">
+                No will created yet
+              </p>
+            </>
           )}
         </CardContent>
       </Card>

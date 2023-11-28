@@ -24,7 +24,5 @@ export const sendMail = async (data: Payload) => {
     })
     return response.json()
   }
-  postData().then((data) => {
-    alert(data.message)
-  })
+  postData()
 }

@@ -1,5 +1,3 @@
-'use client'
-
 import { ChangeEvent, useState } from 'react'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { useRouter } from 'next/router'
@@ -14,18 +12,22 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../../components/ui/form'
-import { Label } from '../../components/ui/label'
-import { Button } from '../../components/ui/button'
-import { Card, CardContent } from '../../components/ui/card'
-import { Input } from '../../components/ui/input'
+} from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 
 import { Plus, Trash2 } from 'lucide-react'
 
-import { Database, Tables } from '../../lib/database.types'
+import { Database, Tables } from '@/lib/database.types'
+import { useContract, useContractWrite } from '@thirdweb-dev/react'
+import { toast } from '@/components/ui/use-toast'
+import { utils } from 'ethers'
 
 const formSchema = z.object({
   title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
+  ethAmount: z.string({ required_error: 'Amount is required' }),
 })
 
 export default function CreateWill() {
@@ -45,6 +47,13 @@ export default function CreateWill() {
   const [beneficiaryInputVal, setBeneficiaryInputVal] = useState('')
   const [percentageInputVal, setPercentageInputVal] = useState('')
   const [totalPercentage, setTotalPercentage] = useState(0)
+  const [loadingText, setLoadingText] = useState('Loading')
+
+  const { contract } = useContract(
+    process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
+  )
+  const { mutateAsync: createWill, isLoading: isCreateWillLoading } =
+    useContractWrite(contract, 'createWill')
 
   const handleBeneficiaryInputValChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -167,33 +176,79 @@ export default function CreateWill() {
     setValidatorsArr(newArr)
   }
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const { data: wills_data, error: wills_error } = await supabase
+  const onCreate = async (values: z.infer<typeof formSchema>) => {
+    console.info('Inserting will')
+    setLoadingText('Creating will')
+    const { data: newWill, error: createWillError } = await supabase
       .from('wills')
-      .insert({ title: values.title as string, user_id: user?.id as string })
+      .insert({
+        title: values.title as string,
+        user_id: user?.id as string,
+        eth_amount: values.ethAmount as string,
+      })
       .select()
+      .single()
 
-    if (!wills_error) {
+    if (!createWillError) {
       beneficiariesArr.forEach(async (beneficiary) => {
-        beneficiary.will_id = wills_data[0].id as string
+        beneficiary.will_id = newWill.id as string
       })
       validatorsArr.forEach(async (validator) => {
-        validator.will_id = wills_data[0].id as string
+        validator.will_id = newWill.id as string
       })
 
-      const { data: ben_data, error: ben_error } = await supabase
+      console.info('Inserting beneficiaries and validators data')
+      setLoadingText('Creating beneficiaries and validators')
+      const { data: newBeneficiary, error: createBenError } = await supabase
         .from('beneficiaries')
         .insert(beneficiariesArr)
         .select()
-      const { data: val_data, error: val_error } = await supabase
+
+      const { data: newValidator, error: createValError } = await supabase
         .from('validators')
         .insert(validatorsArr)
         .select()
 
-      if (!ben_error && !val_error) {
+      console.info('Calling WillContract')
+      setLoadingText('Calling WillContract')
+      try {
+        // Prep data for createWill contract call
+        const _willId = newWill.id as string
+        const _beneficiaries = beneficiariesArr.map((beneficiary) => ({
+          beneficiaryAddress: (
+            beneficiary.metadata as Record<string, any>
+          ).wallet_address.toString(),
+          percentage: beneficiary.percentage.toString(),
+        }))
+        const data = await createWill({
+          args: [_willId, _beneficiaries],
+          overrides: {
+            value: utils.parseEther(values.ethAmount),
+          },
+        })
+        console.info('WillContract call success', data)
+        toast({
+          title: 'WillContract call success',
+          description: `Your will has been created!`,
+          variant: 'success',
+        })
+      } catch (e) {
+        console.error('WillContract call error', e)
+        toast({
+          title: 'WillContract call error',
+          description: `Transaction failed. Please try again.`,
+          variant: 'destructive',
+        })
+
+        // Delete will if contract call fails
+        console.info('Transaction failed, deleting will')
+        await supabase.from('wills').delete().eq('id', newWill.id)
+      }
+
+      if (!createBenError && !createValError) {
         router.push('/wills')
       } else {
-        console.log(ben_error, val_error)
+        console.error(createBenError, createValError)
       }
     }
   }
@@ -208,15 +263,41 @@ export default function CreateWill() {
       <Card>
         <CardContent className="p-12">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onCreate)} className="space-y-8">
               <FormField
                 control={form.control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Will Title</FormLabel>
+                    <FormLabel>Will title</FormLabel>
                     <FormControl>
                       <Input placeholder="My First Will" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="ethAmount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Deposit fund</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter ETH amount to deposit"
+                        type="text"
+                        pattern="[0-9.]*" // Allow only numbers
+                        inputMode="numeric" // Set the input mode to numeric for better mobile support
+                        onInput={(e) => {
+                          const inputElement = e.target as HTMLInputElement
+                          inputElement.value = inputElement.value.replace(
+                            /[^0-9.]/g,
+                            ''
+                          ) // Remove non-numeric characters
+                        }}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -229,9 +310,7 @@ export default function CreateWill() {
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-5 gap-2">
-                      <Label htmlFor="email">
-                        Beneficiary's Wallet Address
-                      </Label>
+                      <Label htmlFor="email">Beneficiary's address</Label>
                       <Input
                         type="text"
                         name="field1"
@@ -242,7 +321,7 @@ export default function CreateWill() {
                       />
                     </div>
                     <div className="grid items-center w-full col-span-5 gap-2">
-                      <Label htmlFor="email">Division Percentage</Label>
+                      <Label htmlFor="email">Percentage (%)</Label>
                       <Input
                         type="number"
                         name="field2"
@@ -308,7 +387,7 @@ export default function CreateWill() {
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-10 gap-2">
-                      <Label htmlFor="email">Validator's Wallet Address</Label>
+                      <Label htmlFor="email">Validator's address</Label>
                       <Input
                         type="text"
                         name="field1"
@@ -360,9 +439,16 @@ export default function CreateWill() {
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button size={'lg'} type="submit">
-                  Create will
-                </Button>
+                {!isCreateWillLoading ? (
+                  <Button size={'lg'} type="submit">
+                    Create will
+                  </Button>
+                ) : (
+                  <Button disabled>
+                    <div className="loading-spinner"></div>
+                    {loadingText}
+                  </Button>
+                )}
               </div>
             </form>
           </Form>

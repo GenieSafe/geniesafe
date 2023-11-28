@@ -30,9 +30,7 @@ export default function InheritedWills({ data }: { data: any }) {
                   <Info className="w-4 h-4 mr-2 text-primary-foreground/50 hover:text-primary" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>
-                    Tabulation summarising all the wills you are currently inheriting
-                  </p>
+                  <p>Wills you are currently inheriting</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -53,8 +51,8 @@ export default function InheritedWills({ data }: { data: any }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((data: any) => (
-                  <TableRow>
+                {data.map((data: any, i: number) => (
+                  <TableRow key={i}>
                     <TableCell className="flex gap-2 font-medium">
                       {data.wills.metadata.first_name}{' '}
                       {data.wills.metadata.last_name}
