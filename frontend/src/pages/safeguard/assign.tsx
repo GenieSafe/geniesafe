@@ -48,7 +48,7 @@ export default function AssignConfig() {
         .select('*')
         .eq('wallet_address', verifierInputVal)
 
-      if (!error && data) {
+      if (!error && data.length > 0) {
         const newVerifier: any = {
           user_id: data[0].id,
           metadata: data[0],
