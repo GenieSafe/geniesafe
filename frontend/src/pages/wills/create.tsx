@@ -44,7 +44,7 @@ export default function CreateWill() {
   const [beneficiaryInputVal, setBeneficiaryInputVal] = useState('')
   const [percentageInputVal, setPercentageInputVal] = useState('')
   const [totalPercentage, setTotalPercentage] = useState(0)
-  const [loadingText, setLoadingText] = useState('Loading')
+  const [isLoading, setIsLoading] = useState(false)
 
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
@@ -206,8 +206,8 @@ export default function CreateWill() {
   }
 
   const onCreate = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true)
     console.info('Inserting will')
-    setLoadingText('Creating will')
     const { data: newWill, error: createWillError } = await supabase
       .from('wills')
       .insert({
@@ -227,7 +227,6 @@ export default function CreateWill() {
       })
 
       console.info('Inserting beneficiaries and validators data')
-      setLoadingText('Creating beneficiaries and validators')
       const { data: newBeneficiary, error: createBenError } = await supabase
         .from('beneficiaries')
         .insert(beneficiariesArr)
@@ -251,7 +250,6 @@ export default function CreateWill() {
       }
 
       console.info('Calling WillContract')
-      setLoadingText('Calling WillContract')
       try {
         // Prep data for createWill contract call
         const _willId = newWill.id as string

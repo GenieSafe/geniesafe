@@ -83,7 +83,7 @@ const formSchema = z.object({
 export default function EditWill({ will }: { will: any }) {
   const supabase = useSupabaseClient<Database>()
   const router = useRouter()
-  const [loadingText, setLoadingText] = useState('Loading')
+  const [isLoading, setIsLoading] = useState(false)
 
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
@@ -243,15 +243,19 @@ export default function EditWill({ will }: { will: any }) {
   }
 
   const onSave = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true)
     try {
       // If total percentages of beneficiaries is less than 100%, show alert and return
       if (totalPercentage < 100) {
-        alert('Total percentage of beneficiaries must be 100%')
+        toast({
+          title: 'Error',
+          description: 'Total percentage of beneficiaries must be 100%.',
+          variant: 'destructive',
+        })
         return
       }
 
       console.info('Updating will')
-      setLoadingText('Updating will')
       // Adding throws for the supabase.rpc call
       let { data: updatedWill, error: updateWillError } = await supabase.rpc(
         'update_will',
