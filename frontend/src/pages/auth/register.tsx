@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation'
 import { ConnectWallet, useAddress, useWallet } from '@thirdweb-dev/react'
 import { createSupabaseServer } from '../../lib/createSupabaseAdmin'
 import { sign } from 'crypto'
+import { toast } from '@/components/ui/use-toast'
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -64,18 +65,24 @@ export default function Register() {
   })
 
   async function linkWallet(id: string, address: string) {
-    await fetch("/api/link", {
-      method: "POST",
+    await fetch('/api/link', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({  id: id, address: address }),
-    });
+      body: JSON.stringify({ id: id, address: address }),
+    })
   }
-  
+
   async function signUpWithEmail(values: z.infer<typeof registerSchema>) {
-    // TODO: Replace with toast if wallet address is undefined
-    if (address === undefined) return alert('Please connect your wallet first')
+    if (address === undefined) {
+      return toast({
+        title: 'Please connect your wallet first',
+        description: 'Use your metamask extension to connect your wallet.',
+        variant: 'destructive',
+        duration: 2000,
+      })
+    }
 
     const { data: signup_data, error: signup_error } =
       await supabase.auth.signUp({
@@ -94,8 +101,21 @@ export default function Register() {
       })
 
       linkWallet(signup_data.user?.id, address)
-
-      !error  ? router.push('/') : console.log(error)
+      
+      if (!error) {
+        toast({
+          title: 'Registration successful!',
+          description: 'Please login to continue.',
+          variant: 'success',
+          duration: 2000,
+        })
+        router.push('/auth/login')
+      } else {
+        toast({
+          title: error.details,
+          variant: 'destructive'
+        })
+      }
     }
   }
 
