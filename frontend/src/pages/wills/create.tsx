@@ -4,7 +4,6 @@ import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-
 import {
   Form,
   FormControl,
@@ -17,17 +16,15 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-
+import { toast } from '@/components/ui/use-toast'
 import { Plus, Trash2 } from 'lucide-react'
-
 import { Database, Tables } from '@/lib/database.types'
 import { useContract, useContractWrite } from '@thirdweb-dev/react'
-import { toast } from '@/components/ui/use-toast'
 import { utils } from 'ethers'
 
 const formSchema = z.object({
   title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
-  ethAmount: z.string({ required_error: 'Amount is required' }),
+  ethAmount: z.string({ required_error: 'Amount is required' }).default('0'),
 })
 
 export default function CreateWill() {
@@ -71,9 +68,17 @@ export default function CreateWill() {
     e.preventDefault()
 
     if (beneficiaryInputVal === '' || parseInt(percentageInputVal) === 0) {
-      alert('Please fill in the fields')
+      toast({
+        title: 'Error',
+        description: `Please fill in the fields.`,
+        variant: 'destructive',
+      })
     } else if (totalPercentage + parseInt(percentageInputVal) > 100) {
-      alert('Total percentage cannot exceed 100%')
+      toast({
+        title: 'Error',
+        description: `Total percentage cannot exceed 100%.`,
+        variant: 'destructive',
+      })
     } else if (
       beneficiariesArr.some(
         (beneficiary) =>
@@ -81,7 +86,11 @@ export default function CreateWill() {
           beneficiaryInputVal
       )
     ) {
-      alert('Beneficiary with the same wallet address already exists')
+      toast({
+        title: 'Error',
+        description: `Beneficiary with the same wallet address already exists.`,
+        variant: 'destructive',
+      })
     } else {
       const { data, error } = await supabase
         .from('profiles')
@@ -100,7 +109,11 @@ export default function CreateWill() {
       } else {
         // API call failed
         // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error',
+          description: `User with the address does not exist.`,
+          variant: 'destructive',
+        })
       }
     }
 
@@ -130,9 +143,17 @@ export default function CreateWill() {
   const handleAddValidator = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     if (validatorInputVal.trim() === '') {
-      alert('Please fill in the field')
+      toast({
+        title: 'Error',
+        description: `Please fill in the field.`,
+        variant: 'destructive',
+      })
     } else if (validatorsArr.length >= 3) {
-      alert('You can only have up to 3 validators')
+      toast({
+        title: 'Error',
+        description: `You can only have up to 3 validators.`,
+        variant: 'destructive',
+      })
     } else if (
       validatorsArr.some(
         (validator) =>
@@ -140,14 +161,18 @@ export default function CreateWill() {
           validatorInputVal
       )
     ) {
-      alert('Validator with the same wallet address already exists')
+      toast({
+        title: 'Error',
+        description: `Validator with the same wallet address already exists.`,
+        variant: 'destructive',
+      })
     } else {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('wallet_address', validatorInputVal)
 
-      if (!error && data) {
+      if (!error && data.length > 0) {
         const newValidator: any = {
           user_id: data[0].id,
           metadata: data[0],
@@ -161,7 +186,11 @@ export default function CreateWill() {
       } else {
         // API call failed
         // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error',
+          description: `User with the address does not exist.`,
+          variant: 'destructive',
+        })
       }
     }
   }
@@ -209,6 +238,18 @@ export default function CreateWill() {
         .insert(validatorsArr)
         .select()
 
+      if (createBenError || createValError) {
+        toast({
+          title: 'Error',
+          description: `Transaction failed. Please try again.`,
+          variant: 'destructive',
+        })
+
+        // Delete will if contract call fails
+        console.info('Transaction failed, deleting will')
+        await supabase.from('wills').delete().eq('id', newWill.id)
+      }
+
       console.info('Calling WillContract')
       setLoadingText('Calling WillContract')
       try {
@@ -228,27 +269,22 @@ export default function CreateWill() {
         })
         console.info('WillContract call success', data)
         toast({
-          title: 'WillContract call success',
+          title: 'Contract call success',
           description: `Your will has been created!`,
           variant: 'success',
         })
+        router.push('/wills')
       } catch (e) {
         console.error('WillContract call error', e)
         toast({
-          title: 'WillContract call error',
-          description: `Transaction failed. Please try again.`,
+          title: 'Contract call error',
+          description: `Transaction failed. Ensure your balance is enough and try again.`,
           variant: 'destructive',
         })
 
         // Delete will if contract call fails
         console.info('Transaction failed, deleting will')
         await supabase.from('wills').delete().eq('id', newWill.id)
-      }
-
-      if (!createBenError && !createValError) {
-        router.push('/wills')
-      } else {
-        console.error(createBenError, createValError)
       }
     }
   }
@@ -271,7 +307,7 @@ export default function CreateWill() {
                   <FormItem>
                     <FormLabel>Will title</FormLabel>
                     <FormControl>
-                      <Input placeholder="My First Will" {...field} />
+                      <Input placeholder="Enter will title" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -310,7 +346,7 @@ export default function CreateWill() {
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-5 gap-2">
-                      <Label htmlFor="email">Beneficiary's address</Label>
+                      <Label htmlFor="email">Address</Label>
                       <Input
                         type="text"
                         name="field1"
@@ -387,7 +423,7 @@ export default function CreateWill() {
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-10 gap-2">
-                      <Label htmlFor="email">Validator's address</Label>
+                      <Label htmlFor="email">Address</Label>
                       <Input
                         type="text"
                         name="field1"
