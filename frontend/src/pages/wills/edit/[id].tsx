@@ -20,7 +20,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Plus, Trash2 } from 'lucide-react'
 import { Database, Tables } from '@/lib/database.types'
-import { useContract, useContractWrite } from '@thirdweb-dev/react'
+import {
+  useAddress,
+  useContract,
+  useContractWrite,
+  useWallet,
+} from '@thirdweb-dev/react'
 import { utils } from 'ethers'
 import { toast } from '@/components/ui/use-toast'
 import {
@@ -80,6 +85,7 @@ const formSchema = z.object({
 export default function EditWill({ will }: { will: any }) {
   const supabase = useSupabaseClient<Database>()
   const router = useRouter()
+  const address = useAddress()
   const [isLoading, setIsLoading] = useState(false)
 
   const { contract } = useContract(
@@ -149,6 +155,12 @@ export default function EditWill({ will }: { will: any }) {
       toast({
         title: 'Error',
         description: 'Beneficiary with the same wallet address already exists.',
+        variant: 'destructive',
+      })
+    } else if (beneficiaryInputVal === address) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a beneficiary.',
         variant: 'destructive',
       })
     } else {
@@ -223,6 +235,12 @@ export default function EditWill({ will }: { will: any }) {
       toast({
         title: 'Error',
         description: 'Validator with the same wallet address already exists.',
+        variant: 'destructive',
+      })
+    } else if (validatorInputVal === address) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a validator.',
         variant: 'destructive',
       })
     } else {

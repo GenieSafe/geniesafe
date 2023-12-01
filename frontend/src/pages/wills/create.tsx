@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input'
 import { toast } from '@/components/ui/use-toast'
 import { Plus, Trash2 } from 'lucide-react'
 import { Database, Tables } from '@/lib/database.types'
-import { useContract, useContractWrite } from '@thirdweb-dev/react'
+import { useAddress, useContract, useContractWrite } from '@thirdweb-dev/react'
 import { utils } from 'ethers'
 
 const formSchema = z.object({
@@ -31,6 +31,7 @@ export default function CreateWill() {
   const supabase = useSupabaseClient<Database>()
   const user = useUser()
   const router = useRouter()
+  const address = useAddress()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -89,6 +90,12 @@ export default function CreateWill() {
       toast({
         title: 'Error',
         description: `Beneficiary with the same wallet address already exists.`,
+        variant: 'destructive',
+      })
+    } else if (beneficiaryInputVal === address) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a beneficiary.',
         variant: 'destructive',
       })
     } else {
@@ -164,6 +171,12 @@ export default function CreateWill() {
       toast({
         title: 'Error',
         description: `Validator with the same wallet address already exists.`,
+        variant: 'destructive',
+      })
+    } else if (validatorInputVal === address) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a validator.',
         variant: 'destructive',
       })
     } else {
