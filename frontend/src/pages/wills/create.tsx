@@ -285,6 +285,7 @@ export default function CreateWill() {
         await supabase.from('wills').delete().eq('id', newWill.id)
       }
     }
+    setIsLoading(false)
   }
 
   return (
@@ -473,17 +474,21 @@ export default function CreateWill() {
                 </div>
               </div>
               <div className="flex justify-end">
-                {!isCreateWillLoading ? (
+                {!isLoading ? (
                   <Button size={'lg'} type="submit">
                     Create will
                   </Button>
                 ) : (
-                  <Button disabled>
+                  <Button size={'lg'} disabled>
                     <div className="loading-spinner"></div>
-                    {loadingText}
+                    Loading...
                   </Button>
                 )}
               </div>
+              <p className="text-right text-xs text-muted">
+                Note: Creating a will will trigger a transaction and incur gas
+                fees.
+              </p>
             </form>
           </Form>
         </CardContent>
