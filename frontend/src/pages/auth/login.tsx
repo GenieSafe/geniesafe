@@ -25,6 +25,7 @@ import {
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { toast } from '@/components/ui/use-toast'
 
 const signInSchema = z.object({
   email: z.string().email(),
@@ -54,8 +55,12 @@ export default function Login() {
       email: values.email,
       password: values.password,
     })
-
-    !error ? router.push('/') : console.log(error)
+    
+    if(!error){
+      toast({title: 'Welcome back!', description: 'You have successfully logged in.', variant: 'success', duration: 2000})
+    }else{
+      toast({title: error?.message, description: 'Please check your email/password.', variant: 'destructive', duration: 2000})
+    }
   }
 
   useEffect(() => {
