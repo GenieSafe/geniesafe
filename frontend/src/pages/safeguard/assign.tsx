@@ -12,11 +12,13 @@ import { Trash2 } from 'lucide-react'
 
 import { Database, Tables } from '../../lib/database.types'
 import { toast } from '@/components/ui/use-toast'
+import { useAddress } from '@thirdweb-dev/react'
 
 export default function AssignConfig() {
   const supabase = useSupabaseClient<Database>()
   const user = useUser()
   const router = useRouter()
+  const address = useAddress()
 
   const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>([])
   const [verifierInputVal, setVerifierInputVal] = useState('')
@@ -55,7 +57,7 @@ export default function AssignConfig() {
         description: `Verifier with the same wallet address already exists.`,
         variant: 'destructive',
       })
-    } else if (user?.user_metadata.address === verifierInputVal) {
+    } else if (address === verifierInputVal) {
       toast({
         title: 'Error',
         description: 'You cannot add yourself as a verifier.',
