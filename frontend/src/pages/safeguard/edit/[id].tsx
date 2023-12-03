@@ -1,7 +1,7 @@
 import { useState, ChangeEvent } from 'react'
 import { GetServerSidePropsContext } from 'next'
 import { useRouter } from 'next/router'
-import { useSupabaseClient } from '@supabase/auth-helpers-react'
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 
 import { Label } from '../../../components/ui/label'
@@ -13,6 +13,7 @@ import { Input } from '../../../components/ui/input'
 import { Trash2 } from 'lucide-react'
 
 import { Database, Tables } from '../../../lib/database.types'
+import { toast } from '@/components/ui/use-toast'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -46,6 +47,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 
 export default function EditConfig({ config }: { config: any }) {
   const supabase = useSupabaseClient<Database>()
+  const user = useUser()
   const router = useRouter()
 
   const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>(
@@ -59,9 +61,17 @@ export default function EditConfig({ config }: { config: any }) {
 
   const handleAddVerifier = async () => {
     if (verifierInputVal.trim() === '') {
-      alert('Please fill in the field')
+      toast({
+        title: 'Error',
+        description: `Please fill in a verifier wallet address.`,
+        variant: 'destructive',
+      })
     } else if (verifiersArr.length >= 3) {
-      alert('You can only have up to 3 verifiers')
+      toast({
+        title: 'Error',
+        description: `You can only have up to 3 verifiers.`,
+        variant: 'destructive',
+      })
     } else if (
       verifiersArr.some(
         (verifier) =>
@@ -69,8 +79,18 @@ export default function EditConfig({ config }: { config: any }) {
           verifierInputVal
       )
     ) {
-      alert('Verifier with the same wallet address already exists')
-    } else {
+      toast({
+        title: 'Error',
+        description: `Verifier with the same wallet address already exists.`,
+        variant: 'destructive',
+      })
+    } else if (user?.user_metadata.address === verifierInputVal) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a verifier.',
+        variant: 'destructive',
+      })
+    }else {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -88,9 +108,11 @@ export default function EditConfig({ config }: { config: any }) {
           setVerifierInputVal('')
         }
       } else {
-        // API call failed
-        // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error',
+          description: `User with the address does not exist.`,
+          variant: 'destructive',
+        })
       }
     }
 
@@ -114,9 +136,17 @@ export default function EditConfig({ config }: { config: any }) {
     })
 
     if (!error) {
+      toast({
+        title: 'Safeguard configuration updated successfully!',
+        variant: 'success',
+      })
       router.push('/safeguard')
     } else {
-      console.log(error)
+      toast({
+        title: 'Error updating safeguard configuration',
+        description: error.message,
+        variant: 'destructive',
+      })
     }
   }
 
@@ -127,6 +157,10 @@ export default function EditConfig({ config }: { config: any }) {
       .eq('id', config.id)
 
     if (!error) {
+      toast({
+        title: 'Safeguard configuration updated deleted successfully!',
+        variant: 'success',
+      })
       router.push('/safeguard')
     }
   }

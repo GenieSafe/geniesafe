@@ -33,13 +33,15 @@ export default function AssignConfig() {
   const handleAddVerifier = async () => {
     if (verifierInputVal.trim() === '') {
       toast({
-        title: 'Please fill in a verifier wallet address',
-        description: 'Verifier wallet address cannot be empty',
+        title: 'Error',
+        description: `Please fill in a verifier wallet address.`,
+        variant: 'destructive',
       })
     } else if (verifiersArr.length >= 3) {
       toast({
-        title: 'Maximum number of verifiers reached',
-        description: 'You can only have up to 3 verifiers',
+        title: 'Error',
+        description: `You can only have up to 3 verifiers.`,
+        variant: 'destructive',
       })
     } else if (
       verifiersArr.some(
@@ -49,11 +51,15 @@ export default function AssignConfig() {
       )
     ) {
       toast({
-        title: 'Verifier already added',
+        title: 'Error',
+        description: `Verifier with the same wallet address already exists.`,
+        variant: 'destructive',
       })
     } else if (user?.user_metadata.address === verifierInputVal) {
       toast({
-        title: 'You cannot add yourself as a verifier',
+        title: 'Error',
+        description: 'You cannot add yourself as a verifier.',
+        variant: 'destructive',
       })
     } else {
       const { data, error } = await supabase
@@ -74,8 +80,8 @@ export default function AssignConfig() {
         }
       } else {
         toast({
-          title: 'Error retrieving user data',
-          description: error.message,
+          title: 'Error',
+          description: `User with the address does not exist.`,
           variant: 'destructive',
         })
       }
@@ -115,9 +121,9 @@ export default function AssignConfig() {
 
       if (!ver_error) {
         toast({
-          title: 'Safeguard configuration created successfully',
+          title: 'Safeguard configuration created successfully!',
           description:
-            'You can now easily retrieve your private key in the Safeguard page.',
+            'Your private key has been encrypted and stored in our database.',
           variant: 'success',
         })
         router.push('/safeguard')
