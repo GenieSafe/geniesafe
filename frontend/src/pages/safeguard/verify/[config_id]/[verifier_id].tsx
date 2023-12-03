@@ -236,7 +236,7 @@ export default function VerificationPage({
                 <Button variant={'destructive'} disabled={isLoading}>
                   {isLoading ? (
                     <>
-                      <div className="loading-spinner"></div>Loading
+                      <div className="loading-spinner"></div>Loading...
                     </>
                   ) : (
                     'Ignore'

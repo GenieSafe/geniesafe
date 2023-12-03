@@ -149,7 +149,7 @@ export default function SafeguardCard({
                 (isLoading ? (
                   <>
                     <div className="loading-spinner"></div>
-                    Loading
+                    Loading...
                   </>
                 ) : (
                   <>

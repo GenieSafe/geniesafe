@@ -28,18 +28,21 @@ import { sendMail } from '@/lib/emailHelper'
 import { Card, CardContent } from '@/components/ui/card'
 import ValidationPromptEmail from '../../emails/ValidationPromptEmail'
 import { render } from '@react-email/components'
+import { useState } from 'react'
 
 export default function InheritedWillsTable({ data }: { data: any }) {
   const supabase = useSupabaseClient<Database>()
   const router = useRouter()
   const { toast } = useToast()
   const connectionStatus = useConnectionStatus()
+  const [isLoading, setIsLoading] = useState(false)
 
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
   )
 
   async function handleActivateWill(id: string) {
+    setIsLoading(true)
     // Get will data based on id
     const will = data.find((item: any) => item.wills.id === id)
 
@@ -86,7 +89,7 @@ export default function InheritedWillsTable({ data }: { data: any }) {
           // Email validators
           const payload = {
             to: validator.profiles.email,
-            subject: `${will.profiles.first_name}'s will is pending your validation, ${validator.profiles.first_name}`,
+            subject: `${will.wills.profiles.first_name}'s will is pending your validation, ${validator.profiles.first_name}`,
             html: render(
               ValidationPromptEmail({
                 redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/wills/validate/${willId}/${validatorId}`,
@@ -102,6 +105,20 @@ export default function InheritedWillsTable({ data }: { data: any }) {
       }
     } catch (error) {
       console.error('Create will failed', error)
+      const { error: updateWillStatusError } = await supabase
+        .from('wills')
+        .update({
+          status: 'INACTIVE',
+          activated_at: null,
+        })
+        .eq('id', id)
+      toast({
+        title: 'Create will failed!',
+        description: 'Please refresh and try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -156,46 +173,50 @@ export default function InheritedWillsTable({ data }: { data: any }) {
                   {item.percentage}%
                 </TableCell>
                 <TableCell className="text-center">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      {item.wills.status === 'INACTIVE' ? (
-                        <Button variant="ghost" size="sm" disabled>
-                          Activate
-                        </Button>
-                      ) : connectionStatus === 'disconnected' ? (
-                        <Button variant="ghost" size="sm" disabled>
-                          Wallet disconnected
-                        </Button>
-                      ) : (
-                        <Button variant="ghost" size="sm" disabled>
-                          {item.wills.status.charAt(0).toUpperCase() +
-                            item.wills.status.slice(1).toLowerCase()}
-                        </Button>
-                      )}
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Activate will?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Activate this will upon the owner's death. Once
-                          activated, the will will be created on our smart
-                          contract, and validators will receive email
-                          notifications for will validation. Please note that
-                          activation incurs a gas fee.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => {
-                            handleActivateWill(item.wills.id)
-                          }}
-                        >
-                          Activate
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  {isLoading ? (
+                    <div className="loading-spinner"></div>
+                  ) : (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        {connectionStatus === 'disconnected' ? (
+                          <Button variant="ghost" size="sm" disabled>
+                            Wallet disconnected
+                          </Button>
+                        ) : item.wills.status === 'INACTIVE' ? (
+                          <Button variant="ghost" size="sm">
+                            Activate
+                          </Button>
+                        ) : (
+                          <Button variant="ghost" size="sm" disabled>
+                            {item.wills.status.charAt(0).toUpperCase() +
+                              item.wills.status.slice(1).toLowerCase()}
+                          </Button>
+                        )}
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Activate will?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Activate this will upon the owner's death. Once
+                            activated, the will will be created on our smart
+                            contract, and validators will receive email
+                            notifications for will validation. Please note that
+                            activation incurs a gas fee.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              handleActivateWill(item.wills.id)
+                            }}
+                          >
+                            Activate
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

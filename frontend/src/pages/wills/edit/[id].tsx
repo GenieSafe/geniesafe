@@ -6,7 +6,6 @@ import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-
 import {
   Form,
   FormControl,
@@ -19,11 +18,14 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-
 import { Plus, Trash2 } from 'lucide-react'
-
 import { Database, Tables } from '@/lib/database.types'
-import { useContract, useContractWrite } from '@thirdweb-dev/react'
+import {
+  useAddress,
+  useContract,
+  useContractWrite,
+  useWallet,
+} from '@thirdweb-dev/react'
 import { utils } from 'ethers'
 import { toast } from '@/components/ui/use-toast'
 import {
@@ -83,7 +85,8 @@ const formSchema = z.object({
 export default function EditWill({ will }: { will: any }) {
   const supabase = useSupabaseClient<Database>()
   const router = useRouter()
-  const [loadingText, setLoadingText] = useState('Loading')
+  const address = useAddress()
+  const [isLoading, setIsLoading] = useState(false)
 
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
@@ -131,9 +134,17 @@ export default function EditWill({ will }: { will: any }) {
     e.preventDefault()
 
     if (beneficiaryInputVal === '' || parseInt(percentageInputVal) === 0) {
-      alert('Please fill in the fields')
+      toast({
+        title: 'Error',
+        description: 'Beneficiary and percentage fields are required.',
+        variant: 'destructive',
+      })
     } else if (totalPercentage + parseInt(percentageInputVal) > 100) {
-      alert('Total percentage cannot exceed 100%')
+      toast({
+        title: 'Error',
+        description: 'Total percentage cannot exceed 100%.',
+        variant: 'destructive',
+      })
     } else if (
       beneficiariesArr.some(
         (beneficiary) =>
@@ -141,7 +152,17 @@ export default function EditWill({ will }: { will: any }) {
           beneficiaryInputVal
       )
     ) {
-      alert('Beneficiary with the same wallet address already exists')
+      toast({
+        title: 'Error',
+        description: 'Beneficiary with the same wallet address already exists.',
+        variant: 'destructive',
+      })
+    } else if (beneficiaryInputVal === address) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a beneficiary.',
+        variant: 'destructive',
+      })
     } else {
       const { data, error } = await supabase
         .from('profiles')
@@ -193,9 +214,17 @@ export default function EditWill({ will }: { will: any }) {
   const handleAddValidator = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     if (validatorInputVal.trim() === '') {
-      alert('Please fill in the field')
+      toast({
+        title: 'Error',
+        description: 'Validator field is required.',
+        variant: 'destructive',
+      })
     } else if (validatorsArr.length >= 3) {
-      alert('You can only have up to 3 validators')
+      toast({
+        title: 'Error',
+        description: 'You can only have up to 3 validators.',
+        variant: 'destructive',
+      })
     } else if (
       validatorsArr.some(
         (validator) =>
@@ -203,7 +232,17 @@ export default function EditWill({ will }: { will: any }) {
           validatorInputVal
       )
     ) {
-      alert('Validator with the same wallet address already exists')
+      toast({
+        title: 'Error',
+        description: 'Validator with the same wallet address already exists.',
+        variant: 'destructive',
+      })
+    } else if (validatorInputVal === address) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a validator.',
+        variant: 'destructive',
+      })
     } else {
       const { data, error } = await supabase
         .from('profiles')
@@ -243,15 +282,19 @@ export default function EditWill({ will }: { will: any }) {
   }
 
   const onSave = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true)
     try {
       // If total percentages of beneficiaries is less than 100%, show alert and return
       if (totalPercentage < 100) {
-        alert('Total percentage of beneficiaries must be 100%')
+        toast({
+          title: 'Error',
+          description: 'Total percentage of beneficiaries must be 100%.',
+          variant: 'destructive',
+        })
         return
       }
 
       console.info('Updating will')
-      setLoadingText('Updating will')
       // Adding throws for the supabase.rpc call
       let { data: updatedWill, error: updateWillError } = await supabase.rpc(
         'update_will',
@@ -296,32 +339,39 @@ export default function EditWill({ will }: { will: any }) {
         percentage: beneficiary.percentage.toString(),
       }))
 
-      console.info('Calling WillContract')
-      setLoadingText('Calling WillContract')
-      try {
-        const updatedWillContract = await updateWill({
-          args: [_willId, _newBeneficiaries],
-          overrides: {
-            value: utils.parseEther(values.ethAmount),
-          },
-        })
+      // If ethAmount is not 0, call WillContract
+      if (values.ethAmount !== '0') {
+        console.info('Calling WillContract')
+        try {
+          const updatedWillContract = await updateWill({
+            args: [_willId, _newBeneficiaries],
+            overrides: {
+              value: utils.parseEther(values.ethAmount),
+            },
+          })
 
-        console.info('WillContract call success', updatedWillContract)
-        toast({
-          title: 'WillContract call success',
-          description: `Your will has been updated!`,
-          variant: 'success',
-        })
-      } catch (e) {
-        console.error('WillContract call failure', e)
-        toast({
-          title: 'WillContract call error',
-          description: `Error: ${e}`,
-          variant: 'destructive',
-        })
+          console.info('WillContract call success', updatedWillContract)
+          toast({
+            title: 'Contract call success',
+            description: `Your will has been updated!`,
+            variant: 'success',
+          })
+        } catch (e) {
+          console.error('WillContract call failure', e)
+          toast({
+            title: 'Contract call error',
+            description: `Transaction failed. Ensure your balance is enough and try again.`,
+            variant: 'destructive',
+          })
+        }
       }
 
       if (!updateWillError) {
+        toast({
+          title: 'Success',
+          description: `Your will has been updated!`,
+          variant: 'success',
+        })
         router.push('/wills')
       } else {
         console.log(updateWillError)
@@ -333,6 +383,8 @@ export default function EditWill({ will }: { will: any }) {
         description: `Error: ${e}`,
         variant: 'destructive',
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -342,7 +394,6 @@ export default function EditWill({ will }: { will: any }) {
       const _weiAmount = utils.parseEther(will.eth_amount)
 
       console.info('Calling WillContract to withdraw funds')
-      setLoadingText('Withdrawing funds')
       try {
         const data = await withdraw({ args: [_willId, _weiAmount] })
         console.info('Contract call success', data)
@@ -357,7 +408,6 @@ export default function EditWill({ will }: { will: any }) {
       }
 
       console.info('Calling WillContract to delete will')
-      setLoadingText('Deleting will')
       try {
         const data = await deleteWill({ args: [_willId] })
         console.info('Contract call success', data)
@@ -428,14 +478,15 @@ export default function EditWill({ will }: { will: any }) {
                         type="text"
                         pattern="[0-9.]*" // Allow only numbers
                         inputMode="numeric" // Set the input mode to numeric for better mobile support
-                        onInput={(e) => {
+                        value={field.value || ''}
+                        onChange={(e) => {
                           const inputElement = e.target as HTMLInputElement
                           inputElement.value = inputElement.value.replace(
                             /[^0-9.]/g,
                             ''
                           ) // Remove non-numeric characters
+                          field.onChange(e) // Call the onChange function from the form field
                         }}
-                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -449,7 +500,7 @@ export default function EditWill({ will }: { will: any }) {
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-5 gap-2">
-                      <Label htmlFor="email">Beneficiary's address</Label>
+                      <Label htmlFor="email">Address</Label>
                       <Input
                         type="text"
                         name="field1"
@@ -460,7 +511,7 @@ export default function EditWill({ will }: { will: any }) {
                       />
                     </div>
                     <div className="grid items-center w-full col-span-5 gap-2">
-                      <Label htmlFor="email">Division percentage (%)</Label>
+                      <Label htmlFor="email">Percentage (%)</Label>
                       <Input
                         type="number"
                         name="field2"
@@ -522,7 +573,7 @@ export default function EditWill({ will }: { will: any }) {
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-10 gap-2">
-                      <Label htmlFor="email">Validator's address</Label>
+                      <Label htmlFor="email">Address</Label>
                       <Input
                         type="text"
                         name="field1"
@@ -572,67 +623,48 @@ export default function EditWill({ will }: { will: any }) {
                 </div>
               </div>
               <div className="flex justify-end gap-4">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    {!isWithdrawLoading || !isDeleteWillLoading ? (
-                      <Button size={'lg'} variant={'destructive'}>
-                        Delete
-                      </Button>
-                    ) : (
-                      <Button size={'lg'} variant={'destructive'} disabled>
-                        <div className="loading-spinner"></div>
-                        {loadingText}
-                      </Button>
-                    )}
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Are you sure you want to delete this will?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        You will not be able to undo this action. All funds will
-                        be returned to your address. Please proceed with
-                        caution.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={onDelete}>
-                        Confirm
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    {!isUpdateWillLoading ? (
-                      <Button size={'lg'}>Save</Button>
-                    ) : (
-                      <Button size={'lg'} disabled>
-                        <div className="loading-spinner"></div>
-                        {loadingText}
-                      </Button>
-                    )}
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Save changes?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action updates the on-chain will. It will require a
-                        transaction.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction type="submit">
-                        Confirm
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                {isLoading ? (
+                  <Button size={'lg'} disabled>
+                    <div className="loading-spinner"></div>
+                    Loading...
+                  </Button>
+                ) : (
+                  <>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size={'lg'} variant={'destructive'}>
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are you sure you want to delete this will?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            You will not be able to undo this action. All funds
+                            will be returned to your address. Please proceed
+                            with caution.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={onDelete}>
+                            Confirm
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    <Button size={'lg'} type="submit">
+                      Save
+                    </Button>
+                  </>
+                )}
               </div>
+              <p className="text-right text-xs text-muted">
+                Note: Any amount of deposits will trigger a transaction and
+                incur gas fees.
+              </p>
             </form>
           </Form>
         </CardContent>

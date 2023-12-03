@@ -1,12 +1,12 @@
 import Link from 'next/link'
-import { Button } from '../ui/button'
+import { Button } from '@/components/ui/button'
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
   navigationMenuTriggerStyle,
-} from '../ui/navigation-menu'
+} from '@/components/ui/navigation-menu'
 import React from 'react'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { useRouter } from 'next/router'
