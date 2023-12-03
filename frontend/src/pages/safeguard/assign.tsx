@@ -11,6 +11,7 @@ import { Card, CardContent } from '../../components/ui/card'
 import { Trash2 } from 'lucide-react'
 
 import { Database, Tables } from '../../lib/database.types'
+import { toast } from '@/components/ui/use-toast'
 
 export default function AssignConfig() {
   const supabase = useSupabaseClient<Database>()
@@ -31,9 +32,15 @@ export default function AssignConfig() {
 
   const handleAddVerifier = async () => {
     if (verifierInputVal.trim() === '') {
-      alert('Please fill in the field')
+      toast({
+        title: 'Please fill in a verifier wallet address',
+        description: 'Verifier wallet address cannot be empty',
+      })
     } else if (verifiersArr.length >= 3) {
-      alert('You can only have up to 3 verifiers')
+      toast({
+        title: 'Maximum number of verifiers reached',
+        description: 'You can only have up to 3 verifiers',
+      })
     } else if (
       verifiersArr.some(
         (verifier) =>
@@ -41,7 +48,13 @@ export default function AssignConfig() {
           verifierInputVal
       )
     ) {
-      alert('Verifier with the same wallet address already exists')
+      toast({
+        title: 'Verifier already added',
+      })
+    } else if (user?.user_metadata.address === verifierInputVal) {
+      toast({
+        title: 'You cannot add yourself as a verifier',
+      })
     } else {
       const { data, error } = await supabase
         .from('profiles')
@@ -60,9 +73,11 @@ export default function AssignConfig() {
           setVerifierInputVal('')
         }
       } else {
-        // API call failed
-        // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error retrieving user data',
+          description: error.message,
+          variant: 'destructive',
+        })
       }
     }
 
@@ -99,9 +114,19 @@ export default function AssignConfig() {
         .select()
 
       if (!ver_error) {
+        toast({
+          title: 'Safeguard configuration created successfully',
+          description:
+            'You can now easily retrieve your private key in the Safeguard page.',
+          variant: 'success',
+        })
         router.push('/safeguard')
       } else {
-        console.log(ver_error)
+        toast({
+          title: 'Error creating safeguard configuration',
+          description: ver_error.message,
+          variant: 'destructive',
+        })
       }
     }
   }
