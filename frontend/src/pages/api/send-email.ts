@@ -2,13 +2,13 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import nodemailer from 'nodemailer'
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || '587'),
+  host: process.env.NEXT_PUBLIC_SMTP_HOST,
+  port: parseInt(process.env.NEXT_PUBLIC_SMTP_PORT || '587'),
   secure: true,
   service: 'gmail',
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
+    user: process.env.NEXT_PUBLIC_SMTP_USER,
+    pass: process.env.NEXT_PUBLIC_GMAIL_APP_PASSWORD,
   },
 })
 
@@ -23,7 +23,7 @@ export default async function handler(
     const info = await transporter.sendMail({
       from: {
         name: 'geniesafe',
-        address: process.env.SMTP_FROM || 'geniesafedev@gmail.com',
+        address: process.env.NEXT_PUBLIC_SMTP_FROM || 'geniesafedev@gmail.com',
       },
       to: to,
       subject: subject,
