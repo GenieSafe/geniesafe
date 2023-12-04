@@ -34,7 +34,7 @@ export const Layout = ({ children, customMeta }: LayoutProps): JSX.Element => {
       }
     }
     fetchName()
-  }, [])
+  }, [router.pathname])
 
   return (
     <>
