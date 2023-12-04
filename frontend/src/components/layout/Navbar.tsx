@@ -17,6 +17,7 @@ import {
   useWallet,
 } from '@thirdweb-dev/react'
 import { toast } from '@/components/ui/use-toast'
+import Geniesafe from '../../../public/icons/geniesafe.svg'
 
 export default function Navbar({ name }: { name?: string }) {
   const router = useRouter()
@@ -55,14 +56,17 @@ export default function Navbar({ name }: { name?: string }) {
 
   return (
     <>
-      <div className="flex items-center justify-between px-[5.5rem] py-4 rounded-none glass">
-        <ConnectWallet
-          dropdownPosition={{
-            side: 'bottom',
-            align: 'center',
-          }}
-        />
-        <NavigationMenu>
+      <div className="grid grid-cols-3 items-center px-[5.5rem] py-4 rounded-none glass">
+        <div className="flex items-center gap-4">
+          <Geniesafe className="w-12 h-12 text-primary" />
+          <ConnectWallet
+            dropdownPosition={{
+              side: 'bottom',
+              align: 'center',
+            }}
+          />
+        </div>
+        <NavigationMenu className='mx-auto'>
           <NavigationMenuList>
             <NavigationMenuItem>
               <Link href="/" legacyBehavior passHref>
@@ -87,7 +91,7 @@ export default function Navbar({ name }: { name?: string }) {
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
-        <div className="flex items-center justify-end space-x-2">
+        <div className="flex items-center justify-end ml-auto space-x-2">
           <span className="text-sm">Hello, {name}!</span>
           <Button
             variant={'link'}
