@@ -138,7 +138,8 @@ export default function EditConfig({ config }: { config: any }) {
 
     if (!error) {
       toast({
-        title: 'Safeguard configuration updated successfully!',
+        title: 'Success'
+        description: 'Safeguard configuration updated successfully!',
         variant: 'success',
       })
       router.push('/safeguard')
