@@ -11,11 +11,14 @@ import { Card, CardContent } from '../../components/ui/card'
 import { Trash2 } from 'lucide-react'
 
 import { Database, Tables } from '../../lib/database.types'
+import { toast } from '@/components/ui/use-toast'
+import { useAddress } from '@thirdweb-dev/react'
 
 export default function AssignConfig() {
   const supabase = useSupabaseClient<Database>()
   const user = useUser()
   const router = useRouter()
+  const address = useAddress()
 
   const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>([])
   const [verifierInputVal, setVerifierInputVal] = useState('')
@@ -31,9 +34,17 @@ export default function AssignConfig() {
 
   const handleAddVerifier = async () => {
     if (verifierInputVal.trim() === '') {
-      alert('Please fill in the field')
+      toast({
+        title: 'Error',
+        description: `Please fill in a verifier wallet address.`,
+        variant: 'destructive',
+      })
     } else if (verifiersArr.length >= 3) {
-      alert('You can only have up to 3 verifiers')
+      toast({
+        title: 'Error',
+        description: `You can only have up to 3 verifiers.`,
+        variant: 'destructive',
+      })
     } else if (
       verifiersArr.some(
         (verifier) =>
@@ -41,7 +52,17 @@ export default function AssignConfig() {
           verifierInputVal
       )
     ) {
-      alert('Verifier with the same wallet address already exists')
+      toast({
+        title: 'Error',
+        description: `Verifier with the same wallet address already exists.`,
+        variant: 'destructive',
+      })
+    } else if (address === verifierInputVal) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a verifier.',
+        variant: 'destructive',
+      })
     } else {
       const { data, error } = await supabase
         .from('profiles')
@@ -60,9 +81,11 @@ export default function AssignConfig() {
           setVerifierInputVal('')
         }
       } else {
-        // API call failed
-        // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error',
+          description: `User with the address does not exist.`,
+          variant: 'destructive',
+        })
       }
     }
 
@@ -99,9 +122,19 @@ export default function AssignConfig() {
         .select()
 
       if (!ver_error) {
+        toast({
+          title: 'Safeguard configuration created successfully!',
+          description:
+            'Your private key has been encrypted and stored in our database.',
+          variant: 'success',
+        })
         router.push('/safeguard')
       } else {
-        console.log(ver_error)
+        toast({
+          title: 'Error creating safeguard configuration',
+          description: ver_error.message,
+          variant: 'destructive',
+        })
       }
     }
   }

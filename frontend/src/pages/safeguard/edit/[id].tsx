@@ -1,7 +1,7 @@
 import { useState, ChangeEvent } from 'react'
 import { GetServerSidePropsContext } from 'next'
 import { useRouter } from 'next/router'
-import { useSupabaseClient } from '@supabase/auth-helpers-react'
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 
 import { Label } from '../../../components/ui/label'
@@ -13,6 +13,8 @@ import { Input } from '../../../components/ui/input'
 import { Trash2 } from 'lucide-react'
 
 import { Database, Tables } from '../../../lib/database.types'
+import { toast } from '@/components/ui/use-toast'
+import { useAddress } from '@thirdweb-dev/react'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -31,10 +33,16 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Run queries with RLS on the server
-  const { data, error } = await supabase.from('wallet_recovery_config').select(`
+  const { data, error } = await supabase
+    .from('wallet_recovery_config')
+    .select(
+      `
     id, private_key, status,
     verifiers(user_id, has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
-  `).eq('user_id', session.user.id).single()
+  `
+    )
+    .eq('user_id', session.user.id)
+    .single()
 
   return {
     props: {
@@ -47,6 +55,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 export default function EditConfig({ config }: { config: any }) {
   const supabase = useSupabaseClient<Database>()
   const router = useRouter()
+  const address = useAddress()
 
   const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>(
     config.verifiers
@@ -59,9 +68,17 @@ export default function EditConfig({ config }: { config: any }) {
 
   const handleAddVerifier = async () => {
     if (verifierInputVal.trim() === '') {
-      alert('Please fill in the field')
+      toast({
+        title: 'Error',
+        description: `Please fill in a verifier wallet address.`,
+        variant: 'destructive',
+      })
     } else if (verifiersArr.length >= 3) {
-      alert('You can only have up to 3 verifiers')
+      toast({
+        title: 'Error',
+        description: `You can only have up to 3 verifiers.`,
+        variant: 'destructive',
+      })
     } else if (
       verifiersArr.some(
         (verifier) =>
@@ -69,12 +86,23 @@ export default function EditConfig({ config }: { config: any }) {
           verifierInputVal
       )
     ) {
-      alert('Verifier with the same wallet address already exists')
+      toast({
+        title: 'Error',
+        description: `Verifier with the same wallet address already exists.`,
+        variant: 'destructive',
+      })
+    } else if (address === verifierInputVal) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a verifier.',
+        variant: 'destructive',
+      })
     } else {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('wallet_address', verifierInputVal).single()
+        .eq('wallet_address', verifierInputVal)
+        .single()
 
       if (!error && data) {
         const newVerifier: any = {
@@ -88,9 +116,11 @@ export default function EditConfig({ config }: { config: any }) {
           setVerifierInputVal('')
         }
       } else {
-        // API call failed
-        // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error',
+          description: `User with the address does not exist.`,
+          variant: 'destructive',
+        })
       }
     }
 
@@ -114,9 +144,18 @@ export default function EditConfig({ config }: { config: any }) {
     })
 
     if (!error) {
+      toast({
+        title: 'Success',
+        description: 'Safeguard configuration updated successfully!',
+        variant: 'success',
+      })
       router.push('/safeguard')
     } else {
-      console.log(error)
+      toast({
+        title: 'Error updating safeguard configuration',
+        description: error.message,
+        variant: 'destructive',
+      })
     }
   }
 
@@ -127,6 +166,11 @@ export default function EditConfig({ config }: { config: any }) {
       .eq('id', config.id)
 
     if (!error) {
+      toast({
+        title: 'Success',
+        description: 'Safeguard configuration updated deleted successfully!',
+        variant: 'success',
+      })
       router.push('/safeguard')
     }
   }
@@ -141,10 +185,10 @@ export default function EditConfig({ config }: { config: any }) {
       <Card>
         <CardContent className="p-12 space-y-8">
           <div className="grid gap-2">
-              <Label className="justify-self-end">
-                {verifiersArr.length}/3 verifiers
-              </Label>
-              <Progress value={Math.floor((verifiersArr.length / 3) * 100)} />
+            <Label className="justify-self-end">
+              {verifiersArr.length}/3 verifiers
+            </Label>
+            <Progress value={Math.floor((verifiersArr.length / 3) * 100)} />
           </div>
           <div className="flex flex-col gap-6">
             <div className="grid items-center w-full gap-2">
