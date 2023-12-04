@@ -1,20 +1,11 @@
 import Link from 'next/link'
-import {
-  GetServerSidePropsContext,
-} from 'next'
+import { GetServerSidePropsContext } from 'next'
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
-
-import { Edit3 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
 
 import { Button } from '../../components/ui/button'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '../../components/ui/card'
-import { Tables } from '../../lib/database.types'
-
+import SafeguardCard from '../../components/SafeguardCard'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -33,81 +24,77 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Run queries with RLS on the server
-  const { data, error } = await supabase.from('wallet_recovery_config').select(`
-    id, status,
-    verifiers(has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
-  `)
+  const { data: config_data, error: config_error } = await supabase
+    .from('wallet_recovery_config')
+    .select(
+      `
+    id, status, profiles(first_name),
+    verifiers(id, has_verified, verified_at, profiles(email, first_name, last_name, wallet_address))
+  `
+    )
+    .eq('user_id', session.user.id)
+    .single()
 
   return {
     props: {
       initialSession: session,
-      data: data ?? error,
+      data: config_data,
     },
   }
 }
 
-const Safeguard = ({ data }: { data: any }) => {
+export default function Config({ data }: { data: any }) {
+  const supabase = useSupabaseClient()
+  const [privateKey, setPrivateKey] = useState<string | null>('' as string)
+
+  async function getPrivateKey(id: string) {
+    const { data, error } = await supabase.rpc('get_private_key', {
+      in_config_id: id,
+    })
+
+    if (!error) {
+      setPrivateKey(data)
+    } else {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    if (data !== null) {
+      if (data.status == 'VERIFIED') getPrivateKey(data.id)
+    }
+  })
+
   return (
     <>
-      <div className="container flex flex-col gap-8 pb-8">
-        {data.length > 0 ? (
+      <div className="flex flex-col gap-8">
+        {data ? (
           <>
-            <div className="container pb-8">
-              <div className="flex flex-col gap-4 mb-4">
-                <h1 className="text-4xl font-bold tracking-tight scroll-m-20 lg:text-5xl">
-                  Recover your wallet
-                </h1>
-                <p className="mb-4 leading-7">
-                  Lost access to your wallet? Notify your Verifiers to verify
-                  your identity and we'll send you your private key.
-                </p>
-              </div>
-              <div className="grid gap-8">
-                <Card className="bg-primary">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-2xl text-primary-foreground">Verifiers</CardTitle>
-                    <Button size={'icon'} variant={"secondary"} asChild>
-                      <Link href={`/safeguard/edit/${data.id}`}>
-                        <Edit3 className="w-4 h-4" />
-                      </Link>
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="flex gap-4">
-                    {data[0].verifiers.map((verifier: Tables<'verifiers'>, index: number) => (
-                      <Card key={index} className="">
-                        <CardContent className="grid pt-6">
-                          <p className="">
-                          {
-                            (verifier.metadata as Record<string, any>)
-                              .first_name
-                          }{' '}
-                          {
-                            (verifier.metadata as Record<string, any>)
-                              .last_name
-                          }
-                          </p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="grid justify-end py-8">
-                <Button size={'lg'}>Notify Verifiers</Button>
-              </div>
+            <div className="flex flex-col gap-4 pb-4">
+              <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
+                Recover your wallet
+              </h1>
+              <p className="leading-7">
+                Lost access to your wallet? Notify your verifiers to verify your
+                identity and we'll send you your private key.
+              </p>
             </div>
+            <SafeguardCard
+              config={data}
+              privateKey={privateKey}
+            ></SafeguardCard>
           </>
         ) : (
           <>
-            <h1 className="text-4xl font-bold tracking-tight scroll-m-20">
-              It seems like you don't have any wallet recovery method for now.
+            <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
+              It seems like you don't have safeguard set up for now.
             </h1>
             <p className="leading-7">
               Worry you might lose access to your private key? Assign trusted
-              Verifiers to help safeguard your private key.
+              verifiers to help safeguard your private key.
             </p>
             <Button asChild className="self-start" size={'lg'}>
-              <Link href="/safeguard/assign">Assign Verifiers</Link>
+              <Link href="/safeguard/assign">Assign verifiers</Link>
             </Button>
           </>
         )}
@@ -115,5 +102,3 @@ const Safeguard = ({ data }: { data: any }) => {
     </>
   )
 }
-
-export default Safeguard

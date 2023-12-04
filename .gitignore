@@ -1,56 +1,59 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-**/node_modules
-/.pnp
+# Dependencies
+**/node_modules/
+**/.vscode/
+.pnp
 .pnp.js
 
-# testing
-/coverage
+# Testing
+**/coverage/
 
-# next.js
-/.next/
-/out/
+# Production
+**/build/
 
-# production
-/build
-
-# misc
+# Miscellaneous
 .DS_Store
 *.pem
 
-# debug
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
-/frontend/.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Local Environment Files
+**/.env
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
 
-# vercel
-.vercel
+# Vercel
+**/.vercel/
+**/.vscode/
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 
-node_modules
+# Frontend Files
+# Testing
+**/coverage/
+# Next.js
+**/.next/
+**/out/
+# Production
+**/build/
 
-#Hardhat files
-cache
-# artifacts
-
-## Frontend Files ##
-# testing
-/frontend/coverage
-# next.js
-/frontend/.next/
-/frontend/out/
-# production
-/frontend/build
-# contracts
+# Contracts (commented out as requested)
 # /frontend/artifacts/*
+
+# Coverage Reports
+**/coverage/
+**/coverage.json
+
+# Typechain
+**/typechain/
+**/typechain-types/
+
+# Hardhat Files
+**/cache/
+**/artifacts/

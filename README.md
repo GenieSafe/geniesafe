@@ -5,25 +5,14 @@ Built by [Alif](https://github.com/alifmazli) and [Syaamil](https://github.com/e
 
 ```bash
 git clone https://github.com/GenieSafe/geniesafe.git
-cd geniesafe
+cd geniesafe/contract
 
 npm i
-
-# Start up the Hardhat Network
-npm run chain
 ```
-
-Here we just install the npm project's dependencies, and by running `npm run chain` we spin up an instance of Hardhat Network that you can connect to using MetaMask. In a different terminal in the same directory, run:
-
 ```bash
-npm run deploy
-```
-
-This will deploy the contract to Hardhat Network. After this completes run:
-
-```bash
+cd ..
 cd frontend
-npm install
+npm i
 ```
 
 This will install the frontend packages. We also need to set up the local configuration file.

@@ -1,12 +1,9 @@
-'use client'
-
 import { ChangeEvent, useState } from 'react'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-
 import {
   Form,
   FormControl,
@@ -14,24 +11,27 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../../components/ui/form'
-import { Label } from '../../components/ui/label'
-import { Button } from '../../components/ui/button'
-import { Card, CardContent } from '../../components/ui/card'
-import { Input } from '../../components/ui/input'
-
-import { Trash2 } from 'lucide-react'
-
-import { Database, Tables } from '../../lib/database.types'
+} from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { toast } from '@/components/ui/use-toast'
+import { Plus, Trash2 } from 'lucide-react'
+import { Database, Tables } from '@/lib/database.types'
+import { useAddress, useContract, useContractWrite } from '@thirdweb-dev/react'
+import { utils } from 'ethers'
 
 const formSchema = z.object({
   title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
+  ethAmount: z.string({ required_error: 'Amount is required' }).default('0'),
 })
 
 export default function CreateWill() {
   const supabase = useSupabaseClient<Database>()
   const user = useUser()
   const router = useRouter()
+  const address = useAddress()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,6 +45,13 @@ export default function CreateWill() {
   const [beneficiaryInputVal, setBeneficiaryInputVal] = useState('')
   const [percentageInputVal, setPercentageInputVal] = useState('')
   const [totalPercentage, setTotalPercentage] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const { contract } = useContract(
+    process.env.NEXT_PUBLIC_WILL_CONTRACT_ADDRESS
+  )
+  const { mutateAsync: createWill, isLoading: isCreateWillLoading } =
+    useContractWrite(contract, 'createWill')
 
   const handleBeneficiaryInputValChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -62,9 +69,17 @@ export default function CreateWill() {
     e.preventDefault()
 
     if (beneficiaryInputVal === '' || parseInt(percentageInputVal) === 0) {
-      alert('Please fill in the fields')
+      toast({
+        title: 'Error',
+        description: `Please fill in the fields.`,
+        variant: 'destructive',
+      })
     } else if (totalPercentage + parseInt(percentageInputVal) > 100) {
-      alert('Total percentage cannot exceed 100%')
+      toast({
+        title: 'Error',
+        description: `Total percentage cannot exceed 100%.`,
+        variant: 'destructive',
+      })
     } else if (
       beneficiariesArr.some(
         (beneficiary) =>
@@ -72,14 +87,24 @@ export default function CreateWill() {
           beneficiaryInputVal
       )
     ) {
-      alert('Beneficiary with the same wallet address already exists')
+      toast({
+        title: 'Error',
+        description: `Beneficiary with the same wallet address already exists.`,
+        variant: 'destructive',
+      })
+    } else if (beneficiaryInputVal === address) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a beneficiary.',
+        variant: 'destructive',
+      })
     } else {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('wallet_address', beneficiaryInputVal)
 
-      if (!error && data) {
+      if (!error && data.length > 0) {
         const newBeneficiary: any = {
           user_id: data[0].id,
           percentage: parseInt(percentageInputVal),
@@ -91,7 +116,11 @@ export default function CreateWill() {
       } else {
         // API call failed
         // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error',
+          description: `User with the address does not exist.`,
+          variant: 'destructive',
+        })
       }
     }
 
@@ -121,9 +150,17 @@ export default function CreateWill() {
   const handleAddValidator = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     if (validatorInputVal.trim() === '') {
-      alert('Please fill in the field')
+      toast({
+        title: 'Error',
+        description: `Please fill in the field.`,
+        variant: 'destructive',
+      })
     } else if (validatorsArr.length >= 3) {
-      alert('You can only have up to 3 validators')
+      toast({
+        title: 'Error',
+        description: `You can only have up to 3 validators.`,
+        variant: 'destructive',
+      })
     } else if (
       validatorsArr.some(
         (validator) =>
@@ -131,14 +168,24 @@ export default function CreateWill() {
           validatorInputVal
       )
     ) {
-      alert('Validator with the same wallet address already exists')
+      toast({
+        title: 'Error',
+        description: `Validator with the same wallet address already exists.`,
+        variant: 'destructive',
+      })
+    } else if (validatorInputVal === address) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a validator.',
+        variant: 'destructive',
+      })
     } else {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('wallet_address', validatorInputVal)
 
-      if (!error && data) {
+      if (!error && data.length > 0) {
         const newValidator: any = {
           user_id: data[0].id,
           metadata: data[0],
@@ -152,7 +199,11 @@ export default function CreateWill() {
       } else {
         // API call failed
         // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error',
+          description: `User with the address does not exist.`,
+          variant: 'destructive',
+        })
       }
     }
   }
@@ -167,194 +218,294 @@ export default function CreateWill() {
     setValidatorsArr(newArr)
   }
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const { data: wills_data, error: wills_error } = await supabase
+  const onCreate = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true)
+    console.info('Inserting will')
+    const { data: newWill, error: createWillError } = await supabase
       .from('wills')
-      .insert({ title: values.title as string, user_id: user?.id as string })
+      .insert({
+        title: values.title as string,
+        user_id: user?.id as string,
+        eth_amount: values.ethAmount as string,
+      })
       .select()
+      .single()
 
-    if (!wills_error) {
+    if (!createWillError) {
       beneficiariesArr.forEach(async (beneficiary) => {
-        beneficiary.will_id = wills_data[0].id as string
+        beneficiary.will_id = newWill.id as string
       })
       validatorsArr.forEach(async (validator) => {
-        validator.will_id = wills_data[0].id as string
+        validator.will_id = newWill.id as string
       })
 
-      const { data: ben_data, error: ben_error } = await supabase
+      console.info('Inserting beneficiaries and validators data')
+      const { data: newBeneficiary, error: createBenError } = await supabase
         .from('beneficiaries')
         .insert(beneficiariesArr)
         .select()
-      const { data: val_data, error: val_error } = await supabase
+
+      const { data: newValidator, error: createValError } = await supabase
         .from('validators')
         .insert(validatorsArr)
         .select()
 
-      if (!ben_error && !val_error) {
+      if (createBenError || createValError) {
+        toast({
+          title: 'Error',
+          description: `Transaction failed. Please try again.`,
+          variant: 'destructive',
+        })
+
+        // Delete will if contract call fails
+        console.info('Transaction failed, deleting will')
+        await supabase.from('wills').delete().eq('id', newWill.id)
+      }
+
+      console.info('Calling WillContract')
+      try {
+        // Prep data for createWill contract call
+        const _willId = newWill.id as string
+        const _beneficiaries = beneficiariesArr.map((beneficiary) => ({
+          beneficiaryAddress: (
+            beneficiary.metadata as Record<string, any>
+          ).wallet_address.toString(),
+          percentage: beneficiary.percentage.toString(),
+        }))
+        const data = await createWill({
+          args: [_willId, _beneficiaries],
+          overrides: {
+            value: utils.parseEther(values.ethAmount),
+          },
+        })
+        console.info('WillContract call success', data)
+        toast({
+          title: 'Contract call success',
+          description: `Your will has been created!`,
+          variant: 'success',
+        })
         router.push('/wills')
-      } else {
-        console.log(ben_error, val_error)
+      } catch (e) {
+        console.error('WillContract call error', e)
+        toast({
+          title: 'Contract call error',
+          description: `Transaction failed. Ensure your balance is enough and try again.`,
+          variant: 'destructive',
+        })
+
+        // Delete will if contract call fails
+        console.info('Transaction failed, deleting will')
+        await supabase.from('wills').delete().eq('id', newWill.id)
       }
     }
+    setIsLoading(false)
   }
 
   return (
     <>
-      <div className="container flex items-center justify-between pb-8">
+      <div className="flex items-center justify-between pb-12">
         <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
           Create Will
         </h1>
       </div>
-      <div className="container grid gap-4">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Will Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="My First Will" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid gap-4">
-              <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
-                Beneficiaries
-              </h2>
-              <div className="grid items-end grid-cols-11 gap-4">
-                <div className="grid w-full items-center gap-1.5 col-span-5">
-                  <Label htmlFor="email">Beneficiary's Wallet Address</Label>
-                  <Input
-                    type="text"
-                    name="field1"
-                    placeholder="0x12345..."
-                    value={beneficiaryInputVal}
-                    onChange={handleBeneficiaryInputValChange}
-                    disabled={totalPercentage === 100}
-                  />
+      <Card>
+        <CardContent className="p-12">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onCreate)} className="space-y-8">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Will title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter will title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="ethAmount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Deposit fund</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter ETH amount to deposit"
+                        type="text"
+                        pattern="[0-9.]*" // Allow only numbers
+                        inputMode="numeric" // Set the input mode to numeric for better mobile support
+                        onInput={(e) => {
+                          const inputElement = e.target as HTMLInputElement
+                          inputElement.value = inputElement.value.replace(
+                            /[^0-9.]/g,
+                            ''
+                          ) // Remove non-numeric characters
+                        }}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-12">
+                <div className="flex flex-col gap-6">
+                  <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
+                    Beneficiaries
+                  </h2>
+                  <div className="grid items-end grid-cols-11 gap-4">
+                    <div className="grid items-center w-full col-span-5 gap-2">
+                      <Label htmlFor="email">Address</Label>
+                      <Input
+                        type="text"
+                        name="field1"
+                        placeholder="0x12345..."
+                        value={beneficiaryInputVal}
+                        onChange={handleBeneficiaryInputValChange}
+                        disabled={totalPercentage === 100}
+                      />
+                    </div>
+                    <div className="grid items-center w-full col-span-5 gap-2">
+                      <Label htmlFor="email">Percentage (%)</Label>
+                      <Input
+                        type="number"
+                        name="field2"
+                        placeholder="100"
+                        value={percentageInputVal}
+                        onChange={handlePercentFieldChange}
+                        disabled={totalPercentage === 100}
+                      />
+                    </div>
+                    <Button
+                      className="col-span-1"
+                      size={'icon'}
+                      onClick={handleAddBeneficiary}
+                      disabled={totalPercentage === 100}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {beneficiariesArr.length != 0 && (
+                    <div className="flex flex-col gap-4">
+                      {beneficiariesArr.map((beneficiary, index) => (
+                        <Card key={beneficiary.user_id}>
+                          <CardContent className="flex items-center justify-between pt-6">
+                            <p className="leading-7 truncate max-w-[10rem]">
+                              {
+                                (beneficiary.metadata as Record<string, any>)
+                                  .first_name
+                              }{' '}
+                              {
+                                (beneficiary.metadata as Record<string, any>)
+                                  .last_name
+                              }
+                            </p>
+                            <p className="w-40 leading-7 truncate">
+                              {
+                                (beneficiary.metadata as Record<string, any>)
+                                  .wallet_address
+                              }
+                            </p>
+                            <p className="leading-7">
+                              {beneficiary.percentage}%
+                            </p>
+                            <Button
+                              size={'sm'}
+                              variant={'destructive'}
+                              className="col-span-1"
+                              onClick={(event) =>
+                                handleDeleteBeneficiary(event, index)
+                              }
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="grid w-full items-center gap-1.5 col-span-5">
-                  <Label htmlFor="email">Division Percentage</Label>
-                  <Input
-                    type="number"
-                    name="field2"
-                    placeholder="100"
-                    value={percentageInputVal}
-                    onChange={handlePercentFieldChange}
-                    disabled={totalPercentage === 100}
-                  />
-                </div>
-                <Button
-                  onClick={handleAddBeneficiary}
-                  disabled={totalPercentage === 100}
-                >
-                  Add
-                </Button>
-              </div>
-              <div className="grid gap-4">
-                {beneficiariesArr.map((beneficiary, index) => (
-                  <Card className="dark" key={beneficiary.user_id}>
-                    <CardContent className="flex items-center justify-between pt-6">
-                      <div className="flex items-center gap-12">
-                        <p className="w-40 leading-7 truncate">
-                          {
-                            (beneficiary.metadata as Record<string, any>)
-                              .first_name
-                          }{' '}
-                          {
-                            (beneficiary.metadata as Record<string, any>)
-                              .last_name
-                          }
-                        </p>
-                        <p className="w-40 leading-7 truncate">
-                          {
-                            (beneficiary.metadata as Record<string, any>)
-                              .wallet_address
-                          }
-                        </p>
-                        <p className="leading-7">{beneficiary.percentage}%</p>
-                      </div>
-                      <Button
-                        size={'sm'}
-                        variant={'destructive'}
-                        className="col-span-1"
-                        onClick={(event) =>
-                          handleDeleteBeneficiary(event, index)
-                        }
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
 
-            <div className="grid gap-4">
-              <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
-                Validators
-              </h2>
-              <div className="grid items-end grid-cols-11 gap-4">
-                <div className="grid items-center w-full col-span-10 gap-2">
-                  <Label htmlFor="email">Validator's Wallet Address</Label>
-                  <Input
-                    type="text"
-                    name="field1"
-                    placeholder="0x12345..."
-                    value={validatorInputVal}
-                    onChange={handleValidatorInputChange}
-                    disabled={validatorsArr.length === 3}
-                  />
+                <div className="flex flex-col gap-6">
+                  <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
+                    Validators
+                  </h2>
+                  <div className="grid items-end grid-cols-11 gap-4">
+                    <div className="grid items-center w-full col-span-10 gap-2">
+                      <Label htmlFor="email">Address</Label>
+                      <Input
+                        type="text"
+                        name="field1"
+                        placeholder="0x12345..."
+                        value={validatorInputVal}
+                        onChange={handleValidatorInputChange}
+                        disabled={validatorsArr.length === 3}
+                      />
+                    </div>
+                    <Button
+                      className="col-span-1"
+                      size={'icon'}
+                      onClick={handleAddValidator}
+                      disabled={validatorsArr.length === 3}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {validatorsArr.length != 0 && (
+                    <div className="grid gap-4">
+                      {validatorsArr.map((validator, index) => (
+                        <Card key={index}>
+                          <CardContent className="flex items-center justify-between pt-6">
+                            <p className="w-40 leading-7 truncate">
+                              {
+                                (validator.metadata as Record<string, any>)
+                                  .first_name
+                              }{' '}
+                              {
+                                (validator.metadata as Record<string, any>)
+                                  .last_name
+                              }
+                            </p>
+                            <Button
+                              size={'sm'}
+                              variant={'destructive'}
+                              className="col-span-1"
+                              onClick={(event) =>
+                                handleDeleteValidator(event, index)
+                              }
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <Button
-                  className="grid col-span-1"
-                  onClick={handleAddValidator}
-                  disabled={validatorsArr.length === 3}
-                >
-                  Add
-                </Button>
               </div>
-              <div className="grid gap-4">
-                {validatorsArr.map((validator, index) => (
-                  <Card className="dark" key={index}>
-                    <CardContent className="flex items-center justify-between pt-6">
-                      <div className="flex items-center gap-12">
-                        <p className="w-40 leading-7 truncate">
-                          {
-                            (validator.metadata as Record<string, any>)
-                              .first_name
-                          }{' '}
-                          {
-                            (validator.metadata as Record<string, any>)
-                              .last_name
-                          }
-                        </p>
-                      </div>
-                      <Button
-                        size={'sm'}
-                        variant={'destructive'}
-                        className="col-span-1"
-                        onClick={(event) => handleDeleteValidator(event, index)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
+              <div className="flex justify-end">
+                {!isLoading ? (
+                  <Button size={'lg'} type="submit">
+                    Create will
+                  </Button>
+                ) : (
+                  <Button size={'lg'} disabled>
+                    <div className="loading-spinner"></div>
+                    Loading...
+                  </Button>
+                )}
               </div>
-            </div>
-            <div className="flex justify-end gap-4">
-              <Button size={'lg'} type="submit">
-                Submit
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
+              <p className="text-right text-xs text-muted">
+                Note: Creating a will will trigger a transaction and incur gas
+                fees.
+              </p>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </>
   )
 }

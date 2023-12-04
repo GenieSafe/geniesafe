@@ -11,15 +11,16 @@ import { Card, CardContent } from '../../components/ui/card'
 import { Trash2 } from 'lucide-react'
 
 import { Database, Tables } from '../../lib/database.types'
+import { toast } from '@/components/ui/use-toast'
+import { useAddress } from '@thirdweb-dev/react'
 
-const Assign = () => {
+export default function AssignConfig() {
   const supabase = useSupabaseClient<Database>()
   const user = useUser()
   const router = useRouter()
+  const address = useAddress()
 
-  const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>(
-    []
-  )
+  const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>([])
   const [verifierInputVal, setVerifierInputVal] = useState('')
   const [pkInputVal, setPkInputVal] = useState('')
 
@@ -33,9 +34,17 @@ const Assign = () => {
 
   const handleAddVerifier = async () => {
     if (verifierInputVal.trim() === '') {
-      alert('Please fill in the field')
+      toast({
+        title: 'Error',
+        description: `Please fill in a verifier wallet address.`,
+        variant: 'destructive',
+      })
     } else if (verifiersArr.length >= 3) {
-      alert('You can only have up to 3 verifiers')
+      toast({
+        title: 'Error',
+        description: `You can only have up to 3 verifiers.`,
+        variant: 'destructive',
+      })
     } else if (
       verifiersArr.some(
         (verifier) =>
@@ -43,14 +52,24 @@ const Assign = () => {
           verifierInputVal
       )
     ) {
-      alert('Verifier with the same wallet address already exists')
+      toast({
+        title: 'Error',
+        description: `Verifier with the same wallet address already exists.`,
+        variant: 'destructive',
+      })
+    } else if (address === verifierInputVal) {
+      toast({
+        title: 'Error',
+        description: 'You cannot add yourself as a verifier.',
+        variant: 'destructive',
+      })
     } else {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('wallet_address', verifierInputVal)
 
-      if (!error && data) {
+      if (!error && data.length > 0) {
         const newVerifier: any = {
           user_id: data[0].id,
           metadata: data[0],
@@ -62,9 +81,11 @@ const Assign = () => {
           setVerifierInputVal('')
         }
       } else {
-        // API call failed
-        // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error',
+          description: `User with the address does not exist.`,
+          variant: 'destructive',
+        })
       }
     }
 
@@ -84,7 +105,10 @@ const Assign = () => {
   const onSubmit = async () => {
     const { data: config_data, error: config_error } = await supabase
       .from('wallet_recovery_config')
-      .insert({ private_key: pkInputVal as string, user_id: user?.id as string })
+      .insert({
+        private_key: pkInputVal as string,
+        user_id: user?.id as string,
+      })
       .select()
 
     if (!config_error) {
@@ -98,94 +122,102 @@ const Assign = () => {
         .select()
 
       if (!ver_error) {
+        toast({
+          title: 'Safeguard configuration created successfully!',
+          description:
+            'Your private key has been encrypted and stored in our database.',
+          variant: 'success',
+        })
         router.push('/safeguard')
       } else {
-        console.log(ver_error)
+        toast({
+          title: 'Error creating safeguard configuration',
+          description: ver_error.message,
+          variant: 'destructive',
+        })
       }
     }
   }
 
   return (
     <>
-      <div className="container pb-8">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-4xl font-bold tracking-tight scroll-m-20 lg:text-5xl">
-            Safeguard your wallet
-          </h1>
-          <p className="leading-7 ">
-            Worry you might lose access to your wallet? Assign trusted Verifiers
-            to help safeguard your private key.
-          </p>
-        </div>
-        <div className="grid items-center w-full gap-10 pt-8">
-          <div className="grid w-full  items-center gap-1.5">
+      <div className="flex items-center justify-between pb-12">
+        <h1 className="text-5xl font-bold tracking-tight scroll-m-20">
+          Create Safeguard Configuration
+        </h1>
+      </div>
+      <Card>
+        <CardContent className="p-12 space-y-8">
+          <div className="grid items-center w-full gap-2">
             <Label>Private Key</Label>
             <Input
               type="password"
               id="privateKey"
               placeholder=""
               onChange={handlePkInputChange}
+              value={pkInputVal}
             />
           </div>
-          <div className="grid gap-1.5">
-            <Progress value={Math.floor((verifiersArr.length / 3) * 100)} />
+          <div className="grid gap-2">
             <Label className="justify-self-end">
-              {verifiersArr.length}/3 Verifiers
+              {verifiersArr.length}/3 verifiers
             </Label>
+            <Progress value={Math.floor((verifiersArr.length / 3) * 100)} />
           </div>
-          <div className="grid w-full items-center gap-1.5">
-            <Label>Verifier's Wallet Address</Label>
-            <div className="flex items-center w-full space-x-4">
-              <Input
-                type="text"
-                placeholder="0x12345..."
-                value={verifierInputVal}
-                onChange={handleVerifierInputChange}
-                disabled={verifiersArr.length === 3}
-              />
-              <Button
-                type="submit"
-                onClick={handleAddVerifier}
-                disabled={verifiersArr.length === 3}
-              >
-                Assign
-              </Button>
+          <div className="flex flex-col gap-6">
+            <div className="grid items-center w-full gap-2">
+              <Label>Verifier's Wallet Address</Label>
+              <div className="flex items-center w-full space-x-4">
+                <Input
+                  type="text"
+                  placeholder="0x12345..."
+                  value={verifierInputVal}
+                  onChange={handleVerifierInputChange}
+                  disabled={verifiersArr.length === 3}
+                />
+                <Button
+                  type="submit"
+                  onClick={handleAddVerifier}
+                  disabled={verifiersArr.length === 3}
+                >
+                  Assign
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-          {verifiersArr.map((verifier, index) => (
-              <Card className="dark" key={index}>
-                <CardContent className="pt-6">
-                  <div className="flex flex-row items-center justify-between">
-                    <p>
-                      {(verifier.metadata as Record<string, any>).first_name}{' '}
-                      {(verifier.metadata as Record<string, any>).last_name}
-                    </p>
-                    <Button
-                      size={'sm'}
-                      variant={'destructive'}
-                      onClick={(event) => handleDeleteVerifier(event, index)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <div className="grid grid-cols-3 gap-4">
+              {verifiersArr.map((verifier, index) => (
+                <Card className="dark" key={index}>
+                  <CardContent className="pt-6">
+                    <div className="flex flex-row items-center justify-between">
+                      <p>
+                        {(verifier.metadata as Record<string, any>).first_name}{' '}
+                        {(verifier.metadata as Record<string, any>).last_name}
+                      </p>
+                      <Button
+                        size={'sm'}
+                        variant={'destructive'}
+                        onClick={(event) => handleDeleteVerifier(event, index)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
           <div className="flex justify-end">
             <Button
               type="submit"
+              size={'lg'}
               onClick={onSubmit}
-              disabled={verifiersArr.length === 3}
+              disabled={verifiersArr.length < 3}
             >
-              Confirm verifiers
+              Create Safeguard
             </Button>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </>
   )
 }
-
-export default Assign

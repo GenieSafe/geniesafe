@@ -36,16 +36,18 @@ export interface Database {
         }
         Relationships: [
           {
-            foreignKeyName: "beneficiaries_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            foreignKeyName: 'beneficiaries_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "beneficiaries_will_id_fkey"
-            columns: ["will_id"]
-            referencedRelation: "wills"
-            referencedColumns: ["id"]
+            foreignKeyName: 'beneficiaries_will_id_fkey'
+            columns: ['will_id']
+            isOneToOne: false
+            referencedRelation: 'wills'
+            referencedColumns: ['id']
           }
         ]
       }
@@ -79,10 +81,11 @@ export interface Database {
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_id_fkey"
-            columns: ["id"]
-            referencedRelation: "users"
-            referencedColumns: ["id"]
+            foreignKeyName: 'profiles_id_fkey'
+            columns: ['id']
+            isOneToOne: true
+            referencedRelation: 'users'
+            referencedColumns: ['id']
           }
         ]
       }
@@ -93,6 +96,7 @@ export interface Database {
           id: string
           metadata: Json | null
           user_id: string
+          validated_at: string | null
           will_id: string
         }
         Insert: {
@@ -101,6 +105,7 @@ export interface Database {
           id?: string
           metadata?: Json | null
           user_id: string
+          validated_at?: string | null
           will_id: string
         }
         Update: {
@@ -109,20 +114,23 @@ export interface Database {
           id?: string
           metadata?: Json | null
           user_id?: string
+          validated_at?: string | null
           will_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "validators_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            foreignKeyName: 'validators_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "validators_will_id_fkey"
-            columns: ["will_id"]
-            referencedRelation: "wills"
-            referencedColumns: ["id"]
+            foreignKeyName: 'validators_will_id_fkey'
+            columns: ['will_id']
+            isOneToOne: false
+            referencedRelation: 'wills'
+            referencedColumns: ['id']
           }
         ]
       }
@@ -156,16 +164,25 @@ export interface Database {
         }
         Relationships: [
           {
-            foreignKeyName: "verifiers_config_id_fkey"
-            columns: ["config_id"]
-            referencedRelation: "wallet_recovery_config"
-            referencedColumns: ["id"]
+            foreignKeyName: 'verifiers_config_id_fkey'
+            columns: ['config_id']
+            isOneToOne: false
+            referencedRelation: 'decrypted_wallet_recovery_config'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "verifiers_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            foreignKeyName: 'verifiers_config_id_fkey'
+            columns: ['config_id']
+            isOneToOne: false
+            referencedRelation: 'wallet_recovery_config'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'verifiers_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           }
         ]
       }
@@ -174,7 +191,7 @@ export interface Database {
           created_at: string
           id: string
           private_key: string | null
-          status: Database["public"]["Enums"]["config_status"]
+          status: Database['public']['Enums']['config_status']
           updated_at: string
           user_id: string
         }
@@ -182,7 +199,7 @@ export interface Database {
           created_at?: string
           id?: string
           private_key?: string | null
-          status?: Database["public"]["Enums"]["config_status"]
+          status?: Database['public']['Enums']['config_status']
           updated_at?: string
           user_id: string
         }
@@ -190,71 +207,118 @@ export interface Database {
           created_at?: string
           id?: string
           private_key?: string | null
-          status?: Database["public"]["Enums"]["config_status"]
+          status?: Database['public']['Enums']['config_status']
           updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "wallet_recovery_config_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            foreignKeyName: 'wallet_recovery_config_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           }
         ]
       }
       wills: {
         Row: {
-          contract_address: string | null
+          activated_at: string | null
           created_at: string
           deployed_at: string | null
           deployed_at_block: string | null
           id: string
-          status: Database["public"]["Enums"]["will_status"]
+          status: Database['public']['Enums']['will_status']
           title: string
           updated_at: string
           user_id: string
+          eth_amount: string
         }
         Insert: {
-          contract_address?: string | null
+          activated_at?: string | null
           created_at?: string
           deployed_at?: string | null
           deployed_at_block?: string | null
           id?: string
-          status?: Database["public"]["Enums"]["will_status"]
+          status?: Database['public']['Enums']['will_status']
           title: string
           updated_at?: string
           user_id: string
+          eth_amount?: string
         }
         Update: {
-          contract_address?: string | null
+          activated_at?: string | null
           created_at?: string
           deployed_at?: string | null
           deployed_at_block?: string | null
           id?: string
-          status?: Database["public"]["Enums"]["will_status"]
+          status?: Database['public']['Enums']['will_status']
           title?: string
           updated_at?: string
           user_id?: string
+          eth_amount?: string
         }
         Relationships: [
           {
-            foreignKeyName: "wills_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            foreignKeyName: 'wills_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           }
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      decrypted_wallet_recovery_config: {
+        Row: {
+          created_at: string | null
+          decrypted_private_key: string | null
+          id: string | null
+          private_key: string | null
+          status: Database['public']['Enums']['config_status'] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          decrypted_private_key?: never
+          id?: string | null
+          private_key?: string | null
+          status?: Database['public']['Enums']['config_status'] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          decrypted_private_key?: never
+          id?: string | null
+          private_key?: string | null
+          status?: Database['public']['Enums']['config_status'] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'wallet_recovery_config_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
+      }
     }
     Functions: {
+      get_private_key: {
+        Args: {
+          in_config_id: string
+        }
+        Returns: string
+      }
       update_config: {
         Args: {
           in_config_id: string
-          in_private_key: string
           in_verifiers: unknown[]
         }
         Returns: undefined
@@ -270,8 +334,8 @@ export interface Database {
       }
     }
     Enums: {
-      config_status: "INACTIVE" | "ACTIVE" | "VERIFIED" | "EXECUTED"
-      will_status: "INACTIVE" | "ACTIVE" | "VALIDATED" | "EXECUTED"
+      config_status: 'INACTIVE' | 'ACTIVE' | 'VERIFIED' | 'EXECUTED'
+      will_status: 'INACTIVE' | 'ACTIVE' | 'VALIDATED' | 'EXECUTED'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -279,6 +343,7 @@ export interface Database {
   }
 }
 
-export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
-export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T]
-// etc.
+export type Tables<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Row']
+export type Enums<T extends keyof Database['public']['Enums']> =
+  Database['public']['Enums'][T]
