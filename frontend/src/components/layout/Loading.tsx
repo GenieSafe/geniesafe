@@ -5,7 +5,7 @@ export default function Loading() {
   return (
     <>
       <div className="flex items-center justify-center w-full h-[500px]">
-        <Geniesafe className="h-36 w-36 animate-pulse"/>
+        <Geniesafe className="h-36 w-36 animate-pulse text-[#4b556380]"/>
         
       </div>
     </>
