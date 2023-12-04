@@ -28,6 +28,7 @@ import { ConnectWallet, useAddress, useWallet } from '@thirdweb-dev/react'
 import { createSupabaseServer } from '../../lib/createSupabaseAdmin'
 import { sign } from 'crypto'
 import { toast } from '@/components/ui/use-toast'
+import Logo from '@/components/layout/Logo'
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -101,7 +102,7 @@ export default function Register() {
       })
 
       linkWallet(signup_data.user?.id, address)
-      
+
       if (!error) {
         toast({
           title: 'Registration successful!',
@@ -113,7 +114,7 @@ export default function Register() {
       } else {
         toast({
           title: error.details,
-          variant: 'destructive'
+          variant: 'destructive',
         })
       }
     }
@@ -129,111 +130,113 @@ export default function Register() {
 
   return (
     <>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(signUpWithEmail)}
-          className="grid gap-4 lg:gap-6"
-        >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div className="space-y-1">
-                <CardTitle className="text-2xl">Register</CardTitle>
-                <CardDescription>Create a geniesafe account</CardDescription>
-              </div>
-              <ConnectWallet
-                dropdownPosition={{
-                  side: 'bottom',
-                  align: 'center',
-                }}
-              />
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Enter your email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex flex-col gap-2">
+      <div className="flex flex-col items-center gap-6">
+        <Logo />
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(signUpWithEmail)}
+            className="grid gap-4 lg:gap-6"
+          >
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="space-y-1">
+                  <CardTitle className="text-2xl">Register</CardTitle>
+                  <CardDescription>Create a geniesafe account</CardDescription>
+                </div>
+                <ConnectWallet
+                  dropdownPosition={{
+                    side: 'bottom',
+                    align: 'center',
+                  }}
+                />
+              </CardHeader>
+              <CardContent className="grid gap-4">
                 <FormField
                   control={form.control}
-                  name="password"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <div className="flex items-center w-full space-x-2">
+                        <Input
+                          type="email"
+                          placeholder="Enter your email"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex flex-col gap-2">
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center w-full space-x-2">
+                            <Input
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder="********"
+                              {...field}
+                            />
+                            <Button
+                              size="icon"
+                              type="button"
+                              onClick={handleShowPassword}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="w-4 h-4" />
+                              ) : (
+                                <Eye className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <FormField
+                    control={form.control}
+                    name="first_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name</FormLabel>
+                        <FormControl>
                           <Input
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="********"
+                            type="text"
+                            placeholder="Enter your first name"
                             {...field}
                           />
-                          <Button
-                            size="icon"
-                            type="button"
-                            onClick={handleShowPassword}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="w-4 h-4" />
-                            ) : (
-                              <Eye className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex gap-4">
-                <FormField
-                  control={form.control}
-                  name="first_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Enter your first name"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="last_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder="Enter your last name"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              {/* <FormField
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="last_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="Enter your last name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                {/* <FormField
                 control={form.control}
                 name="wallet_address"
                 render={({ field }) => (
@@ -250,35 +253,36 @@ export default function Register() {
                   </FormItem>
                 )}
               /> */}
-              <FormField
-                control={form.control}
-                name="ic_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>I/C Number</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="Enter your I/C number"
-                        {...field}
-                        maxLength={12} // Limit the input to 12 characters
-                        pattern="[0-9]*" // Only allows numeric characters
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-            <CardFooter className="flex flex-col items-center">
-              <Button className="w-full">Register</Button>
-              <Button variant={'link'} size={'sm'} asChild>
-                <Link href="/">Sign in to your account</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        </form>
-      </Form>
+                <FormField
+                  control={form.control}
+                  name="ic_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>I/C Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Enter your I/C number"
+                          {...field}
+                          maxLength={12} // Limit the input to 12 characters
+                          pattern="[0-9]*" // Only allows numeric characters
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+              <CardFooter className="flex flex-col items-center">
+                <Button className="w-full">Register</Button>
+                <Button variant={'link'} size={'sm'} asChild>
+                  <Link href="/">Sign in to your account</Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          </form>
+        </Form>
+      </div>
     </>
   )
 }
