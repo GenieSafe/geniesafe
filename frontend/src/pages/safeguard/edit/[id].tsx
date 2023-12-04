@@ -138,7 +138,7 @@ export default function EditConfig({ config }: { config: any }) {
 
     if (!error) {
       toast({
-        title: 'Success'
+        title: 'Success',
         description: 'Safeguard configuration updated successfully!',
         variant: 'success',
       })
