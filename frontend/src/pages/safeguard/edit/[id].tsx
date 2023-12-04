@@ -33,10 +33,16 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
   // Run queries with RLS on the server
-  const { data, error } = await supabase.from('wallet_recovery_config').select(`
+  const { data, error } = await supabase
+    .from('wallet_recovery_config')
+    .select(
+      `
     id, private_key, status,
     verifiers(user_id, has_verified, verified_at, metadata:user_id(first_name, last_name, wallet_address))
-  `).eq('user_id', session.user.id).single()
+  `
+    )
+    .eq('user_id', session.user.id)
+    .single()
 
   return {
     props: {
@@ -91,11 +97,12 @@ export default function EditConfig({ config }: { config: any }) {
         description: 'You cannot add yourself as a verifier.',
         variant: 'destructive',
       })
-    }else {
+    } else {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('wallet_address', verifierInputVal).single()
+        .eq('wallet_address', verifierInputVal)
+        .single()
 
       if (!error && data) {
         const newVerifier: any = {
@@ -160,7 +167,8 @@ export default function EditConfig({ config }: { config: any }) {
 
     if (!error) {
       toast({
-        title: 'Safeguard configuration updated deleted successfully!',
+        title: 'Success',
+        description: 'Safeguard configuration updated deleted successfully!',
         variant: 'success',
       })
       router.push('/safeguard')
@@ -177,10 +185,10 @@ export default function EditConfig({ config }: { config: any }) {
       <Card>
         <CardContent className="p-12 space-y-8">
           <div className="grid gap-2">
-              <Label className="justify-self-end">
-                {verifiersArr.length}/3 verifiers
-              </Label>
-              <Progress value={Math.floor((verifiersArr.length / 3) * 100)} />
+            <Label className="justify-self-end">
+              {verifiersArr.length}/3 verifiers
+            </Label>
+            <Progress value={Math.floor((verifiersArr.length / 3) * 100)} />
           </div>
           <div className="flex flex-col gap-6">
             <div className="grid items-center w-full gap-2">
