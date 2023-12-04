@@ -26,6 +26,7 @@ import { useForm } from 'react-hook-form'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from '@/components/ui/use-toast'
+import Logo from '@/components/layout/Logo'
 
 const signInSchema = z.object({
   email: z.string().email(),
@@ -55,11 +56,21 @@ export default function Login() {
       email: values.email,
       password: values.password,
     })
-    
-    if(!error){
-      toast({title: 'Welcome back!', description: 'You have successfully logged in.', variant: 'success', duration: 2000})
-    }else{
-      toast({title: error?.message, description: 'Please check your email/password.', variant: 'destructive', duration: 2000})
+
+    if (!error) {
+      toast({
+        title: 'Welcome back!',
+        description: 'You have successfully logged in.',
+        variant: 'success',
+        duration: 2000,
+      })
+    } else {
+      toast({
+        title: error?.message,
+        description: 'Please check your email/password.',
+        variant: 'destructive',
+        duration: 2000,
+      })
     }
   }
 
@@ -69,76 +80,79 @@ export default function Login() {
 
   return (
     <>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(signInWithEmail)}
-          className="grid gap-4 lg:gap-6"
-        >
-          <Card className="w-96">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl">Sign in</CardTitle>
-              <CardDescription>Enter your email and password</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Enter your email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex flex-col gap-2">
+      <div className="flex flex-col items-center gap-6">
+        <Logo />
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(signInWithEmail)}
+            className="grid gap-4 lg:gap-6"
+          >
+            <Card className="w-96">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl">Sign in</CardTitle>
+                <CardDescription>Enter your email and password</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4">
                 <FormField
                   control={form.control}
-                  name="password"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <div className="flex items-center w-full space-x-2">
-                          <Input
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="********"
-                            {...field}
-                          />
-                          <Button
-                            size="icon"
-                            type="button"
-                            onClick={handleShowPassword}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="w-4 h-4" />
-                            ) : (
-                              <Eye className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </div>
+                        <Input
+                          type="email"
+                          placeholder="Enter your email"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col items-center">
-              <Button className="w-full">Sign in</Button>
-              <Button variant={'link'} size={'sm'} asChild>
-                <Link href="/auth/register">Register for an account</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        </form>
-      </Form>
+                <div className="flex flex-col gap-2">
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center w-full space-x-2">
+                            <Input
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder="********"
+                              {...field}
+                            />
+                            <Button
+                              size="icon"
+                              type="button"
+                              onClick={handleShowPassword}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="w-4 h-4" />
+                              ) : (
+                                <Eye className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-col items-center">
+                <Button className="w-full">Sign in</Button>
+                <Button variant={'link'} size={'sm'} asChild>
+                  <Link href="/auth/register">Register for an account</Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          </form>
+        </Form>
+      </div>
     </>
   )
 }
