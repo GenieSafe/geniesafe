@@ -6,7 +6,6 @@ import { Plus } from 'lucide-react'
 
 import { WillCard } from '@/components/WillCard'
 import { Button } from '@/components/ui/button'
-import { ethers } from 'ethers'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import InheritedWillsTable from '@/components/InheritedWillsTable'
 import { useState } from 'react'
@@ -105,32 +104,41 @@ export default function Wills({
           </TabsTrigger>
         </TabsList>
         <TabsContent value="will" className="mt-6">
-          <div className="flex items-center justify-between pb-12">
+          <div className="flex flex-col gap-2 pb-12">
             <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
               Your Will
             </h1>
-            {!will && (
-              <Button asChild>
-                <Link href="/wills/create">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create new will
-                </Link>
-              </Button>
-            )}
+            <p className="leading-7">
+              Your one and only geniesafe's virtual will card. 
+            </p>
           </div>
           <div className="flex flex-col gap-16">
             {will ? (
               <WillCard will={will} balance={balance} ethUsd={ethUsd} />
             ) : (
-              <p className="text-2xl font-bold text-center">No will found</p>
+              <>
+                <div className="flex mx-auto">
+                  {!will && (
+                    <Button asChild>
+                      <Link href="/wills/create">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create new will
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </TabsContent>
         <TabsContent value="inherited" className="mt-6">
-          <div className="flex items-center justify-between pb-12">
+        <div className="flex flex-col gap-2 pb-12">
             <h1 className="text-4xl font-bold tracking-tight shadow scroll-m-20 lg:text-5xl">
               Inherited Wills
             </h1>
+            <p className="leading-7">
+              View the status, division percentage and activate the wills you have been assigned as a beneficiary.
+            </p>
           </div>
           <div className="flex flex-col gap-16">
             {inheritedWillsData.length > 0 ? (
