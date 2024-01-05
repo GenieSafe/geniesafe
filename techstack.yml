@@ -1,11 +1,12 @@
 repo_name: GenieSafe/geniesafe
-report_id: 1c6fa5d350d75f77bd98d1a72b51f6ce
+report_id: ecec2297259b66114c39a9e73678ee96
+version: 0.1
 repo_type: Public
-timestamp: '2023-12-14T10:37:04+00:00'
+timestamp: '2024-01-05T08:45:46+00:00'
 requested_by: alifmazli
 provider: github
 branch: dev
-detected_tools_count: 30
+detected_tools_count: 31
 tools:
 - name: CSS 3
   description: The latest evolution of the Cascading Style Sheets language
@@ -15,6 +16,7 @@ tools:
   category: Languages & Frameworks
   sub_category: Languages
   image_url: https://img.stackshare.io/service/6727/css.png
+  detection_source_url: https://github.com/GenieSafe/geniesafe
   detection_source: Repo Metadata
 - name: JavaScript
   description: Lightweight, interpreted, object-oriented language with first-class
@@ -25,6 +27,7 @@ tools:
   category: Languages & Frameworks
   sub_category: Languages
   image_url: https://img.stackshare.io/service/1209/javascript.jpeg
+  detection_source_url: https://github.com/GenieSafe/geniesafe
   detection_source: Repo Metadata
 - name: TypeScript
   description: A superset of JavaScript that compiles to clean JavaScript output
@@ -35,6 +38,7 @@ tools:
   category: Languages & Frameworks
   sub_category: Languages
   image_url: https://img.stackshare.io/service/1612/bynNY5dJ.jpg
+  detection_source_url: https://github.com/GenieSafe/geniesafe
   detection_source: Repo Metadata
 - name: Autoprefixer
   description: PostCSS plugin to parse CSS and add vendor prefixes to CSS rules
@@ -44,6 +48,7 @@ tools:
   category: Languages & Frameworks
   sub_category: CSS Pre-processors / Extensions
   image_url: https://img.stackshare.io/service/2202/72d087642cfce6fef6f2dabec5bf49e8_400x400.png
+  detection_source_url: https://github.com/GenieSafe/geniesafe/blob/dev/frontend/.react-email/package.json
   detection_source: frontend/.react-email/package.json
   last_updated_by: alif
   last_updated_on: 2023-11-07 19:14:05.000000000 Z
@@ -69,6 +74,7 @@ tools:
   category: Languages & Frameworks
   sub_category: Frameworks (Full Stack)
   image_url: https://img.stackshare.io/service/1011/n1JRsFeB_400x400.png
+  detection_source_url: https://github.com/GenieSafe/geniesafe/blob/dev/frontend/.react-email/package.json
   detection_source: frontend/.react-email/package.json
   last_updated_by: alif
   last_updated_on: 2023-11-07 19:14:05.000000000 Z
@@ -81,6 +87,7 @@ tools:
   category: Languages & Frameworks
   sub_category: CSS Pre-processors / Extensions
   image_url: https://img.stackshare.io/service/3339/rlFcjEdI.png
+  detection_source_url: https://github.com/GenieSafe/geniesafe/blob/dev/frontend/.react-email/package.json
   detection_source: frontend/.react-email/package.json
   last_updated_by: alif
   last_updated_on: 2023-11-07 19:14:05.000000000 Z
@@ -107,6 +114,7 @@ tools:
   category: Languages & Frameworks
   sub_category: Front-End Frameworks
   image_url: https://img.stackshare.io/service/8158/default_660b7c41c3ba489cb581eec89c04655404258c19.png
+  detection_source_url: https://github.com/GenieSafe/geniesafe/blob/dev/frontend/.react-email/package.json
   detection_source: frontend/.react-email/package.json
   last_updated_by: alif
   last_updated_on: 2023-11-07 19:14:05.000000000 Z
@@ -119,6 +127,7 @@ tools:
   category: Application Hosting
   sub_category: Realtime Backend / API
   image_url: https://img.stackshare.io/service/12323/Z_q3YLKR_400x400.jpg
+  detection_source_url: https://github.com/GenieSafe/geniesafe/blob/dev/frontend/package.json
   detection_source: frontend/package.json
   last_updated_by: alif
   last_updated_on: 2023-11-16 09:35:48.000000000 Z
@@ -146,6 +155,7 @@ tools:
   category: Build, Test, Deploy
   sub_category: Code Review
   image_url: https://img.stackshare.io/service/3337/Q4L7Jncy.jpg
+  detection_source_url: https://github.com/GenieSafe/geniesafe/blob/dev/frontend/.react-email/package.json
   detection_source: frontend/.react-email/package.json
   last_updated_by: alif
   last_updated_on: 2023-11-07 19:14:05.000000000 Z
@@ -157,6 +167,7 @@ tools:
   category: Build, Test, Deploy
   sub_category: Version Control System
   image_url: https://img.stackshare.io/service/1046/git.png
+  detection_source_url: https://github.com/GenieSafe/geniesafe
   detection_source: Repo Metadata
 - name: Prettier
   description: 'Prettier is an opinionated code formatter. '
@@ -194,6 +205,7 @@ tools:
   category: Build, Test, Deploy
   sub_category: Front End Package Manager
   image_url: https://img.stackshare.io/service/1120/lejvzrnlpb308aftn31u.png
+  detection_source_url: https://github.com/GenieSafe/geniesafe/blob/dev/frontend/package.json
   detection_source: frontend/package.json
   last_updated_by: Hunter Chang
   last_updated_on: 2022-09-05 04:11:27.000000000 Z
@@ -205,6 +217,7 @@ tools:
   category: Communications
   sub_category: Transactional Email
   image_url: https://img.stackshare.io/service/2862/qr2-jCLr.jpg
+  detection_source_url: https://github.com/GenieSafe/geniesafe/blob/dev/frontend/.react-email/package.json
   detection_source: frontend/.react-email/package.json
   last_updated_by: alif
   last_updated_on: 2023-11-07 19:14:05.000000000 Z
@@ -214,6 +227,7 @@ tools:
   open_source: false
   hosted_saas: false
   image_url: https://img.stackshare.io/service/48521/default_eea961e4c374e68a1c7eb5bbc9e4a39920890342.png
+  detection_source_url: https://github.com/GenieSafe/geniesafe/blob/dev/frontend/.react-email/package.json
   detection_source: frontend/.react-email/package.json
   last_updated_by: alif
   last_updated_on: 2023-11-07 19:14:05.000000000 Z
@@ -223,12 +237,14 @@ tools:
   open_source: false
   hosted_saas: false
   image_url: https://img.stackshare.io/service/4959/1__IS8pZzkhvd6kUbSFpSgag.png
+  detection_source_url: https://github.com/GenieSafe/geniesafe
   detection_source: Repo Metadata
 - name: yup
   website_url: https://github.com/jquense/yup
   open_source: false
   hosted_saas: false
   image_url: https://img.stackshare.io/service/10756/339286.png
+  detection_source_url: https://github.com/GenieSafe/geniesafe/blob/dev/frontend/package.json
   detection_source: frontend/package.json
   last_updated_by: Hunter Chang
   last_updated_on: 2022-09-05 04:11:27.000000000 Z
@@ -372,3 +388,17 @@ tools:
   detection_source: frontend/.react-email/package.json
   last_updated_by: alif
   last_updated_on: 2023-11-07 19:14:05.000000000 Z
+- name: yup
+  description: Dead simple Object schema validation
+  package_url: https://www.npmjs.com/yup
+  version: 1.3.2
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: npm Packages
+  image_url: https://img.stackshare.io/package/17215/default_37d9ccc57ae4d32e7ff46614e4f8bb2c4ddc7964.png
+  detection_source_url: https://github.com/GenieSafe/geniesafe/blob/dev/frontend/package-lock.json
+  detection_source: frontend/package.json
+  last_updated_by: Hunter Chang
+  last_updated_on: 2022-09-05 04:11:27.000000000 Z
