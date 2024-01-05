@@ -50,7 +50,7 @@ Full tech stack [here](/techstack.md)
 # Tech Stack File
 ![](https://img.stackshare.io/repo.svg "repo") [GenieSafe/geniesafe](https://github.com/GenieSafe/geniesafe)![](https://img.stackshare.io/public_badge.svg "public")
 <br/><br/>
-|30<br/>Tools used|12/14/23 <br/>Report generated|
+|31<br/>Tools used|01/05/24 <br/>Report generated|
 |------|------|
 </div>
 
@@ -240,9 +240,9 @@ Full tech stack [here](/techstack.md)
 </table>
 
 
-## <img src='https://img.stackshare.io/group.svg' /> Open source packages (10)</h2>
+## <img src='https://img.stackshare.io/group.svg' /> Open source packages (11)</h2>
 
-## <img width='24' height='24' src='https://img.stackshare.io/service/1120/lejvzrnlpb308aftn31u.png'/> npm (10)
+## <img width='24' height='24' src='https://img.stackshare.io/service/1120/lejvzrnlpb308aftn31u.png'/> npm (11)
 
 |NAME|VERSION|LAST UPDATED|LAST UPDATED BY|LICENSE|VULNERABILITIES|
 |:------|:------|:------|:------|:------|:------|
@@ -256,6 +256,7 @@ Full tech stack [here](/techstack.md)
 |[ethers](https://www.npmjs.com/ethers)|v5.7.2|11/07/23|alif |MIT|N/A|
 |[react-dom](https://www.npmjs.com/react-dom)|v18.2.0|11/07/23|alif |MIT|N/A|
 |[tailwindcss](https://www.npmjs.com/tailwindcss)|v3.3.5|11/07/23|alif |MIT|N/A|
+|[yup](https://www.npmjs.com/yup)|v1.3.2|09/05/22|Hunter Chang |MIT|N/A|
 
 <br/>
 <div align='center'>
