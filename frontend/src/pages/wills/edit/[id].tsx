@@ -270,7 +270,11 @@ export default function EditWill({ will }: { will: any }) {
       } else {
         // API call failed
         // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error',
+          description: `User with the address does not exist.`,
+          variant: 'destructive',
+        })
       }
     }
 
