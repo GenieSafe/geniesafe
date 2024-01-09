@@ -212,6 +212,8 @@ export default function CreateWill() {
         })
       }
     }
+    
+    setValidatorInputVal('')
   }
 
   const handleDeleteValidator = (
