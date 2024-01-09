@@ -78,7 +78,13 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
 }
 
 const formSchema = z.object({
-  title: z.string({ required_error: 'Will title is required' }).min(5).max(30),
+  title: z
+    .string({ required_error: 'Will title is required' })
+    .min(5, { message: 'Will title must at least contain 5 characters' })
+    .max(30, { message: 'Will title must not exceed 30 characters' })
+    .refine((data) => /^[a-zA-Z0-9][a-zA-Z0-9\s]*$/.test(data), {
+      message: 'Will title must not start with whitespaces and can only contain alphanumeric characters',
+    }),
   ethAmount: z.string({ required_error: 'Amount is required' }).default('0'),
 })
 
@@ -182,7 +188,11 @@ export default function EditWill({ will }: { will: any }) {
       } else {
         // API call failed
         // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error',
+          description: `User with the address does not exist.`,
+          variant: 'destructive',
+        })
       }
     }
 
@@ -264,7 +274,11 @@ export default function EditWill({ will }: { will: any }) {
       } else {
         // API call failed
         // Handle the error
-        console.log(error)
+        toast({
+          title: 'Error',
+          description: `User with the address does not exist.`,
+          variant: 'destructive',
+        })
       }
     }
 
@@ -661,7 +675,7 @@ export default function EditWill({ will }: { will: any }) {
                   </>
                 )}
               </div>
-              <p className="text-right text-xs text-muted">
+              <p className="text-xs text-right text-muted">
                 Note: Any amount of deposits will trigger a transaction and
                 incur gas fees.
               </p>

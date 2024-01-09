@@ -6,6 +6,7 @@ import { useSupabaseClient } from '@supabase/auth-helpers-react'
 
 import { Button } from '../../components/ui/button'
 import SafeguardCard from '../../components/SafeguardCard'
+import { toast } from '@/components/ui/use-toast'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
@@ -55,7 +56,11 @@ export default function Config({ data }: { data: any }) {
     if (!error) {
       setPrivateKey(data)
     } else {
-      console.log(error)
+      toast({
+        title: 'Error retrieving private key',
+        description: error.message,
+        variant: 'destructive',
+      })
     }
   }
 
