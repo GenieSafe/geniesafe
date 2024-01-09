@@ -145,7 +145,7 @@ export default function SafeguardCard({
               disabled={configStatus === 'ACTIVE' || isLoading}
               onClick={onNotify}
             >
-              {configStatus === 'INACTIVE' &&
+              {configStatus === 'INACTIVE' || configStatus === "VERIFIED" &&
                 (isLoading ? (
                   <>
                     <div className="loading-spinner"></div>
