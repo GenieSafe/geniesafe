@@ -142,10 +142,10 @@ export default function SafeguardCard({
           {!privateKey && (
             <Button
               size={'sm'}
-              disabled={configStatus === 'ACTIVE' || isLoading}
+              disabled={configStatus !== 'INACTIVE' || isLoading}
               onClick={onNotify}
             >
-              {configStatus === 'INACTIVE' || configStatus === "VERIFIED" &&
+              {configStatus === 'INACTIVE' &&
                 (isLoading ? (
                   <>
                     <div className="loading-spinner"></div>
@@ -161,6 +161,12 @@ export default function SafeguardCard({
                 <>
                   <CheckCheck className="w-4 h-4 mr-2" />
                   Verifiers notified
+                </>
+              )}
+              {configStatus === 'VERIFIED' && (
+                <>
+                  <CheckCheck className="w-4 h-4 mr-2" />
+                  Verified
                 </>
               )}
             </Button>
