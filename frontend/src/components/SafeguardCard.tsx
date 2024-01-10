@@ -6,6 +6,7 @@ import {
   Unlock,
   BellRing,
   CheckCheck,
+  Pencil,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import Link from 'next/link'
@@ -123,18 +124,15 @@ export default function SafeguardCard({
     <>
       <Card className="hover:shadow-[0px_0px_20px_0px_hsl(var(--primary))] transition-shadow duration-500 p-4">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-3xl font-semibold tracking-tight scroll-m-20 hover:bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] hover:from-violet-200 hover:via-violet-400 hover:to-violet-800 hover:text-transparent hover:bg-clip-text hover:transition-colors hover:duration-300 hover:ease-in-out">
+        <CardTitle className={`w-fit text-3xl font-semibold tracking-tight scroll-m-20 ${config.status == 'INACTIVE' ? "hover:bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] hover:from-violet-200 hover:via-violet-400 hover:to-violet-800 hover:text-transparent hover:bg-clip-text hover:transition-colors hover:duration-300 hover:ease-in-out" : ""}`}>
             <Link
-              href={
-                config.status === 'INACTIVE'
-                  ? `/safeguard/edit/${config.id}`
-                  : '#'
-              }
+              href={`/safeguard/edit/${config.id}`}
               className={
-                config.status === 'INACTIVE'
-                  ? 'pointer-events-auto'
-                  : 'pointer-events-none'
+                config.status != 'INACTIVE'
+                ? 'pointer-events-none'
+                : 'flex items-center'
               }
+              aria-disabled={config.status != 'INACTIVE'}
             >
               Safeguard
               {config.status == 'INACTIVE' && <Pencil className="w-6 h-6 ml-2" />}
