@@ -30,7 +30,11 @@ const formSchema = z.object({
     .refine((data) => !/^\s/.test(data), {
       message: 'Will title must not start with whitespace',
     }),
-  ethAmount: z.string({ required_error: 'Amount is required' }).default('0'),
+  ethAmount: z
+    .string({ required_error: 'Amount is required' })
+    .refine((data) => parseFloat(data) >= 0.01, {
+      message: 'Amount must be greater than or equal to 0.01',
+    }),
 })
 
 export default function CreateWill() {
@@ -338,7 +342,7 @@ export default function CreateWill() {
                 name="ethAmount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Deposit fund</FormLabel>
+                    <FormLabel>Deposit fund (min. 0.01 ETH)</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter ETH amount to deposit"
