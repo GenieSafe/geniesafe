@@ -137,6 +137,7 @@ export default function SafeguardCard({
               }
             >
               Safeguard
+              {config.status == 'INACTIVE' && <Pencil className="w-6 h-6 ml-2" />}
             </Link>
           </CardTitle>
           {!privateKey && (
