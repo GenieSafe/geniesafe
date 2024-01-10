@@ -403,6 +403,7 @@ export default function EditWill({ will }: { will: any }) {
   }
 
   const onDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    setIsLoading(true)
     try {
       const _willId = will.id
       const _weiAmount = utils.parseEther(will.eth_amount)
@@ -453,6 +454,8 @@ export default function EditWill({ will }: { will: any }) {
         variant: 'destructive',
       })
       return
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -647,7 +650,7 @@ export default function EditWill({ will }: { will: any }) {
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button size={'lg'} variant={'destructive'}>
-                          Delete
+                          Delete and withdraw
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -669,7 +672,13 @@ export default function EditWill({ will }: { will: any }) {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                    <Button size={'lg'} type="submit">
+                    <Button
+                      size={'lg'}
+                      type="submit"
+                      disabled={
+                        validatorsArr.length < 3 || totalPercentage < 100
+                      }
+                    >
                       Save
                     </Button>
                   </>

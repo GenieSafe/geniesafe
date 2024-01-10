@@ -190,7 +190,7 @@ export default function Home({
           <InheritableFund
             inheritableFund={inheritableFund}
             ethUsd={ethUsd}
-            willStatus={will.status}
+            willStatus={will !== null ? will.status : null}
           />
           <SafeguardStatus config={config} />
           <ETHPrice ethUsd={ethUsd} eth24hrChange={eth24hrChange} />
