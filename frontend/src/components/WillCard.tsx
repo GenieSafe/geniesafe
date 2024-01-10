@@ -134,7 +134,8 @@ export function WillCard({
             {will.status === 'EXECUTED' ? 0 : balance} ETH
           </p>
           <CardDescription className="text-sm text-primary-foreground/50">
-            ~${(balance * ethUsd).toFixed(2)} (1 ETH = ${ethUsd})
+            ~${will.status === 'EXECUTED' ? 0 : (balance * ethUsd).toFixed(2)}{' '}
+            (1 ETH = ${ethUsd})
           </CardDescription>
         </div>
         <div className="p-4">

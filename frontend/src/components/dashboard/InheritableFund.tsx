@@ -42,7 +42,10 @@ export default function InheritableFund({
                 {willStatus === 'EXECUTED' ? 0 : inheritableFund} ETH
               </div>
               <p className="text-primary-foreground/50">
-                ~${(inheritableFund * ethUsd).toFixed(2)}
+                ~$
+                {willStatus === 'EXECUTED'
+                  ? 0
+                  : (inheritableFund * ethUsd).toFixed(2)}
               </p>
             </>
           ) : (
