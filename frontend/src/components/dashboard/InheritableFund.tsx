@@ -10,9 +10,11 @@ import {
 export default function InheritableFund({
   inheritableFund,
   ethUsd,
+  willStatus,
 }: {
   inheritableFund: number
   ethUsd: number
+  willStatus: string
 }) {
   return (
     <>
@@ -36,7 +38,9 @@ export default function InheritableFund({
         <CardContent className="flex flex-col justify-center h-full space-y-1">
           {inheritableFund !== null ? (
             <>
-              <div className="text-2xl font-bold">{inheritableFund} ETH</div>
+              <div className="text-2xl font-bold">
+                {willStatus === 'EXECUTED' ? 0 : inheritableFund} ETH
+              </div>
               <p className="text-primary-foreground/50">
                 ~${(inheritableFund * ethUsd).toFixed(2)}
               </p>
