@@ -131,7 +131,7 @@ export function WillCard({
         <div className="space-y-1">
           <CardDescription>Inheritable fund:</CardDescription>
           <p className="text-5xl font-semibold tracking-tight scroll-m-20">
-            {balance} ETH
+            {will.status === 'EXECUTED' ? 0 : balance} ETH
           </p>
           <CardDescription className="text-sm text-primary-foreground/50">
             ~${(balance * ethUsd).toFixed(2)} (1 ETH = ${ethUsd})
