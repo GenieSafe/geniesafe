@@ -499,9 +499,7 @@ export default function CreateWill() {
                   <Button
                     size={'lg'}
                     type="submit"
-                    disabled={
-                      validatorsArr.length < 3 || beneficiariesArr.length < 1
-                    }
+                    disabled={validatorsArr.length < 3 || totalPercentage < 100}
                   >
                     Create will
                   </Button>
