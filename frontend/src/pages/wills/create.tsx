@@ -439,7 +439,7 @@ export default function CreateWill() {
 
                 <div className="flex flex-col gap-6">
                   <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
-                    Validators
+                    Validators ({validatorsArr.length}/3)
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-10 gap-2">
@@ -496,7 +496,13 @@ export default function CreateWill() {
               </div>
               <div className="flex justify-end">
                 {!isLoading ? (
-                  <Button size={'lg'} type="submit">
+                  <Button
+                    size={'lg'}
+                    type="submit"
+                    disabled={
+                      validatorsArr.length < 3 || beneficiariesArr.length < 1
+                    }
+                  >
                     Create will
                   </Button>
                 ) : (

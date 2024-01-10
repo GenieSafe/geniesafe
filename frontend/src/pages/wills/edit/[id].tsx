@@ -650,7 +650,7 @@ export default function EditWill({ will }: { will: any }) {
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button size={'lg'} variant={'destructive'}>
-                          Delete
+                          Delete and withdraw
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -672,7 +672,13 @@ export default function EditWill({ will }: { will: any }) {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                    <Button size={'lg'} type="submit">
+                    <Button
+                      size={'lg'}
+                      type="submit"
+                      disabled={
+                        validatorsArr.length < 3 || totalPercentage < 100
+                      }
+                    >
                       Save
                     </Button>
                   </>
