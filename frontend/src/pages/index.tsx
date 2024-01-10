@@ -17,7 +17,7 @@ import { useRouter } from 'next/router'
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
   const supabase = createPagesServerClient(ctx)
-  
+
   // Check if we have a session
   const {
     data: { session },
@@ -187,7 +187,11 @@ export default function Home({
       <div className="flex flex-col gap-6">
         <div className="grid grid-cols-4 gap-6">
           <WillStatus will={will} />
-          <InheritableFund inheritableFund={inheritableFund} ethUsd={ethUsd} />
+          <InheritableFund
+            inheritableFund={inheritableFund}
+            ethUsd={ethUsd}
+            willStatus={will !== null ? will.status : null}
+          />
           <SafeguardStatus config={config} />
           <ETHPrice ethUsd={ethUsd} eth24hrChange={eth24hrChange} />
         </div>

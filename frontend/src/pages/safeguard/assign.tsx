@@ -23,6 +23,7 @@ export default function AssignConfig() {
   const [verifiersArr, setVerifiersArr] = useState<Tables<'verifiers'>[]>([])
   const [verifierInputVal, setVerifierInputVal] = useState('')
   const [pkInputVal, setPkInputVal] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleVerifierInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVerifierInputVal(e.target.value)
@@ -103,40 +104,50 @@ export default function AssignConfig() {
   }
 
   const onSubmit = async () => {
-    const { data: config_data, error: config_error } = await supabase
-      .from('wallet_recovery_config')
-      .insert({
-        private_key: pkInputVal as string,
-        user_id: user?.id as string,
-      })
-      .select()
+    setIsLoading(true)
+    console.info('Retrieving encryption key...')
 
-    if (!config_error) {
-      verifiersArr.forEach(async (verifier) => {
-        verifier.config_id = config_data[0].id as string
-      })
+    setTimeout(() => {
+      console.info('Encrypting private key...')
+    }, 2000)
 
-      const { data: ver_data, error: ver_error } = await supabase
-        .from('verifiers')
-        .insert(verifiersArr)
+    setTimeout(async () => {
+      const { data: config_data, error: config_error } = await supabase
+        .from('wallet_recovery_config')
+        .insert({
+          private_key: pkInputVal as string,
+          user_id: user?.id as string,
+        })
         .select()
 
-      if (!ver_error) {
-        toast({
-          title: 'Safeguard configuration created successfully!',
-          description:
-            'Your private key has been encrypted and stored in our database.',
-          variant: 'success',
+      if (!config_error) {
+        verifiersArr.forEach(async (verifier) => {
+          verifier.config_id = config_data[0].id as string
         })
-        router.push('/safeguard')
-      } else {
-        toast({
-          title: 'Error creating safeguard configuration',
-          description: ver_error.message,
-          variant: 'destructive',
-        })
+
+        const { data: ver_data, error: ver_error } = await supabase
+          .from('verifiers')
+          .insert(verifiersArr)
+          .select()
+
+        if (!ver_error) {
+          setIsLoading(false)
+          toast({
+            title: 'Safeguard configuration created successfully!',
+            description:
+              'Your private key has been encrypted and stored in our database.',
+            variant: 'success',
+          })
+          router.push('/safeguard')
+        } else {
+          toast({
+            title: 'Error creating safeguard configuration',
+            description: ver_error.message,
+            variant: 'destructive',
+          })
+        }
       }
-    }
+    }, 10000)
   }
 
   return (
@@ -207,14 +218,21 @@ export default function AssignConfig() {
             </div>
           </div>
           <div className="flex justify-end">
-            <Button
-              type="submit"
-              size={'lg'}
-              onClick={onSubmit}
-              disabled={verifiersArr.length < 3}
-            >
-              Create Safeguard
-            </Button>
+            {!isLoading ? (
+              <Button
+                type="submit"
+                size={'lg'}
+                onClick={onSubmit}
+                disabled={verifiersArr.length < 3}
+              >
+                Create Safeguard
+              </Button>
+            ) : (
+              <Button size={'lg'} disabled>
+                <div className="loading-spinner"></div>
+                Encrypting...
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

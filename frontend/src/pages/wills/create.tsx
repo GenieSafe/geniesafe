@@ -27,10 +27,14 @@ const formSchema = z.object({
     .string({ required_error: 'Will title is required' })
     .min(5, { message: 'Will title must at least contain 5 characters' })
     .max(30, { message: 'Will title must not exceed 30 characters' })
-    .refine((data) => /^[a-zA-Z0-9][a-zA-Z0-9\s]*$/.test(data), {
-      message: 'Will title must not start with whitespaces and can only contain alphanumeric characters',
+    .refine((data) => !/^\s/.test(data), {
+      message: 'Will title must not start with whitespace',
     }),
-  ethAmount: z.string({ required_error: 'Amount is required' }).default('0'),
+  ethAmount: z
+    .string({ required_error: 'Amount is required' })
+    .refine((data) => parseFloat(data) >= 0.01, {
+      message: 'Amount must be greater than or equal to 0.01',
+    }),
 })
 
 export default function CreateWill() {
@@ -212,7 +216,7 @@ export default function CreateWill() {
         })
       }
     }
-    
+
     setValidatorInputVal('')
   }
 
@@ -338,7 +342,7 @@ export default function CreateWill() {
                 name="ethAmount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Deposit fund</FormLabel>
+                    <FormLabel>Deposit fund (min. 0.01 ETH)</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter ETH amount to deposit"
@@ -439,7 +443,7 @@ export default function CreateWill() {
 
                 <div className="flex flex-col gap-6">
                   <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
-                    Validators
+                    Validators ({validatorsArr.length}/3)
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-10 gap-2">
@@ -496,7 +500,11 @@ export default function CreateWill() {
               </div>
               <div className="flex justify-end">
                 {!isLoading ? (
-                  <Button size={'lg'} type="submit">
+                  <Button
+                    size={'lg'}
+                    type="submit"
+                    disabled={validatorsArr.length < 3 || totalPercentage < 100}
+                  >
                     Create will
                   </Button>
                 ) : (

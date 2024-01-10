@@ -82,8 +82,8 @@ const formSchema = z.object({
     .string({ required_error: 'Will title is required' })
     .min(5, { message: 'Will title must at least contain 5 characters' })
     .max(30, { message: 'Will title must not exceed 30 characters' })
-    .refine((data) => /^[a-zA-Z0-9][a-zA-Z0-9\s]*$/.test(data), {
-      message: 'Will title must not start with whitespaces and can only contain alphanumeric characters',
+    .refine((data) => !/^\s/.test(data), {
+      message: 'Will title must not start with whitespace',
     }),
   ethAmount: z.string({ required_error: 'Amount is required' }).default('0'),
 })
@@ -403,6 +403,7 @@ export default function EditWill({ will }: { will: any }) {
   }
 
   const onDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    setIsLoading(true)
     try {
       const _willId = will.id
       const _weiAmount = utils.parseEther(will.eth_amount)
@@ -453,6 +454,8 @@ export default function EditWill({ will }: { will: any }) {
         variant: 'destructive',
       })
       return
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -647,7 +650,7 @@ export default function EditWill({ will }: { will: any }) {
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button size={'lg'} variant={'destructive'}>
-                          Delete
+                          Delete and withdraw
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -669,7 +672,13 @@ export default function EditWill({ will }: { will: any }) {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                    <Button size={'lg'} type="submit">
+                    <Button
+                      size={'lg'}
+                      type="submit"
+                      disabled={
+                        validatorsArr.length < 3 || totalPercentage < 100
+                      }
+                    >
                       Save
                     </Button>
                   </>
