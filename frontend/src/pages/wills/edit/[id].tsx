@@ -403,6 +403,7 @@ export default function EditWill({ will }: { will: any }) {
   }
 
   const onDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    setIsLoading(true)
     try {
       const _willId = will.id
       const _weiAmount = utils.parseEther(will.eth_amount)
@@ -453,6 +454,8 @@ export default function EditWill({ will }: { will: any }) {
         variant: 'destructive',
       })
       return
+    } finally {
+      setIsLoading(false)
     }
   }
 
