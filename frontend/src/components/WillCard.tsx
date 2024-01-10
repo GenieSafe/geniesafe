@@ -42,7 +42,7 @@ export function WillCard({
               aria-disabled={will.status != 'INACTIVE'}
             >
               {will.title}
-              {will.status == 'ACTIVE' && <Pencil className="w-6 h-6 ml-2" />}
+              {will.status == 'INACTIVE' && <Pencil className="w-6 h-6 ml-2" />}
             </Link>
           </CardTitle>
           {willContract !== null && (
