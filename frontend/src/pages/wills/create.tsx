@@ -27,8 +27,8 @@ const formSchema = z.object({
     .string({ required_error: 'Will title is required' })
     .min(5, { message: 'Will title must at least contain 5 characters' })
     .max(30, { message: 'Will title must not exceed 30 characters' })
-    .refine((data) => /^[a-zA-Z0-9][a-zA-Z0-9\s]*$/.test(data), {
-      message: 'Will title must not start with whitespaces and can only contain alphanumeric characters',
+    .refine((data) => !/^\s/.test(data), {
+      message: 'Will title must not start with whitespace',
     }),
   ethAmount: z.string({ required_error: 'Amount is required' }).default('0'),
 })
@@ -212,7 +212,7 @@ export default function CreateWill() {
         })
       }
     }
-    
+
     setValidatorInputVal('')
   }
 
