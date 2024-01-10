@@ -317,6 +317,45 @@ export default function EditWill({ will }: { will: any }) {
         return
       }
 
+      // Call WillContract
+      const _willId = will.id
+      const _newBeneficiaries = beneficiariesArr.map((beneficiary) => ({
+        beneficiaryAddress: (
+          beneficiary.metadata as Record<string, any>
+        ).wallet_address.toString(),
+        percentage: beneficiary.percentage.toString(),
+      }))
+
+      if (values.ethAmount === '') values.ethAmount = '0'
+
+      // If ethAmount is not 0, call WillContract
+      if (values.ethAmount !== '0') {
+        console.info('Calling WillContract')
+        try {
+          const updatedWillContract = await updateWill({
+            args: [_willId, _newBeneficiaries],
+            overrides: {
+              value: utils.parseEther(values.ethAmount),
+            },
+          })
+
+          console.info('WillContract call success', updatedWillContract)
+          toast({
+            title: 'Contract call success',
+            description: `Your will has been updated!`,
+            variant: 'success',
+          })
+        } catch (e) {
+          console.error('WillContract call failure', e)
+          toast({
+            title: 'Contract call error',
+            description: `Transaction failed. Please try again.`,
+            variant: 'destructive',
+          })
+          return
+        }
+      }
+
       console.info('Updating will')
       // Adding throws for the supabase.rpc call
       let { data: updatedWill, error: updateWillError } = await supabase.rpc(
@@ -351,42 +390,6 @@ export default function EditWill({ will }: { will: any }) {
         throw new Error(
           `Supabase update error: ${updateWillEthAmountError.message}`
         )
-      }
-
-      // Call WillContract
-      const _willId = will.id
-      const _newBeneficiaries = beneficiariesArr.map((beneficiary) => ({
-        beneficiaryAddress: (
-          beneficiary.metadata as Record<string, any>
-        ).wallet_address.toString(),
-        percentage: beneficiary.percentage.toString(),
-      }))
-
-      // If ethAmount is not 0, call WillContract
-      if (values.ethAmount !== '0') {
-        console.info('Calling WillContract')
-        try {
-          const updatedWillContract = await updateWill({
-            args: [_willId, _newBeneficiaries],
-            overrides: {
-              value: utils.parseEther(values.ethAmount),
-            },
-          })
-
-          console.info('WillContract call success', updatedWillContract)
-          toast({
-            title: 'Contract call success',
-            description: `Your will has been updated!`,
-            variant: 'success',
-          })
-        } catch (e) {
-          console.error('WillContract call failure', e)
-          toast({
-            title: 'Contract call error',
-            description: `Transaction failed. Ensure your balance is enough and try again.`,
-            variant: 'destructive',
-          })
-        }
       }
 
       if (!updateWillError) {
@@ -595,7 +598,7 @@ export default function EditWill({ will }: { will: any }) {
 
                 <div className="flex flex-col gap-6">
                   <h2 className="text-2xl font-semibold tracking-tight transition-colors scroll-m-20">
-                    Validators
+                    Validators ({validatorsArr.length}/3)
                   </h2>
                   <div className="grid items-end grid-cols-11 gap-4">
                     <div className="grid items-center w-full col-span-10 gap-2">
