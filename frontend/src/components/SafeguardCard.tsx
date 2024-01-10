@@ -101,6 +101,7 @@ export default function SafeguardCard({
         description: 'Verifiers have been notified.',
         variant: 'success',
       })
+      window.location.reload()
     } catch (e) {
       toast({
         title: 'Update config status failed!',
