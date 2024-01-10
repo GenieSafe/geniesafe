@@ -298,6 +298,15 @@ export default function EditWill({ will }: { will: any }) {
   const onSave = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true)
     try {
+      // If wallet is not connected, show alert and return
+      if (address === undefined) {
+        toast({
+          title: 'Error',
+          description: 'Please connect your wallet first.',
+          variant: 'destructive',
+        })
+        return
+      }
       // If total percentages of beneficiaries is less than 100%, show alert and return
       if (totalPercentage < 100) {
         toast({
