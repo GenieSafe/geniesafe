@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, Pencil, XCircle } from 'lucide-react'
 
 import {
   Card,
@@ -31,8 +31,19 @@ export function WillCard({
     <Card className="hover:shadow-[0px_0px_20px_0px_hsl(var(--primary))] transition-shadow duration-500 p-4">
       <CardHeader className="grid grid-cols-2">
         <div className="space-y-2">
-          <CardTitle className="w-fit text-3xl font-semibold tracking-tight scroll-m-20 hover:bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] hover:from-violet-200 hover:via-violet-400 hover:to-violet-800 hover:text-transparent hover:bg-clip-text hover:transition-colors hover:duration-300 hover:ease-in-out">
-            <Link href={`wills/edit/${will.id}`}>{will.title}</Link>
+          <CardTitle className={`w-fit text-3xl font-semibold tracking-tight scroll-m-20 ${will.status == 'INACTIVE' ? "hover:bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] hover:from-violet-200 hover:via-violet-400 hover:to-violet-800 hover:text-transparent hover:bg-clip-text hover:transition-colors hover:duration-300 hover:ease-in-out" : ""}`}>
+            <Link
+              href={`wills/edit/${will.id}`}
+              className={
+                will.status != 'INACTIVE'
+                  ? 'pointer-events-none'
+                  : 'flex items-center'
+              }
+              aria-disabled={will.status != 'INACTIVE'}
+            >
+              {will.title}
+              {will.status == 'INACTIVE' && <Pencil className="w-6 h-6 ml-2" />}
+            </Link>
           </CardTitle>
           {willContract !== null && (
             <Button variant={'link'} className="p-0 h-fit" asChild>
