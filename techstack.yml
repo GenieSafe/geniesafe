@@ -2,7 +2,7 @@ repo_name: GenieSafe/geniesafe
 report_id: ecec2297259b66114c39a9e73678ee96
 version: 0.1
 repo_type: Public
-timestamp: '2024-01-05T08:45:46+00:00'
+timestamp: '2024-02-29T18:43:20+00:00'
 requested_by: alifmazli
 provider: github
 branch: dev
@@ -53,7 +53,7 @@ tools:
   last_updated_by: alif
   last_updated_on: 2023-11-07 19:14:05.000000000 Z
 - name: Next.js
-  description: 'A small framework for server-rendered universal JavaScript apps '
+  description: A small framework for server-rendered universal JavaScript apps
   website_url: https://nextjs.org/
   version: 13.5.6
   open_source: true
@@ -170,7 +170,7 @@ tools:
   detection_source_url: https://github.com/GenieSafe/geniesafe
   detection_source: Repo Metadata
 - name: Prettier
-  description: 'Prettier is an opinionated code formatter. '
+  description: Prettier is an opinionated code formatter.
   website_url: https://prettier.io/
   version: 3.0.3
   license: MIT
@@ -184,7 +184,7 @@ tools:
   last_updated_by: alif
   last_updated_on: 2023-11-07 19:14:05.000000000 Z
 - name: SuperTest
-  description: 'A library for testing node.js HTTP servers '
+  description: A library for testing node.js HTTP servers
   website_url: https://www.npmjs.com/package/supertest
   version: 6.3.3
   license: MIT
